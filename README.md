@@ -1,6 +1,6 @@
 # Multiplayer Spinning-Top Battle Game — Design Package
 
-> **Current phase: DESIGN (Milestone M0), package v0.3 — awaiting Gate G0 decisions (`docs/09-review/G0-decision-sheet.md`).** This repository contains **documentation only**:
+> **Current phase: DESIGN (Milestone M0), package v0.3.1 (audit corrections) — awaiting Gate G0 decisions (`docs/09-review/G0-decision-sheet.md`).** This repository contains **documentation only**:
 > no game code, scenes, scripts, migrations or infrastructure. Implementation starts only after the
 > owner approves the design at **Gate G0** (`docs/09-review/design-review-report.md`).
 
@@ -18,11 +18,12 @@ The initial deployment is planned for **~100 concurrent connected players at pea
 | `docs/02-uml/` | PlantUML: context, use case, domain, 8 sequences, activity, 2 state machines, component, deployment |
 | `docs/03-data/` | `erd.puml`, `data-dictionary.md` (entities, integrity, indexes, retention, memory vs DB) |
 | `docs/04-interfaces/` | `backend-api.md`, `multiplayer-protocol.md`, `interaction-boundaries.md` |
-| `docs/05-architecture/` | `architecture.md` + `adr/` (ADR-001…011 and cited sources) |
+| `docs/05-architecture/` | `architecture.md` + `adr/` (ADR-001…015; ADR-003 superseded by ADR-012; index and sources in `adr/README.md`) |
 | `docs/06-security/` | threat model, auth & permissions, moderation, secrets & backups |
 | `docs/07-quality-operations/` | test strategy, load-test plan, operations, MVP readiness |
 | `docs/08-planning/` | roadmap + dependency map, traceability matrix, risk register |
-| `docs/09-review/` | design review report and **G0 decision sheet** |
+| `docs/09-review/` | design review report, **G0 decision sheet**, v0.3.1 audit correction log |
+| `tools/analysis/` | **design-analysis bundle (not game code)**: reproducible 1-v-1 combat model, configs, fixed seeds, CSV/JSON results |
 | `docs/10-game-design/` | **GDD**, statistics, classification, combat interaction, launch, burst, skills, controls specs; balancing report; research references; change proposals |
 
 ## Status labels
@@ -34,12 +35,18 @@ Only [C] items are binding. See `docs/01-requirements/assumptions-and-open-quest
 |---|---|---|
 | Godot; desktop + mobile; Windows/Android/Linux first, macOS/iOS later | Godot 4.7.x, GDScript, one project | Launch curve vs literal ×10 (CHG-01) |
 | Max 5 competitors; 100 = peak CCU target | ENet/UDP; 1 match per process; local prediction | Component properties (CHG-02) |
-| 360° joystick + Skill button; 5 s rapid-press launch (5 presses = 50 RPS) | Backend PHP + Laravel 13 + Reverb (ADR-012) | Magic scope & Energy weight (CHG-03, OQ-ST-02) |
+| 360° joystick + Skill button; 5 s rapid-press launch (5 presses = 50 RPS) | Backend PHP + Laravel 13 + Reverb (ADR-012) | Magic scope (CHG-03) & Energy weight (CHG-07, OQ-ST-06) |
 | ATK/DEF/STA/MAG; Energy derived; RPS separate | Energy = plain mean (CHG-07), advantage S, v0.3 coefficients as spike start (ADR-013) | Burst-primary metric (CHG-09) |
-| Burst Finish primary elimination; ring-out; last top wins | Hybrid burst model (ADR-014) | Time limit / tie rules |
+| Burst Finish primary elimination; ring-out; last top wins | Hybrid burst model with full-lock guarantee (ADR-014); launch median cap + ranked gate (CHG-13) | Time limit / tie rules; RPS-principle meaning (D-17) |
 | E-mail + password; unique display names | Skills catalogue & limits | Skill limits & catalogue |
 | MySQL private; server-authoritative combat | Rooms in Backend + Reverb push | Backend stack approval (ADR-012) |
 | Exploration postponed; no real-money wagering | MVP = battle + small social layer | — |
+
+## Reproducing the balance numbers
+```bash
+cd tools/analysis && python3 run_all.py
+```
+Requires Python ≥ 3.10 and numpy ≥ 2.0. Scope: 1-v-1 analytic model only — not gameplay validation (see `tools/analysis/README.md`).
 
 ## Viewing / editing diagrams
 Sources are `.puml` (PlantUML) and one Mermaid block (`docs/08-planning/roadmap.md`).

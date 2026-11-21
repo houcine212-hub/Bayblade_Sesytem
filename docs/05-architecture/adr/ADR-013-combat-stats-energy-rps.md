@@ -1,45 +1,55 @@
 # ADR-013: Combat statistics, Energy formula and RPS–Energy advantage model
-- **Status:** Proposed (revised v0.3, 2026-11-21) — **not approved**
-- **Supersedes:** v0.2 text of this ADR
+- **Status:** Proposed (revised v0.3.1, 2026-11-21) — **not approved**
 
 ## Context
-Confirmed: four primary attributes (ATK, DEF, STA, MAG); Energy derived from them; RPS a separate battle variable; RPS influence must decrease smoothly as the Energy gap grows and never become completely irrelevant (Master Update §7).
+Confirmed: four primary attributes; Energy derived; RPS separate; RPS influence decreases smoothly with the Energy gap and is never completely irrelevant (Master Update §7).
 
 ## Definitions
-`g = (E_A − E_B)/((E_A + E_B)/2)` (ratio `E_A/E_B = (2+g)/(2−g)`); `r = (ω_A − ω_B)/((ω_A + ω_B)/2)` with ω = **current** spin; `w(g) = 0.15 + 0.45·exp(−(g/0.25)²)`; `S = (1 − w)·tanh(3g) + w·tanh(2.5r)`.
+`g = (E_A − E_B)/((E_A + E_B)/2)`, ratio `E_A/E_B = (2+g)/(2−g)`; `r = (ω_A − ω_B)/((ω_A + ω_B)/2)`, ω = current spin; `w(g) = 0.15 + 0.45·exp(−(g/0.25)²)`; `S = (1 − w)·tanh(3g) + w·tanh(2.5r)`. Units and normalisation: DOC-CMB-001 §2 (`N_ij` dimensionless via `v_norm = clamp(v_n/v_ref, 0, 3)`).
 
 ## Decision (proposed)
-1. **Energy = (ATK + DEF + STA + MAG) / 4** (plain mean; v0.2 proposed weight 0.8 for Magic — see DOC-STAT-001 §4.5 for why it is dropped). Alternative kept: 0.8 weight.
-2. Advantage function S as defined; RPS enters *impact* only through S; RPS also acts physically through spin reservoir, stability and burst threshold (DOC-CMB-001 §3.1).
-3. Coefficient set **v0.3 candidate** (DOC-CMB-001 §4.8) as the starting point for spike S-1, including the new recoil term.
+1. Energy = (ATK + DEF + STA + MAG)/4 — **provisional** until skill-inclusive tests (AC-7); alternative 0.8 weight.
+2. Advantage function S; RPS enters *impact* only through S; it also acts physically via spin reservoir, stability and burst threshold.
+3. v0.3.1 candidate coefficients (DOC-CMB-001 §4.9, `tools/analysis/configs/v0.3.1-candidate.json`) as **spike S-1 starting values only**.
 4. Magic acts directly only through skills.
 
-## Contradictions in v0.2 and their resolution
-| ID | v0.2 statement | Test result [MEAS] | v0.3 resolution |
-|---|---|---|---|
-| C1 | Acceptance bands are win rates and a burst share | v0.2 used a deterministic model that cannot produce win rates; bands never measured | Monte Carlo analysis; bands measured (DOC-BAL-001 §5.3) |
-| C2 | Burst ≥ 40% of finishes | v0.2 coefficients: 14.8% | v0.3 candidate 34.9%; decision CHG-09 |
-| C3 | "Defense beats Attack" claimed | v0.2 coefficients in the spec model: Attack wins 55.2%; Attack 77% overall | v0.3 candidate: Defense wins 82.8%; Attack 57.3% overall |
-| C4 | "+25% Energy" scenario | actual ratio 1.19–1.22 (g 0.174–0.198) | ratio and g printed everywhere |
-| C6 | "RPS never irrelevant" (implied for outcomes) | outcome swing 1.8 points at g = 0.26 (Balance mirror) | requirement split: per-contact w ≥ 0.15 (holds); outcome ≥ 10 points for g ≤ 0.20 (holds: 19.7–62.0 points) |
-| C7 | "No type universally superior / no absolute counter" | favoured matchups 83–90% | open balancing item for S-1 |
-
-## Acceptance criteria (revised, measurable) — to be evaluated in spike S-1 with real physics and bots, then in playtests
-| # | Criterion | v0.3 analytic result |
+## Meaning of "RPS is never completely irrelevant" — decision D-17 (audit H-03)
+| Option | Requirement | Status in the model |
 |---|---|---|
-| AC-1 | Each primary type 45–55% average win rate vs the other three types (equal Energy, equal budget, random launches) | 57.5 / 51.8 / 50.2 / 40.2 — **fail** |
-| AC-2 | Favoured matchups (A>S, S>D, D>A) 55–80% | 90.2 / 90.0 / 82.8 — **fail** |
-| AC-3 | Burst share — target per CHG-09 decision (≥ 40% uniform mix as written in NFR-070, or the proposed alternative) | 35.0% |
-| AC-4 | Per-pairing median duration 15–100 s; overall median 30–90 s | 7.6–99.2 s — **fail**; overall 50.9 s — pass |
-| AC-5 | Draws ≤ 5% per pairing | ≤ 4.9% — pass |
-| AC-6 | For g ≤ 0.20 a 30-RPS launch swing changes win probability by ≥ 10 points; per-contact w ≥ 0.15 | 19.7–95.9 points; w ≥ 0.15 — pass |
-| AC-7 | Equal-budget shift between Magic and physical attributes 45–55% (needs real skills) | 78.9% for physical — **fail / not measurable without skills** |
+| (a) Per-contact only | `w(g) ≥ 0.15` for every contact | holds by construction |
+| **(b) Recommended:** per-contact + outcome for comparable builds | (a) and, for `|g| ≤ 0.20`, a 30-RPS launch advantage changes win probability by ≥ 10 points | holds: Attack mirror ≥ 19.2 points, Balance mirror ≥ 31.8 points up to g ≈ 0.18 |
+| (c) Outcome for all gaps | a minimum outcome effect at any g | fails (1.7 points at g = 0.261); would need structural change (cap attribute advantage or Energy-band matchmaking for all play) |
+
+## Contradictions and status
+| ID | Issue | Status |
+|---|---|---|
+| C1 | bands were never measured (deterministic v0.2 model) | resolved — stochastic, reproducible model |
+| C2 | Burst ≥ 40% vs 14.9% (v0.2 set) | candidate 32.5%; target → D-10 |
+| C3 | "Defense beats Attack" claimed | candidate: Defense 85.0% |
+| C4 | mislabelled Energy gaps | resolved |
+| C5 | ABSORB rebound missing | recoil term added |
+| C6 | outcome-level RPS effect can vanish | → D-17 |
+| C7 | favoured matchups 85–91% vs "no absolute counter" | open (AC-2) |
+| C8 | `N_ij` units; knockback ∝ v² (audit C-02) | resolved (DOC-CMB-001 §2, §4.3) |
+| C9 | full-lock guarantee not enforced (audit C-03) | resolved (DOC-BURST-001 §2.3) |
+| C10 | not reproducible (audit C-05) | resolved (`tools/analysis/`) |
+
+## Acceptance criteria — exit gate of spike S-1 (CHG-12)
+Definitions: 1-v-1 results are **seat-averaged**; equal Energy means |g| ≤ 0.02; launches ~ Normal(35, 8) presses unless stated; ≥ 4,000 duels per cell; S-1 uses real physics and bots, the analytic model only screens.
+| # | Criterion | v0.3.1 analytic result |
+|---|---|---|
+| AC-1 | Each primary type 45–55% average win rate vs the other three types | 56.3 / 52.5 / 51.8 / 39.3 — **fail** |
+| AC-2 | Favoured matchups A>S, S>D, D>A each 55–80% ("type advantage" = favoured side's seat-averaged win rate at equal Energy and equal attribute budget) | 89.1 / 91.2 / 85.0 — **fail** |
+| AC-3 | Burst metrics per D-10 (proposal: M-1 ≥ 30%; M-2 most frequent in A→A, A→S, A→B) | 32.5%; 54.2 / 69.5 / 59.1% — pass under proposal |
+| AC-4 | Cell medians 15–100 s; overall 30–90 s | 8.7–100.3 s — **fail**; overall 53.3 s — pass |
+| AC-5 | Draws ≤ 5% per cell | ≤ 4.0% — pass |
+| AC-6 | Per D-17 (recommended option b) | pass |
+| AC-7 | Equal-budget Magic/physical shift 45–55% with real skills | not measurable (79.4% without skills) |
+| AC-8 | **FFA:** in five-competitor bot matches with random type composition, each primary type's win share within ±5 points of its expected share | not measurable in the 1-v-1 model |
+| AC-9 | Launch fairness FC-1 (NFR-074) | passes only with the median cap (DOC-LAUNCH-001 §5) |
 
 ## Balancing process
-Analytic screening (done) → spike S-1 headless physics + bots with random launches and steering policies → internal playtests with telemetry → one parameter family at a time, `content_version` bump per change → criteria AC-1…AC-7.
-
-## Consequences
-Coefficients live in content data. The current candidate is a starting point, explicitly **not** balanced.
+Analytic screening (done, reproducible) → S-1 headless physics + bots (1-v-1 and FFA) → playtests with telemetry → one parameter family per iteration with `content_version` bump → AC-1…AC-9.
 
 ## Revisit when
-AC-1…AC-7 still fail after two S-1 tuning iterations → revisit equation structure (e.g. threshold-gated damage favouring concentrated attack; Balance identity).
+AC-1…AC-9 still fail after two S-1 iterations → revisit the equation structure (threshold-gated damage favouring concentrated attack; Balance identity; spin-race launch sensitivity F-11).

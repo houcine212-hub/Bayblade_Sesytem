@@ -1,5 +1,5 @@
 @startuml deployment
-title Deployment v0.2 — Initial single-VPS candidate [P] (Hostinger KVM = candidate only)
+title Deployment v0.3.1 — Initial single-VPS candidate [P] (Hostinger KVM = candidate only)
 node "Player device\n(Windows / Android / Linux; macOS & iOS later)" as DEV {
   artifact "Game Client build" as CLIENT
 }

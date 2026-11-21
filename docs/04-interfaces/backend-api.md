@@ -1,6 +1,6 @@
 # Backend API Contract (proposed)
 
-| Document ID | DOC-API-001 | Version 0.2 | **[P] Proposed for review** — implemented in Laravel (ADR-012) if approved |
+| Document ID | DOC-API-001 | Version 0.3.1 (contract content unchanged since v0.2 except where marked) | **[P] Proposed for review** — implemented in Laravel (ADR-012) if approved |
 |---|---|---|---|
 
 ## 1. Conventions
@@ -50,7 +50,7 @@ Auth column: G = guest, P = player, L = team leader (of that team), M = moderato
 | API-20b | GET /catalog/skills · GET /catalog/balance-summary | P | Skill catalogue; public summary of formulas (launch curve table, type thresholds) | FR-230, FR-182 | — |
 | API-21 | GET /me/inventory | P | Owned items | FR-021 | — |
 | API-22 | GET /me/loadouts · PUT /me/loadouts/{id} `{parts:{RING,CORE,TIP,SPIRIT}}` · POST /me/loadouts/{id}/activate | P | Builds (ownership + one part per slot validated) | FR-022 | — |
-| API-23 | POST /builds/preview `{parts}` | P | Server-computed attributes, Energy, primary/secondary type, subtype, skill compatibility (same Shared Rules as Match Server) | FR-196, FR-202 | — |
+| API-23 | POST /builds/preview `{parts}` | P | Server-computed attributes, Energy, headline type (TIP), computed profile (primary/secondary/subtype or UNCLASSIFIED), skill compatibility (same Shared Rules as Match Server) | FR-196, FR-202 | — |
 | API-30 | POST /rooms | P | Create room → `{roomId, code}` | FR-030, FR-031 | SQ-02 |
 | API-31 | POST /rooms/join | P | Join by `{code, role}` | FR-032, FR-033, FR-037 | SQ-02 |
 | API-32 | GET /rooms/{roomId} | P (member) | Room snapshot | FR-035 | SQ-02 |
@@ -83,7 +83,7 @@ Auth column: G = guest, P = player, L = team leader (of that team), M = moderato
 POST /v1/builds/preview
 { "parts": { "RING": 101, "CORE": 205, "TIP": 310, "SPIRIT": 402 } }
 ```
-`200` → `{ "attributes": {"atk":85,"def":45,"sta":40,"mag":55}, "energy": 56.3, "primaryType": "ATTACK", "secondaryType": null, "subtype": "SMASH", "properties": {"mass":1.0,"lockStrength":0.95,"mobility":1.0}, "skill": {"key":"rail_dash","compatible":true}, "contentVersion": "c-0.2.0" }` (example values)
+`200` → `{ "attributes": {"atk":85,"def":45,"sta":40,"mag":55}, "energy": 56.25, "headlineType": "ATTACK" (from TIP, D-08), "profile": {"primary": "ATTACK", "secondary": null, "subtype": "SMASH"}, "properties": {"mass":1.0,"lockStrength":0.95,"mobility":1.0}, "skill": {"key":"rail_dash","compatible":true}, "contentVersion": "c-example-0.3.1" }` (example values; Energy shown with the proposed plain mean = 56.25)
 
 ### Example: join room
 ```http

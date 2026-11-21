@@ -1,5 +1,5 @@
 @startuml state-bey-combat
-title State Machine: one Bey during a match (Match Server) [P]
+title State Machine: one Bey during a match (Match Server) [P, v0.3.1]
 [*] --> AWAITING_LAUNCH
 AWAITING_LAUNCH --> LAUNCHING : LAUNCH_WINDOW opens (5 s)
 LAUNCHING --> ACTIVE : RELEASE (launchRps = RPS(presses))
@@ -12,7 +12,7 @@ state ACTIVE {
   STABLE --> SKILL_ACTIVE : skill accepted\n(gauge full, cooldown ok, uses < 3,\nspin >= 20, not opening 3 s)
   SKILL_ACTIVE --> STABLE : duration ends (cooldown starts)
 }
-ACTIVE --> ELIMINATED_BURST : lockIntegrity <= 0\nor critical burst (L <= 50)
+ACTIVE --> ELIMINATED_BURST : lockIntegrity <= 0\nor critical burst (L at tick start <= 50)
 ACTIVE --> ELIMINATED_OVER : left arena / pocket >= 0.5 s
 ACTIVE --> ELIMINATED_XTREME : left via Xtreme zone
 ACTIVE --> ELIMINATED_SPIN : spinRps < 8
@@ -22,6 +22,11 @@ ELIMINATED_OVER --> SPECTATING
 ELIMINATED_XTREME --> SPECTATING
 ELIMINATED_SPIN --> SPECTATING
 SPECTATING --> [*]
+note bottom of ELIMINATED_BURST
+  ELIMINATED_* states = physical finish_type (BURST | OVER | XTREME | SPIN).
+  Disconnect forfeit, no-show and match abort are NOT finish types:
+  they are stored as outcome_reason (data dictionary §2b).
+end note
 WINNER --> [*]
 note right of ACTIVE
   Disconnected competitor: top keeps being simulated

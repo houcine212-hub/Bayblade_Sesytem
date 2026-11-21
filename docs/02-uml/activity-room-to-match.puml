@@ -1,5 +1,5 @@
 @startuml activity-room-to-match
-title Activity: Room-to-Match Lifecycle [v0.2]
+title Activity: Room-to-Match Lifecycle [v0.3.1]
 start
 :Host creates room (FR-030);
 :Backend generates room code (FR-031);

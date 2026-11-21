@@ -1,6 +1,6 @@
 # Multiplayer Protocol & Transport Proposal
 
-| Document ID | DOC-NET-001 | Version 0.2 | **[P] Proposed** — joystick, launch, skills added; values to verify in spike S-2 |
+| Document ID | DOC-NET-001 | Version 0.3.1 (message catalogue = protocol version 1, unchanged since v0.2) | **[P] Proposed** — joystick, launch, skills added; values to verify in spike S-2 |
 |---|---|---|---|
 | Decision | ADR-007 (transport), ADR-005 (simulation), ADR-006 (process model) |
 

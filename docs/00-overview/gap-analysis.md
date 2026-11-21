@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | DOC-GAP-001 |
-| Status | Draft for review (design phase, no implementation) |
+| Status | Historical v0.1 analysis, annotated in v0.3.1 — current decisions live in the SRS, register and G0 decision sheet |
 | Source | Master Product & Architecture Brief (the "Brief") |
 | Date | 2026-11-21 |
 
@@ -48,8 +48,8 @@ virtual-item stakes are later; real-money wagering is excluded.
 - Godot-based 3D client; desktop + mobile; shared account/backend/data/matchmaking/rules/history.
 - Rooms: create, shareable code, join, fewer than 5 allowed, ready flow, spectators possible.
 - Max 5 competitors per match.
-- FFA: ring-out eliminates; last remaining top wins; eliminated players may spectate.
-- Launch: a five-second period exists; launch-button presses contribute to spin; top stats matter (exact semantics TBD).
+- FFA: ring-out eliminates; last remaining top wins; eliminated players may spectate. *(v0.2+: Burst Finish is now the primary elimination; ring-out remains a confirmed secondary elimination — DOC-BURST-001 §3.)*
+- Launch: a five-second period exists; launch-button presses contribute to spin; top stats matter (exact semantics TBD). *(Superseded v0.2: 5-second rapid-press window, 5 presses = 50 RPS — DOC-LAUNCH-001.)*
 - Separation of balance data, loadout, rules, physics and presentation.
 - MySQL for persistent data; never exposed to clients; not written per frame.
 - Trusted server-side authority for official results (acceptance criterion O-7).
@@ -75,13 +75,13 @@ virtual-item stakes are later; real-money wagering is excluded.
 
 ## 6. Contradictions, ambiguities and risks
 
-### 6.1 Gaps that change the core design (high impact)
+### 6.1 Gaps that change the core design (high impact) — *historical: G-01…G-03 were answered in v0.2 (see §7b); kept for traceability*
 
 | ID | Gap | Why it matters |
 |---|---|---|
-| G-01 | **Is there any player control during the battle** after launch (steering, abilities, "attack/defend")? The Brief only describes launch input; future voice commands imply in-battle commands exist. | Determines whether client prediction is needed, input bandwidth, anti-cheat surface and mobile UI. |
-| G-02 | **Other elimination conditions**: does a top that stops spinning ("spin-out") or breaks ("burst") lose? Only ring-out is confirmed. | Without another end condition a match may never end → a timeout rule is mandatory. |
-| G-03 | **Five-second period semantics** (countdown? press window? delay after all join?) and the spin formula. | Drives match state machine, input sampling and fairness across touch/keyboard. |
+| G-01 *(answered v0.2: 360° joystick + skill button)* | **Is there any player control during the battle** after launch (steering, abilities, "attack/defend")? The Brief only describes launch input; future voice commands imply in-battle commands exist. | Determines whether client prediction is needed, input bandwidth, anti-cheat surface and mobile UI. |
+| G-02 *(answered v0.2: Burst primary; Spin/Over secondary)* | **Other elimination conditions**: does a top that stops spinning ("spin-out") or breaks ("burst") lose? Only ring-out is confirmed. | Without another end condition a match may never end → a timeout rule is mandatory. |
+| G-03 *(answered v0.2: rapid-press window)* | **Five-second period semantics** (countdown? press window? delay after all join?) and the spin formula. | Drives match state machine, input sampling and fairness across touch/keyboard. |
 | G-04 | **Physics fidelity**: arcade/stylised vs. realistic rigid-body. | Decides custom simulation vs. Godot physics engine on the server (ADR-005). |
 
 ### 6.2 Terminology conflict

@@ -10,3 +10,7 @@
 .vscode/
 .idea/
 *.zip
+
+# Python analysis bundle
+__pycache__/
+*.pyc

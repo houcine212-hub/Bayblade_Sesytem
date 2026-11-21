@@ -14,7 +14,7 @@ Format per Brief rule: existing decision → proposal → evidence → advantage
 | Advantages | Linear: 30 presses (6/s, normal human) = 300 RPS, 60 presses = 600 RPS → a 12× spread between players; macro/autoclicker gains are unbounded. Curve: 30 presses → 123 RPS, 60 → 144 RPS: skill still rewarded, extremes compressed, device differences shrink. |
 | Disadvantages | Less intuitive than "1 press = 10 RPS"; very fast tappers gain less. |
 | Recommendation | Adopt curve (ADR-015). Alternative kept: linear with hard cap at 15 presses (150 RPS) — simpler but flat above 15 presses (no reward for >3 presses/s), which removes most skill expression. |
-| v0.3 boundaries | 0 presses → 20.00 RPS; max 60 counted presses (half-open window + explicit cap); max 144.42 RPS. Limitations: a macro always reaches the cap (68.6–93.3% win rate vs a 7/s human); zone check is client-side; cap options measured in DOC-LAUNCH-001 §5. |
+| v0.3 boundaries (updated v0.3.1) | 0 presses → 20.00 RPS; n_max and max RPS now depend on the cap (CHG-13: median cap, provisional n_max 35 → 129.3 RPS; v0.3 alternative n_max 60 → 144.42 RPS). With the 12/s cap a capped presser beats a 35-press player 68.9% / 93.6% (Attack / Stamina mirror); zone check is client-side. |
 
 ## CHG-02 Attributes: keep four, add component properties (not attributes)
 | Field | Content |
@@ -58,8 +58,8 @@ Existing (P): Match Server holds a WebSocket control channel to Backend. Proposa
 |---|---|
 | Existing | v0.2 proposal (never approved): Energy = (ATK + DEF + STA + 0.8·MAG)/3.8 |
 | Proposal | Energy = (ATK + DEF + STA + MAG)/4 |
-| Evidence | Measured (DOC-STAT-001 §4.5): moving Magic points into physical attributes wins 78.9–91.5% at every weight 0–1.0; lower weights make Magic investment worse. No official source defines Energy or Magic. |
-| Advantages | Simplest; every attribute point counts equally toward Energy; most Magic-friendly option tested |
+| Evidence | Measured, skills **not** modelled (`tools/analysis/results/e4_magic_weight.csv`): moving Magic points into physical attributes wins 79.4–91.5% at every weight 0–1.0. No official source defines Energy or Magic. These tests cannot establish fairness for Magic (audit H-04). |
+| Advantages | Simplest; every attribute point counts equally toward Energy. (v0.3 claim "most Magic-friendly" withdrawn — not supported without skill-inclusive tests.) |
 | Disadvantages | Does not by itself make Magic competitive — skills must be tuned (AC-7) |
 | Recommendation | Adopt 1.0; keep 0.8 as documented alternative |
 
@@ -68,18 +68,18 @@ Existing (P): Match Server holds a WebSocket control channel to Backend. Proposa
 |---|---|
 | Existing | v0.2 coefficients (proposal) |
 | Proposal | T0 0.20, β 2.0, c_b 3, c_d 0.85, c_move 1.0, **new recoil ρ_rec 0.15** (×2.5 vs ABSORB); Balance example content lock 1.15 / mass 1.08 / mobility 0.75 |
-| Evidence | Spec-consistent Monte Carlo: v0.2 set fails every band (Attack 77%, Burst 14.8%, 150 s matches); v0.3 improves all metrics (Attack 57.5%, Burst 35.0%, overall median 50.9 s) but still fails AC-1, AC-2, AC-4, AC-7 (DOC-BAL-001 §5.3) |
+| Evidence | Reproducible model (`tools/analysis/`): v0.2 reference fails every band (Attack 76.4%, Burst 14.9%, cells up to 152 s); v0.3.1 candidate: Attack 56.3%, Burst 32.5%, overall median 53.3 s, but fails AC-1, AC-2, AC-4, AC-7 (AC-8 untested) |
 | Advantages | Official triangle directions all hold; Defense now counters Attack; recoil implements "ABSORB rebounds attackers" |
-| Disadvantages | Not balanced; Attack mirrors 7.6 s; favoured matchups 83–90% |
+| Disadvantages | Not balanced; Attack mirror median 8.7 s; favoured matchups 85.0–91.2% |
 | Recommendation | Adopt as the **starting point for spike S-1 only**, not as final values |
 
-## CHG-09 What "Burst is primary" must mean numerically
+## CHG-09 What "Burst is primary" must mean numerically (population defined in v0.3.1, audit H-02)
 | Field | Content |
 |---|---|
 | Existing | [C] Burst Finish is the primary elimination mechanic; [P] NFR-070: BURST ≥ 40% of eliminations |
-| Conflict | Measured: ≥ 40% in a uniform matchup mix only with Attack matches ending in 2–4 s; with reasonable lengths Burst ≈ 35% and SPIN ≈ 46%. Defense-vs-Defense/Stamina pairings produce 0–3% bursts. |
-| Options | **(a)** keep ≥ 40% over a uniform mix → needs further rule changes (none found in 810 tested combinations); **(b)** "primary" = featured finish + **≥ 30% of all eliminations and the most frequent finish in pairings involving an Attack- or Balance-type Bey**, measured on real match telemetry (model: 35.0% overall; 56–72% in those pairings); **(c)** add a stronger burst mechanic (e.g. opposite-spin burst, officially documented — post-MVP) |
-| Recommendation | **(b)** for MVP, re-measure in S-1; consider (c) after MVP |
+| Conflict | Uniform matchup mix: Burst 32.5%, SPIN 48.1%. Burst is rare in every Defense pairing (Attack–Defense 9.6%, Defense–Defense 0.0%, Defense–Stamina 2.0%, Defense–Balance 0.0%). v0.3 wording "most frequent finish in pairings involving an Attack- or Balance-type Bey" was **wrong** (Attack–Defense contradicts it) and is withdrawn. |
+| Options | **(a)** keep ≥ 40% over a uniform mix — no tested coefficient set reached it with acceptable match lengths; **(b)** two metrics with defined populations (DOC-BURST-001 §3.1): **M-1** BURST ≥ 30% of *all* eliminations in all completed matches (model 32.5%); **M-2** BURST is the most frequent finish in each of the attributed pairs **Attack→Attack, Attack→Stamina, Attack→Balance** (model 54.2% / 69.5% / 59.1%); eliminations without a credited eliminator count for M-1 only; **(c)** add a stronger burst mechanic later (official opposite-spin "low-speed burst") |
+| Recommendation | **(b)** for MVP, measured on telemetry; reconsider (c) post-MVP |
 
 ## CHG-10 Classification label: official-style headline type
 | Field | Content |
@@ -102,5 +102,29 @@ Existing (P): Match Server holds a WebSocket control channel to Backend. Proposa
 | Field | Content |
 |---|---|
 | Existing | v0.2 bands (type 45–55%, Burst ≥ 40%) — never measured |
-| Proposal | AC-1…AC-7 in ADR-013 (adds favoured-matchup band 55–80%, per-pairing duration, draws, outcome-level RPS requirement, Magic equal-budget test) |
+| Proposal | AC-1…AC-9 in ADR-013 (v0.3.1 adds AC-8 FFA and AC-9 launch fairness) (adds favoured-matchup band 55–80%, per-pairing duration, draws, outcome-level RPS requirement, Magic equal-budget test) |
 | Recommendation | Adopt as the gate for leaving spike S-1 |
+
+## CHG-13 Launch fairness: median press cap + ranked gate (v0.3.1, audit C-01)
+| Field | Content |
+|---|---|
+| Existing | v0.3 proposal: 12 presses/s cap (n_max 60, max 144.42 RPS); macro risk accepted as residual |
+| Proposal | Counted-press cap = **measured median sustained touch rate** (provisional 7/s → n_max 35 → max 129.3 RPS) + fairness criterion FC-1 (≤ 60%) + **ranked gate** (FR-186) until FC-1 passes with S-5/S-1 data; accuracy layer evaluated in S-5 |
+| Evidence | `e5_launch.csv`: capped presser vs median player 68.9% / 93.6% (12/s) → 47.5% / 50.8% (median cap) |
+| Advantages | Macro gains nothing over median-or-better players; device gaps narrow; rapid-press concept and 5 → 50 anchor unchanged |
+| Disadvantages | Lower skill ceiling (no reward above the median); below-median players still disadvantaged; real median unknown until S-5 |
+| Recommendation | Adopt for design; final cap value after S-5 |
+
+## CHG-14 Units, normalisation and burst guarantees (v0.3.1, audit C-02…C-04)
+| Field | Content |
+|---|---|
+| Existing | `N_ij` carried speed units; knockback ∝ v²; mobility factor in the game impact formula; burst equation duplicated and partly undefined; full-lock guarantee only in prose |
+| Proposal | `v_norm = clamp(v_n/v_ref, 0, 3)`, `v_ref = 1.0 m/s`, `v_min = 0.05·v_ref`; linear knockback Δv in m/s; mobility factor only as analysis proxy; contact-event definition with 100 ms debounce and per-tick aggregation; one canonical burst equation with `K_burst`, `K_guard`, `θ_up` (radians); per-tick damage cap 49 + start-of-tick critical gate with proof |
+| Evidence | DOC-CMB-001 §2, §4.6 worked examples; DOC-BURST-001 §2.3 proof; analysis check up to N = 10⁶ |
+| Recommendation | Adopt (structure); values remain S-1 starting points |
+
+## CHG-15 Data model alignment (v0.3.1, audit D-01…D-04, H-05)
+| Field | Content |
+|---|---|
+| Changes | e-mail NOT NULL; no `stats_json` (columns + `properties_json`); `loadout_slot` PK (loadout_id, slot_type); canonical FK `game_match.server_instance_id` (current match derived, `current_match_id` removed); `finish_type` physical only + new `outcome_reason`; `tip_type` only on TIP (replaces generic `designed_type`); match status `LAUNCHING` aligned with state-match |
+| Recommendation | Adopt |

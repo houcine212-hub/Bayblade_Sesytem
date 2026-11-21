@@ -1,5 +1,5 @@
 @startuml component
-title Component Diagram v0.2 [P] — Backend: Laravel (ADR-012); Match Server: Godot headless
+title Component Diagram v0.3.1 [P] — Backend: Laravel (ADR-012); Match Server: Godot headless
 skinparam componentStyle rectangle
 
 package "Game Client (Godot 4.7.x, GDScript)" {

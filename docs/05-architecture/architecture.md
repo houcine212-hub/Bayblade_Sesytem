@@ -1,6 +1,6 @@
 # System Architecture
 
-| Document ID | DOC-ARC-001 | Version 0.2 | **[P] Proposed** — pending Gate G0 approval |
+| Document ID | DOC-ARC-001 | Version 0.3.1 (content unchanged since v0.2 except references) | **[P] Proposed** — pending Gate G0 approval |
 |---|---|---|---|
 
 ## 1. Architecture at a glance

@@ -1,5 +1,5 @@
 @startuml erd
-title ERD v0.2 — MySQL 8.4 (InnoDB, utf8mb4) [P] — <<C>> confirmed entity, <<P>> proposed, <<post>> later
+title ERD v0.3.1 — MySQL 8.4 (InnoDB, utf8mb4) [P] — <<C>> confirmed entity, <<P>> proposed, <<post>> later
 hide circle
 skinparam linetype ortho
 ' Note: table is game_match because MATCH is a MySQL reserved word.
@@ -56,7 +56,7 @@ entity item_definition <<C>> {
   * contrib_def : TINYINT
   * contrib_sta : TINYINT
   * contrib_mag : TINYINT
-  designed_type : ENUM(ATTACK,DEFENSE,STAMINA,BALANCE) NULL
+  tip_type : ENUM(ATTACK,DEFENSE,STAMINA,BALANCE) NULL\n  (CHECK: NOT NULL iff slot = TIP — headline type source)
   * properties_json : JSON (mass, lock_strength, mobility, friction, height, contact_profile, spin_direction)
   skill_key : VARCHAR(64) NULL (SPIRIT only)
   * content_version : VARCHAR(16)
@@ -81,6 +81,7 @@ entity loadout <<C>> {
 entity loadout_slot <<P>> {
   * loadout_id : FK
   * slot_type : ENUM(RING,CORE,TIP,SPIRIT)
+  PK(loadout_id, slot_type) — max one part per slot
   --
   * inventory_item_id : FK
 }
@@ -111,9 +112,9 @@ entity game_match <<C>> {
   room_id : FK NULL
   * mode : ENUM(FFA)
   * stake_type : ENUM(NONE) [BR-009]
-  * status : ENUM(ALLOCATING,WAITING_FOR_PLAYERS,PRE_LAUNCH,BATTLE,ENDED,COMPLETED,CANCELLED,ABORTED,DISPUTED)
-  end_reason : VARCHAR(32)
-  * server_instance_id : VARCHAR(64)
+  * status : ENUM(ALLOCATING,WAITING_FOR_PLAYERS,LAUNCHING,BATTLE,ENDED,COMPLETED,CANCELLED,ABORTED,DISPUTED)
+  end_reason : ENUM(LAST_STANDING,TIME_LIMIT,ALL_DRAW,CANCELLED,ABORTED) NULL
+  server_instance_id : FK NULL → match_server_instance (ON DELETE SET NULL) [canonical link]
   * protocol_version : INT
   * content_version : VARCHAR(16)
   * sim_seed : BIGINT UNSIGNED
@@ -135,13 +136,15 @@ entity match_participant <<C>> {
   * stat_sta : TINYINT
   * stat_mag : TINYINT
   * energy : DECIMAL(5,2) (derived snapshot)
-  * primary_type : ENUM(ATTACK,DEFENSE,STAMINA,BALANCE)
-  secondary_type : ENUM(...) NULL
+  headline_type : ENUM(ATTACK,DEFENSE,STAMINA,BALANCE) NULL (TIP label, D-08)
+  * profile_primary : ENUM(ATTACK,DEFENSE,STAMINA,BALANCE,UNCLASSIFIED) (computed)
+  profile_secondary : ENUM(ATTACK,DEFENSE,STAMINA) NULL
   launch_presses : TINYINT NULL
   launch_rps : DECIMAL(5,1) NULL
   launch_flags : SET(REGULARITY,LATE_BATCH) NULL
   placement : TINYINT NULL
-  finish_type : ENUM(BURST,OVER,XTREME,SPIN,DISCONNECT) NULL
+  finish_type : ENUM(BURST,OVER,XTREME,SPIN) NULL (physical finish only)
+  outcome_reason : ENUM(WINNER,PHYSICAL_FINISH,DRAW_SHARED,DISCONNECT_FORFEIT,NO_SHOW,TIME_LIMIT_RANK,MATCH_ABORTED) NULL
   credited_to_user_id : FK NULL
   eliminated_at_ms : INT NULL
   final_spin_rps : DECIMAL(5,1) NULL
@@ -165,7 +168,6 @@ entity match_server_instance <<P>> {
   * protocol_version : INT
   * build_id : VARCHAR(32)
   * state : ENUM(IDLE,BUSY,DRAINING,OFFLINE)
-  current_match_id : FK NULL
   * last_heartbeat_at : DATETIME(3)
 }
 entity match_server_command <<P>> {
@@ -290,7 +292,7 @@ game_match ||--|{ match_participant
 user_account ||--o{ match_participant
 game_match ||--o{ match_event
 match_server_instance ||--o{ match_server_command
-match_server_instance |o--o| game_match : current
+match_server_instance |o--o{ game_match : runs (game_match.server_instance_id)
 user_account ||--|| competitive_record
 team ||--|{ team_membership
 user_account ||--o{ team_membership

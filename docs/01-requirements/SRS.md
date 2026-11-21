@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | DOC-SRS-001 |
-| Version | 0.3 (correction pass, draft for Gate G0 review) |
+| Version | 0.3.1 (audit correction pass, draft for Gate G0 review) |
 | Status | Requirements marked [C] are user-confirmed; [P]/[A]/[TBD] are not |
 | Related | `MVP-scope.md`, `assumptions-and-open-questions.md`, `glossary.md`, `../08-planning/traceability-matrix.md`, `../10-game-design/` (GDD and combat specifications) |
-| Change log | v0.3: official sources verified; Energy recommendation, combat coefficients, burst targets, launch boundaries and acceptance criteria corrected (CHG-07…12). v0.2: joystick, skill button, rapid-press launch, Burst Finish, attributes/Energy confirmed; email+password accounts, unique display names, first platforms confirmed; backend stack re-evaluated (ADR-012). |
+| Change log | v0.3.1: audit fixes — units/normalisation, burst guarantee, launch fairness + ranked gate, data-model alignment, reproducible analysis (`tools/analysis/`), new FR-186/FR-225/FR-226/NFR-074. v0.3: official sources verified; Energy recommendation, combat coefficients, burst targets, launch boundaries and acceptance criteria corrected (CHG-07…12). v0.2: joystick, skill button, rapid-press launch, Burst Finish, attributes/Energy confirmed; email+password accounts, unique display names, first platforms confirmed; backend stack re-evaluated (ADR-012). |
 
 **Status column:** C = Confirmed, P = Proposed, A = Assumption-based, TBD = placeholder for an open rule.
 **Tier column:** Core = MVP-Core, Soc = MVP-Social, Post = Post-MVP, Excl = Excluded.
@@ -206,11 +206,12 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 | ID | Requirement | Status | Tier |
 |---|---|---|---|
 | FR-180 | A launch zone appears for the 5-second window; presses outside it do not count (touch/mouse). | C | Core |
-| FR-181 | A successful press is edge-triggered, released before the next, inside the half-open window [W0, W0+5000 ms), ≥ 83.3 ms after the previous counted press, at most 60 counted presses, key repeat ignored. | P | Core |
+| FR-181 | A successful press is edge-triggered, released before the next, inside the half-open window [W0, W0+5000 ms), ≥ 1000/r_cap ms after the previous counted press, at most n_max = 5·r_cap counted presses, key repeat ignored. Proposal: r_cap = measured median touch rate (provisional 7/s, n_max 35); v0.3 value 12/s (n_max 60) kept as alternative. | P | Core |
 | FR-182 | Launch RPS = 20 + 130·(1 − e^(−n/19.0575)) (passes 5 → 50.000 RPS); alternative linear model documented (CHG-01). | C anchor / P curve | Core |
-| FR-183 | Launch RPS range 20.00 (zero presses) to 144.42 (60 presses); asymptote 150 never reached. | P | Core |
+| FR-183 | Launch RPS range 20.00 (zero presses) to RPS(n_max) (provisional 129.3 at n_max 35; 144.42 at n_max 60); asymptote 150 never reached. | P | Core |
 | FR-184 | The Match Server counts presses from timestamped batches and determines launch RPS; client counts are cosmetic. | C (server authority) / P | Core |
 | FR-185 | All competitors see every launch result (presses, RPS) before battle starts. | P | Core |
+| FR-186 | Ranked matchmaking, ratings and rank-affecting results stay disabled until launch fairness criterion FC-1 (NFR-074) passes with spike S-5/S-1 data. Friendly code rooms unaffected. | P | Core |
 
 ### 3.17 Statistics & Energy (v0.2)
 | ID | Requirement | Status | Tier |
@@ -228,7 +229,7 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 |---|---|---|---|
 | FR-200 | Primary types ATTACK, DEFENSE, STAMINA, BALANCE. | C (investigate) / P (definitions per DOC-CLS-001) | Core |
 | FR-201 | Builds may have a secondary type (hybrid) when shares are close. | P | Core |
-| FR-202 | Headline type per CHG-10 (proposal: TIP part's designed type, as in official Beyblade X where the Bit decides the type) with a computed profile (hybrid/subtype) from attributes and properties; alternative: computed type only. | P | Core |
+| FR-202 | Headline type per CHG-10 (proposal: the TIP part's `tip_type`, as in official Beyblade X where the Bit decides the type) with a separately stored computed profile (primary/secondary/subtype, or UNCLASSIFIED when ATK+DEF+STA < 30); alternative: computed type only. | P | Core |
 | FR-203 | Classification thresholds are configurable content data. | P | Core |
 | FR-204 | Spin direction (RIGHT/LEFT/DUAL) is a separate badge; no MVP gameplay effect. | P | Core |
 | FR-205 | Subtypes SMASH, UPPER, ANCHOR, ABSORB, ENDURANCE, EVASIVE, ADAPTIVE. | P | Core |
@@ -241,16 +242,18 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 | FR-212 | The transition is smooth and RPS influence never reaches zero (w ≥ 0.15). | C / P (value) | Core |
 | FR-213 | Collisions determine impact, knockback, stability (stagger), spin loss, lock damage (burst) and skill effectiveness per DOC-CMB-001. | C (list) / P (equations) | Core |
 | FR-214 | Type advantages emerge from attributes/properties; optional bounded type modifiers (±5%) disabled by default. | P | Core |
-| FR-215 | No absolute counter rule exists (any matchup can be overturned by RPS, Energy, steering or skills). Measurable target: favoured matchups 55–80% (ADR-013 AC-2; current candidate 83–90% — open). | C / P (target) | Core |
+| FR-215 | No absolute counter rule exists (any matchup can be overturned by RPS, Energy, steering or skills). Measurable target: favoured matchups 55–80% seat-averaged (ADR-013 AC-2; current candidate 85.0–91.2% — open). | C / P (target) | Core |
 
 ### 3.20 Burst Finish & finishes (v0.2)
 | ID | Requirement | Status | Tier |
 |---|---|---|---|
 | FR-220 | A sufficiently powerful impact (cumulatively) separates components → BURST elimination. | C | Core |
-| FR-221 | Hybrid burst model (original design; official sources define only that parts separate): Lock Integrity gauge, spin-dependent threshold, critical burst only at L ≤ 50, bounded seeded variance. | P (ADR-014) | Core |
+| FR-221 | Hybrid burst model (original design; official sources define only that parts separate): Lock Integrity gauge, spin-dependent threshold, bounded seeded variance; canonical equation DOC-BURST-001 §2.2. | P (ADR-014) | Core |
 | FR-222 | Burst/elimination determined and broadcast by the Match Server; eliminated player becomes spectator; remaining competitors continue; results recorded. | C | Core |
-| FR-223 | Finish types recorded per elimination: BURST (primary, C), OVER (secondary, C), SPIN (secondary, required, P), XTREME (optional, P). | C / P | Core |
+| FR-223 | Physical finish types recorded per elimination: BURST (primary, C), OVER (secondary, C), SPIN (secondary, required, P), XTREME (optional, P). Non-physical results (disconnect forfeit, no-show, abort, time-limit rank) are outcome reasons, not finish types. | C / P | Core |
 | FR-224 | Burst gauge shown in 4 stages. | P | Core |
+| FR-225 | A Bey at full Lock Integrity cannot burst from one contact: per-tick lock damage per victim ≤ 49 and critical burst only if Lock Integrity at the **start** of the tick ≤ 50 (proof DOC-BURST-001 §2.3). | P | Core |
+| FR-226 | Contact events: physics contact begin with v_n > v_min; 100 ms debounce per pair; resolved in both directions with start-of-tick values; simultaneous contacts summed in deterministic order. | P | Core |
 
 ### 3.21 Skills & Magic (v0.2)
 | ID | Requirement | Status | Tier |
@@ -339,10 +342,11 @@ Provisional numeric targets are **examples to validate by benchmark**, not achie
 ### 5.4b Gameplay balance targets (tuning goals, not guarantees)
 | ID | Requirement | Status |
 |---|---|---|
-| NFR-070 | BURST ≥ 40% of eliminations across matches — **conflict**: measured 35.0% in a uniform matchup mix; decision CHG-09 (proposal: ≥ 30% overall and most frequent finish in Attack/Balance pairings, on real telemetry). | P |
-| NFR-071 | ADR-013 AC-1 (each type 45–55% vs other types) and AC-2 (favoured matchups 55–80%); no build > 55% FFA win share. Current candidate fails AC-1/AC-2 (DOC-BAL-001 §5.3). | P |
+| NFR-070 | BURST ≥ 40% of eliminations across matches — **conflict**: measured 32.5% in a uniform matchup mix; decision CHG-09/D-10 (proposal: M-1 ≥ 30% of all eliminations; M-2 BURST most frequent in the pairs Attack→Attack, Attack→Stamina, Attack→Balance; populations defined in DOC-BURST-001 §3.1). | P |
+| NFR-071 | ADR-013 AC-1 (each type 45–55% vs other types), AC-2 (favoured matchups 55–80%, seat-averaged) and AC-8 (FFA type win share within ±5 points of expectation). Current candidate fails AC-1/AC-2; AC-8 untested (DOC-BAL-001 §5.3). | P |
 | NFR-072 | Median match length 30–90 s; time limit to be decided. | P |
 | NFR-073 | Median launch RPS per input device type within 5%. | P |
+| NFR-074 | Launch fairness FC-1: a player always at the press cap wins ≤ 60% of equal-build 1-v-1 mirrors (Attack, Stamina) against a player at the median measured touch press count. | P |
 
 ### 5.5 Cross-platform
 | ID | Requirement | Status |
@@ -407,9 +411,9 @@ MVP-readiness criteria are in `../07-quality-operations/mvp-readiness.md`. Examp
 | FR-033 | Given a room with 5 competitors, when a 6th player joins as competitor, then the Backend returns `409 ROOM_FULL` and the room still lists 5 competitors. |
 | FR-051 | Given an expired, reused, or other-match ticket, the Match Server rejects the connection within 1 s and logs `TICKET_INVALID`. |
 | FR-056/057 | In a simulated 3-top match where tops A and B ring out at distinct ticks, C is recorded as winner, placements are C=1, B=2, A=3. |
-| FR-182 | 5 accepted presses → launch RPS 50.0 ± 0.1; 0 → 20.0; 60+ → 144.4. |
+| FR-182 | 5 accepted presses → launch RPS 50.0 ± 0.1; 0 → 20.0; n_max+ → RPS(n_max). |
 | FR-211 | With E_A = E_B the RPS weight w = 0.60; with g = 0.30, w = 0.257; for any g, w ≥ 0.15. |
-| FR-221 | A Bey at L = 100 never bursts from a single contact; L ≤ 0 always bursts. |
+| FR-225 | A Bey at L = 100 never bursts from a single contact, for any N (tested up to 10⁶); L ≤ 0 always bursts. |
 | FR-233 | A 4th skill activation in one match is rejected with `SKILL_LIMIT`. |
 | FR-058 | After elimination the client receives `RoleChanged(spectator)` and further gameplay inputs from that peer are dropped and counted. |
 | FR-070 | Reporting the same result twice yields exactly one persisted result (idempotency). |

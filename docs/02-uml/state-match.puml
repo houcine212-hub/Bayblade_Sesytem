@@ -1,5 +1,5 @@
 @startuml state-match
-title State Machine: Match (authority: Match Server; mirrored status in Backend) [v0.2]
+title State Machine: Match (authority: Match Server; mirrored status in Backend) [v0.3.1]
 [*] --> ALLOCATING : Backend creates match
 ALLOCATING --> WAITING_FOR_PLAYERS : AssignAck (via heartbeat)
 ALLOCATING --> ABORTED : assign failed / timeout

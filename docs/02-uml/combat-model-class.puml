@@ -1,5 +1,5 @@
 @startuml combat-model-class
-title Combat Model — Class Diagram (v0.2) [C concepts / P structure]
+title Combat Model — Class Diagram (v0.3.1) [C concepts / P structure]
 hide empty methods
 skinparam classAttributeIconSize 0
 
@@ -12,7 +12,7 @@ package "Content data (versioned, content_version)" {
     contribDef : int
     contribSta : int
     contribMag : int
-    designedType : PrimaryType
+    tipType : PrimaryType? (TIP slot only)
   }
   class PartProperties <<P>> {
     mass : float

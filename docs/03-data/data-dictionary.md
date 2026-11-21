@@ -1,6 +1,6 @@
 # Data Design: Dictionary, Relationships, Lifecycle, Integrity
 
-| Document ID | DOC-DATA-001 | Version 0.2 | **[P] Proposed** — updated for parts, combat telemetry, Laravel internal channel |
+| Document ID | DOC-DATA-001 | Version 0.3.1 | **[P] Proposed** — aligned with ERD v0.3.1 (audit D-01…D-04, H-05) |
 |---|---|---|---|
 
 Source diagram: `erd.puml`. Database: MySQL 8.4 LTS, InnoDB, `utf8mb4_0900_ai_ci`, all times UTC `DATETIME(3)` (ADR-004).
@@ -40,8 +40,10 @@ Source diagram: `erd.puml`. Database: MySQL 8.4 LTS, InnoDB, `utf8mb4_0900_ai_ci
 | `match_participant.loadout_snapshot_json` | Full copy of definitions + stats at match start (FR-024) so balance changes don't rewrite history. |
 | `game_match.stake_type` | Only `NONE` allowed now (BR-009); adding a value requires approved design. |
 | `room.active_code` | Generated column = `code` while not CLOSED else NULL, with UNIQUE index → codes unique among live rooms while allowing reuse later. |
-| `item_definition.stats_json` | JSON until stat schema is decided (OQ-GP-03); promote to columns when stable and queried. |
-| `user_account.email` | Nullable until registration method decided; personal data. |
+| `item_definition.contrib_atk/def/sta/mag` | Attribute contributions as TINYINT columns (queried and validated); there is **no** `stats_json` column (v0.2 wording corrected). |
+| `item_definition.properties_json` | Component properties (mass, lock_strength, mobility, friction, height, contact_profile, spin_direction) as JSON until the schema stabilises (OQ-GP-03); validated against the content schema. |
+| `item_definition.tip_type` | Headline type label; NOT NULL if and only if `slot = 'TIP'` (CHECK constraint). Single source for the headline type (DOC-CLS-001 §2.1). |
+| `user_account.email` | **NOT NULL, UNIQUE** — e-mail + password registration is confirmed [C]; personal data. |
 
 ## 2b. Combat data rules (v0.2)
 | Rule | Detail |
@@ -50,7 +52,10 @@ Source diagram: `erd.puml`. Database: MySQL 8.4 LTS, InnoDB, `utf8mb4_0900_ai_ci
 | Stamina vs spin | `stat_sta` (attribute) and `final_spin_rps` / `launch_rps` (battle variables) are different columns with different names; no column is named just `stamina` or `spin`. |
 | Transient only | `spin_rps`, `lock_integrity`, `skill_gauge`, steering inputs, per-contact data — Match Server memory; only final values persisted. |
 | Balance coefficients | Not in MySQL; versioned content files referenced by `content_version` (FR-240). |
-| Finish types | `finish_type` ENUM BURST/OVER/XTREME/SPIN (+DISCONNECT if that rule is chosen). |
+| Finish vs outcome | `finish_type` holds only **physical** finishes BURST/OVER/XTREME/SPIN (NULL otherwise). Non-physical results live in `outcome_reason` (WINNER, PHYSICAL_FINISH, DRAW_SHARED, DISCONNECT_FORFEIT, NO_SHOW, TIME_LIMIT_RANK, MATCH_ABORTED). `connection_outcome` records connectivity only. Placement is always in `placement`; shared placements allowed (CHG-11). |
+| Match ↔ server link | **Canonical:** `game_match.server_instance_id` (FK, nullable, ON DELETE SET NULL when old instance rows are purged). The "current match" of an instance is **derived** by query (`status IN (ALLOCATING, WAITING_FOR_PLAYERS, LAUNCHING, BATTLE, ENDED)`); the v0.2 column `match_server_instance.current_match_id` is removed. |
+| Type snapshot | `match_participant.headline_type` (TIP label) and `profile_primary`/`profile_secondary` (computed, may be UNCLASSIFIED) are stored separately (audit H-05). |
+| Match status | `LAUNCHING` covers the Match Server phases READY, LAUNCH_WINDOW and RELEASE (state-match.puml). |
 | Display name | Uniqueness on `display_name_normalized` (lower-case, trimmed) — BR-019. |
 
 ## 3. Integrity rules
@@ -60,6 +65,7 @@ Source diagram: `erd.puml`. Database: MySQL 8.4 LTS, InnoDB, `utf8mb4_0900_ai_ci
 - Exactly one `is_active` loadout per user: enforced in service logic (MySQL lacks partial unique indexes; alternative generated-column trick documented here if needed).
 - Result idempotency: `game_match.status` transition `ENDED→COMPLETED` happens once inside a transaction; duplicate reports return the stored result.
 - Inventory ownership check for `loadout_slot.inventory_item_id` (same user) in service logic.
+- **One part per slot:** `loadout_slot` primary key `(loadout_id, slot_type)` (audit D-02); a complete loadout has exactly 4 rows (service rule).
 
 ## 4. Indexes (initial)
 | Table | Index | Query |
@@ -95,16 +101,20 @@ Indexes are revisited with real query plans after load tests.
 | In Match Server memory only | Persisted at end (or on state change) |
 |---|---|
 | Per-tick physics state, inputs, snapshots, interpolation, peer map, tickets in use | match status transitions, participants, placements, elimination reasons/times, launch summaries, selected events, duration, versions |
-| Backend memory only | |
-| Match Server registry (instances, state, heartbeats) — rebuilt from re-registration | room/match rows (Backend restart-safe) |
+| Backend (MySQL, not memory — v0.3.1 correction) | |
+| — | Match Server registry `match_server_instance` (heartbeat 1 Hz) and command outbox `match_server_command` (ADR-012 §5); room/match rows |
 
 ## 7. Part definition schema (example only — not approved content)
 ```json
 { "_example": true, "item_key": "ring_t1_smash_a", "slot": "RING", "tier": 1,
   "contrib": { "atk": 40, "def": 15, "sta": 5, "mag": 0 },
-  "designed_type": "ATTACK",
+  "tip_type": null,
   "properties": { "mass": 1.0, "contact_profile": "SMASH" } }
 { "_example": true, "item_key": "spirit_t1_dash", "slot": "SPIRIT", "tier": 1,
   "contrib": { "atk": 0, "def": 0, "sta": 0, "mag": 55 },
   "properties": { "spin_direction": "RIGHT" }, "skill_key": "rail_dash" }
+{ "_example": true, "item_key": "tip_t1_flat_a", "slot": "TIP", "tier": 1,
+  "contrib": { "atk": 15, "def": 0, "sta": 10, "mag": 0 },
+  "tip_type": "ATTACK",
+  "properties": { "mobility": 1.0, "friction": 1.1, "lock_strength": 0.95 } }
 ```

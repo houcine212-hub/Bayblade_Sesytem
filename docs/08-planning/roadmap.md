@@ -27,7 +27,7 @@ flowchart LR
   S5 --> LAUNCH[Launch validator]
   S6 --> ALLOC
   LAUNCH --> MATCH
-  Q1[Approve CHG-01..06 + blocking OQs] --> S1
+  Q1[G0 decisions D-01..D-18 / CHG-01..15] --> S1
   S1 --> SIM[Battle simulation]
   S2 --> NET[Match protocol]
   S3 --> POOL[Process pool + VPS sizing]

@@ -1,6 +1,6 @@
-# Requirements Traceability Matrix (v0.3)
+# Requirements Traceability Matrix (v0.3.1)
 
-| Document ID | DOC-RTM-001 | Status | [P] — generated from SRS v0.3; keep in sync |
+| Document ID | DOC-RTM-001 | Status | [P] — generated from SRS v0.3.1; keep in sync |
 |---|---|---|---|
 
 Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protocol (`04-interfaces`) · Test (`07-quality-operations`).
@@ -107,6 +107,7 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | FR-183 | P | UC-09 | SQ-04 | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch | TC-016, TC-017 |
 | FR-184 | C (server authority) / P | UC-09 | SQ-04 | match_participant.launch_flags | S2C_LaunchResult | TC-018 |
 | FR-185 | P | UC-09 | SQ-04 | match_participant.launch_flags | S2C_LaunchResult | TC-018 |
+| FR-186 | P | UC-09, UC-23 | SQ-04 | competitive_record (no rated updates while gated) | ranked endpoints → 403 RANKED_DISABLED | TC-034 |
 | FR-190 | C | UC-04 | combat-model-class, domain-model | match_participant.stat_*, energy, launch_rps, final_spin_rps | API-23 | TC-019, TC-020 |
 | FR-191 | C | UC-04 | combat-model-class, domain-model | match_participant.stat_*, energy, launch_rps, final_spin_rps | API-23 | TC-019, TC-020 |
 | FR-192 | P (ADR-013) | UC-04 | combat-model-class, domain-model | match_participant.stat_*, energy, launch_rps, final_spin_rps | API-23 | TC-019, TC-020 |
@@ -116,7 +117,7 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | FR-196 | P | UC-04 | combat-model-class | item_definition.properties_json, contrib_* | API-20, API-23 | TC-029 |
 | FR-200 | C (investigate) / P (definitions per DOC-CLS-001) | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
 | FR-201 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
-| FR-202 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
+| FR-202 | P | UC-04 | combat-model-class | item_definition.tip_type, match_participant.headline_type/profile_* | API-23 | TC-021, TC-036 |
 | FR-203 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
 | FR-204 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
 | FR-205 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
@@ -129,8 +130,10 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | FR-220 | C | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
 | FR-221 | P (ADR-014) | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
 | FR-222 | C | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
-| FR-223 | C / P | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
+| FR-223 | C / P | UC-10 | SQ-05, SQ-07, state-bey-combat | match_participant.finish_type, outcome_reason | S2C_Eliminated, INT-02 | TC-027 |
 | FR-224 | P | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
+| FR-225 | P | UC-10 | SQ-05, state-bey-combat | match_participant.final_lock_integrity | S2C_Eliminated | TC-033, TC-023 |
+| FR-226 | P | UC-10, UC-24 | SQ-05, SQ-09 | (memory) | — | TC-035 |
 | FR-230 | C / P | UC-25 | SQ-10, state-bey-combat | item_definition.skill_key, match_participant.skill_uses | C2S_SkillActivate, S2C_SkillEvent | TC-024 |
 | FR-231 | C (need) / P (values) | UC-25 | SQ-10, state-bey-combat | item_definition.skill_key, match_participant.skill_uses | C2S_SkillActivate, S2C_SkillEvent | TC-024 |
 | FR-232 | C (investigate) / P | UC-25 | SQ-10, state-bey-combat | item_definition.skill_key, match_participant.skill_uses | C2S_SkillActivate, S2C_SkillEvent | TC-024 |
@@ -186,6 +189,7 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | NFR-071 | P | — | — | match_participant telemetry | INT-02 | TC-030, beta telemetry |
 | NFR-072 | P | — | — | match_participant telemetry | INT-02 | TC-030, beta telemetry |
 | NFR-073 | P | — | — | match_participant telemetry | INT-02 | TC-030, beta telemetry |
+| NFR-074 | P | UC-09 | SQ-04 | match_participant.launch_presses | C2S_LaunchPressBatch | TC-034, spike S-5 |
 | NFR-050 | C | — | deployment | — | — | Cross-platform matrix |
 | NFR-051 | C | — | deployment | — | — | Cross-platform matrix |
 | NFR-060 | C | UC-03 | — | data dictionary §5 | API-13 | Privacy review |

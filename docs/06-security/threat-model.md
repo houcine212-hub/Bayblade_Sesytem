@@ -23,7 +23,7 @@ Accounts & credentials · official match results & records · inventory · roles
 | T-02 | Stolen refresh token | S | Rotation + reuse detection (revoke family), per-device sessions, logout-all | FR-003 |
 | T-03 | Modified client claims victory | T | Results only from Match Server; no client result API | SEC-002, FR-071 |
 | T-04 | Modified client sends impossible state | T | Clients send inputs only; server ignores client positions | ADR-005 |
-| T-05 | Launch-input macros / autoclickers | T | Server-timed window, per-peer press-rate cap, design favouring timing over raw rate; statistical flags for review | SEC-013 |
+| T-05 | Launch-input macros / autoclickers | T | Server-validated window, counted-press cap at the median touch rate (CHG-13), statistical flags for review, ranked gate (FR-186). The mechanic is **count-based** (v0.2 wording "favouring timing" corrected) | SEC-013, FR-186 |
 | T-06 | Joining arbitrary matches | E | Single-use hashed tickets bound to user+match+role | SEC-006 |
 | T-07 | Spectator injects inputs | E | Role check in every C2S handler | FR-090 |
 | T-08 | Room-code enumeration / spam joins | I/D | 8-char codes from 31-symbol alphabet (31^8 ≈ 8.5×10^11 combinations), join attempts rate-limited, code invalid after room closes | SEC-011 |
@@ -39,7 +39,7 @@ Accounts & credentials · official match results & records · inventory · roles
 | T-18 | Ticket sniffing on unencrypted UDP | I | Tickets single-use & 60 s expiry; DTLS evaluated in S-2 | SEC-006 |
 | T-19 | Harassment via names/chat | — | Name filter + report + rename action; chat scope minimal (OQ-AC-07) | FR-131 |
 | T-20 | Loss of data | D | Off-site backups + restore tests | OPS-004 |
-| T-21 | Launch macro / autoclicker / turbo button | T | 12 Hz counted cap, saturating curve, edge+release rule, regularity flags → review | SEC-013 |
+| T-21 | Launch macro / autoclicker / turbo button | T | Median-rate counted cap, saturating curve, edge+release rule, regularity flags → review; ranked gate. Residual: a macro always reaches the cap; client input cannot prove a human press | SEC-013, NFR-074 |
 | T-22 | Back-dated or future-dated launch presses | T | Offset conversion bounded by arrival time (launch spec §6) | SEC-013 |
 | T-23 | Modified client reports its own press total / launch RPS | T | Server counts presses; client totals ignored | FR-184 |
 | T-24 | Joystick input injection (|u| > 1, high rate, speed hacks) | T | Clamp, rate cap, server-side steering physics; client positions ignored | SEC-015 |

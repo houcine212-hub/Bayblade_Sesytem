@@ -1,4 +1,4 @@
-# Gate G0 — Decision Sheet (v0.3)
+# Gate G0 — Decision Sheet (v0.3.1)
 
 | Document ID | DOC-G0-001 | Status | **All rows are PROPOSALS until the user marks a choice.** Confirmed decisions are listed in §1 for reference only. |
 |---|---|---|---|
@@ -13,20 +13,22 @@ Godot; Windows/Android/Linux first, macOS/iOS later; one shared account (e-mail 
 |---|---|---|---|---|---|
 | D-01 | Launch curve (CHG-01) | `RPS = 20 + 130·(1 − e^(−n/19.0575))`; 5 → 50.000 | Literal linear 10·n | DOC-LAUNCH-001 §4 | ☐ Approve ☐ Reject ☐ Change |
 | D-02 | 1.5 s non-counted READY cue before the 5 s window (OQ-LN-01) | Yes | No cue | DOC-LAUNCH-001 §2 | ☐ ☐ ☐ |
-| D-03 | Zero presses result (OQ-LN-07) | 20.00 RPS auto-launch | 0 RPS = immediate Spin Finish | measured: 0.1–3.5% win rate | ☐ ☐ ☐ |
-| D-04 | Launch limits & anti-cheat stance (ADR-015) | Max 60 presses (12/s), max 144.42 RPS; accept documented macro/zone limitations; choose final cap after spike S-5 | Lower cap now (10/s or 8/s) | DOC-LAUNCH-001 §5, §7 | ☐ ☐ ☐ |
+| D-03 | Zero presses result (OQ-LN-07) | 20.00 RPS auto-launch | 0 RPS = immediate Spin Finish | measured: wins 3.7% (Attack mirror) / 0.1% (Stamina mirror) | ☐ ☐ ☐ |
+| D-04 | Launch fairness (ADR-015, CHG-13) | Counted-press cap = **measured median touch rate** (provisional 7/s → n_max 35 → max 129.3 RPS); FC-1 ≤ 60%; **ranked play gated (FR-186)** until FC-1 passes with S-5/S-1 data; accept documented residual limits for friendly play | 12/s cap (n_max 60, 144.42 RPS): capped presser beats a median player 68.9% / 93.6% | DOC-LAUNCH-001 §5, §7 | ☐ ☐ ☐ |
 | D-05 | Component properties beside the four attributes (CHG-02) | Yes (mass, lock strength, mobility, friction, height, contact profile, spin direction) | Attributes only | official: bit determines burst resistance (O-1) | ☐ ☐ ☐ |
 | D-06 | Magic acts directly only on skills (CHG-03) | Yes | Magic as a physical stat | DOC-SKILL-001 | ☐ ☐ ☐ |
-| D-07 | Energy formula (CHG-07) | **(ATK + DEF + STA + MAG) / 4** | (ATK + DEF + STA + 0.8·MAG) / 3.8 | DOC-STAT-001 §4.5 | ☐ ☐ ☐ |
+| D-07 | Energy formula (CHG-07) | **(ATK + DEF + STA + MAG) / 4 — provisional** until skill-inclusive test AC-7 | (ATK + DEF + STA + 0.8·MAG) / 3.8 | DOC-STAT-001 §4.5 (skills not modelled) | ☐ ☐ ☐ |
 | D-08 | Headline type rule (CHG-10) | Option C: TIP part's designed type (official: "type is determined by the Bit") + computed profile | Option A: computed only | DOC-CLS-001 §2 | ☐ ☐ ☐ |
 | D-09 | Elimination set (CHG-04) | BURST primary [C]; OVER [C]; SPIN required; XTREME optional per arena | — | DOC-BURST-001 §3 | ☐ ☐ ☐ |
-| D-10 | Numeric meaning of "Burst is primary" (CHG-09) | ≥ 30% of all eliminations and most frequent finish in Attack/Balance pairings, measured on real telemetry | Keep ≥ 40% over a uniform mix (not reachable in the model with reasonable match lengths) | DOC-BAL-001 §5, §10 | ☐ ☐ ☐ |
+| D-10 | Numeric meaning of "Burst is primary" (CHG-09) | **M-1:** BURST ≥ 30% of all eliminations in all completed matches; **M-2:** BURST most frequent finish in the attributed pairs Attack→Attack, Attack→Stamina, Attack→Balance (populations in DOC-BURST-001 §3.1) | Keep NFR-070 ≥ 40% over a uniform mix | model: M-1 32.5%; M-2 54.2 / 69.5 / 59.1% | ☐ ☐ ☐ |
 | D-11 | Same-tick eliminations (CHG-11) | Shared placement (deviation from official draw + restart) | Restart the match | DOC-BURST-001 §3.3 | ☐ ☐ ☐ |
-| D-12 | Combat model structure (ADR-013) | Approve the **equations** (advantage S with defined g and r, impact/resistance, recoil) and the **v0.3 coefficient set as S-1 starting values only** (CHG-08) | Request a different structure | DOC-CMB-001, DOC-BAL-001 | ☐ ☐ ☐ |
-| D-13 | Combat acceptance criteria (CHG-12) | AC-1…AC-7 as exit gate of spike S-1 | Other bands | ADR-013 | ☐ ☐ ☐ |
+| D-12 | Combat model structure (ADR-013) | Approve the **equations** (advantage S with defined g and r, impact/resistance, recoil) and the **v0.3.1 coefficient set as S-1 starting values only** (CHG-08) | Request a different structure | DOC-CMB-001, DOC-BAL-001 | ☐ ☐ ☐ |
+| D-13 | Combat acceptance criteria (CHG-12) | AC-1…AC-9 (incl. AC-8 FFA, AC-9 launch fairness) as exit gate of spike S-1 | Other bands | ADR-013 | ☐ ☐ ☐ |
 | D-14 | Burst model (ADR-014) | Hybrid Lock Integrity (original design anchored on official facts) | Pure threshold / durability | DOC-BURST-001 §2 | ☐ ☐ ☐ |
 | D-15 | Backend stack (ADR-012, CHG-05/06) | PHP 8.3+ + Laravel 13 + Reverb + MySQL 8.4; Godot 4.7 headless Match Server; heartbeat-pull internal channel; accept risks TR-01…TR-10 | TypeScript/Node + Fastify | ADR-012 §3, §7 | ☐ ☐ ☐ |
-| D-16 | Time limit (OQ-GP-18) | 120 s; then remaining Beys ranked by current spin (higher = better), ties shared | No limit; sudden death | DOC-BAL-001 §5.2 (longest median 99 s) | ☐ ☐ ☐ |
+| D-16 | Time limit (OQ-GP-18) | 120 s; then remaining Beys ranked by current spin (higher = better), ties shared | No limit; sudden death | DOC-BAL-001 §5.1 (longest cell median 100.3 s) | ☐ ☐ ☐ |
+| D-17 | Meaning of "RPS is never completely irrelevant" (OQ-CB-11) | (b) per-contact w ≥ 0.15 **and** ≥ 10-point outcome effect of a 30-RPS launch advantage for \|g\| ≤ 0.20 | (a) per-contact only; (c) outcome effect at all gaps (needs structural change) | ADR-013; DOC-BAL-001 §6 | ☐ ☐ ☐ |
+| D-18 | Formula structure and data-model corrections (CHG-14, CHG-15) | Adopt units/normalisation, contact events, canonical burst equation with full-lock guarantee; adopt ERD fixes (slot PK, server FK, finish vs outcome, `tip_type`) | — | v0.3.1 correction log | ☐ ☐ ☐ |
 
 ## 3. Needed before the feature is built (not blocking G0)
 OQ-BU-03 opponent burst-stage visibility (proposal: visible) · OQ-CB-03 arena Xtreme zone / dash rail · OQ-CB-08 outcome-level RPS requirement for g ≤ 0.20 + Energy-band matchmaking for ranked · OQ-SK-01/02 skill limits and catalogue · OQ-LN-02 assisted launch in friendly rooms · OQ-LN-06 final press cap (after S-5) · OQ-GP-05/06/07/13/14/17 room and disconnect rules · OQ-AC-03/04/07 social rules · OQ-TO-06/07/08 hosting, domain, operations owner.

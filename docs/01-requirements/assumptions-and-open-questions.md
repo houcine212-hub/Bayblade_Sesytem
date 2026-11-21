@@ -14,7 +14,7 @@ When a question is answered, move it to §3 (Decision log) with date and source;
 | A-03 | All MVP matches are Friendly | FR-081 | Stakes approved for MVP |
 | A-04 | New accounts get a starter top | FR-023 | Different onboarding chosen |
 | A-05 | One region / one VPS at launch | Deployment | Players spread across distant regions |
-| A-06 | One Backend instance at launch | ADR-003, allocator | Load requires horizontal scaling |
+| A-06 | One Backend instance at launch | ADR-012 (supersedes ADR-003), allocator | Load requires horizontal scaling |
 | A-07 | GDScript for client and Match Server, same Godot version | ADR-002 | Team prefers C# |
 | A-11 | Human sustained tapping ≈ 5–9 presses/s (sets launch curve expectations) | DOC-LAUNCH-001 | Spike S-5 measurements differ |
 | A-12 | One skill per Bey in MVP (granted by SPIRIT part) | DOC-SKILL-001 | User wants multiple skills |
@@ -75,10 +75,12 @@ When a question is answered, move it to §3 (Decision log) with date and source;
 | OQ-ST-06 | Energy weight of Magic: 1.0 (plain mean, v0.3 recommendation) or 0.8 (v0.2)? | **B** | 1.0 (CHG-07) | FR-192 |
 | OQ-ST-07 | Headline type rule: A computed only / B TIP decides (official-style) / C TIP headline + computed profile? | **B** | C (CHG-10) | FR-202 |
 | OQ-CB-06 | Numeric meaning of "Burst is primary": keep ≥ 40% uniform mix (a), adopt (b) ≥ 30% overall + most frequent in Attack/Balance pairings on telemetry, or (c) add a stronger burst mechanic later? | **B** | (b) (CHG-09) | NFR-070 |
-| OQ-CB-07 | Adopt revised acceptance criteria AC-1…AC-7 as the exit gate of spike S-1? | **B** | Yes (CHG-12) | ADR-013 |
+| OQ-CB-07 | Adopt revised acceptance criteria AC-1…AC-9 as the exit gate of spike S-1? | **B** | Yes (CHG-12) | ADR-013 |
 | OQ-CB-08 | Outcome-level RPS requirement only for Energy gaps g ≤ 0.20; Energy-band matchmaking for ranked play? | H | Yes / yes for ranked | FR-211 |
-| OQ-CB-09 | Adopt v0.3 coefficient set + recoil as S-1 starting point? | **B** | Yes (CHG-08) | DOC-CMB-001 §4.8 |
-| OQ-LN-06 | Launch press cap: keep 12/s until S-5 data, or choose 10/s / 8/s now? | H | Keep 12/s, decide after S-5 | FR-181 |
+| OQ-CB-09 | Adopt v0.3.1 coefficient set + recoil as S-1 starting point? | **B** | Yes (CHG-08) | DOC-CMB-001 §4.9 |
+| OQ-LN-06 | Launch press cap: median touch rate (CHG-13, provisional 7/s) or 12/s / 10/s / 8/s? | **B** | Median cap; final value after S-5 (D-04) | FR-181, NFR-074 |
+| OQ-CB-10 | How to reduce spin-race launch sensitivity (F-11): steering-dependent decay variance, lower k_R, spin floor? | H | Investigate in S-1 | DOC-BAL-001 §9 |
+| OQ-CB-11 | Meaning of "RPS never completely irrelevant": per-contact only (a), + outcome effect for g ≤ 0.20 (b), or outcome effect for all gaps (c)? | **B** | (b) (D-17) | ADR-013 |
 | OQ-LN-07 | Zero presses: 20 RPS auto-launch, or 0 RPS = immediate Spin Finish? | H | 20 RPS | FR-183 |
 
 ### 2.2 Accounts & social (OQ-AC)
@@ -108,7 +110,7 @@ When a question is answered, move it to §3 (Decision log) with date and source;
 ### 2.4 Technology & operations (OQ-TO)
 | ID | Question | Pri | Recommendation |
 |---|---|---|---|
-| OQ-TO-01 | Backend language/framework | ~~**B**~~ **PROPOSED v0.2: PHP + Laravel 13 (ADR-012) — awaiting approval** | TypeScript + Node.js LTS + Fastify (ADR-003) |
+| OQ-TO-01 | Backend language/framework | ~~**B**~~ **PROPOSED: PHP + Laravel 13 (ADR-012) — awaiting approval (D-15)** | Alternative (not recommended): TypeScript + Node.js LTS + Fastify (superseded ADR-003) |
 | OQ-TO-02 | Godot version | H | 4.7.x stable (ADR-001) |
 | OQ-TO-03 | Network transport | H | ENet/UDP (ADR-007) |
 | OQ-TO-04 | DB version & migrations | H | MySQL 8.4 LTS, versioned SQL migrations (ADR-004) |

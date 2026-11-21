@@ -1,6 +1,8 @@
 @startuml use-case
-title Use Case Diagram v0.2 [MVP = solid, Post-MVP = <<post>>]
+' v0.3.1: Guest and Player both specialise an abstract User (audit §7); Player no longer inherits Guest
+title Use Case Diagram v0.3.1 [MVP = solid, Post-MVP = <<post>>]
 left to right direction
+actor User <<abstract>>
 actor Guest
 actor Player
 actor "Team Leader" as Leader
@@ -9,7 +11,8 @@ actor Moderator
 actor Admin
 actor "Organizer" as Org
 actor "Match Server" as MS <<system>>
-Player --|> Guest
+Guest --|> User
+Player --|> User
 Leader --|> Player
 Org --|> Player
 
@@ -42,7 +45,8 @@ rectangle "Game System" {
   usecase "Report official result" as UCR
 }
 Guest --> UC01
-Guest --> UC02
+Guest --> UC02 : log in
+Player --> UC02 : log out
 Player --> UC03
 Player --> UC04
 Player --> UC05

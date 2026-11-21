@@ -1,6 +1,6 @@
 # Skills & Magic Specification
 
-| Document ID | DOC-SKILL-001 | Version | 0.2 | Status | Skill button & type-linked skills [C]; catalogue, numbers [P] |
+| Document ID | DOC-SKILL-001 | Version | 0.3.1 | Status | Skill button & type-linked skills [C]; catalogue, numbers [P] |
 |---|---|---|---|---|---|---|---|
 
 ## 1. Research basis
@@ -43,4 +43,16 @@
 | **Second Wind** | STAMINA | instant: spin + 8% of launch RPS (≤ +12 RPS, never above launch RPS) | only when spin < 50% launch |
 | **Feather Glide** | STAMINA (EVASIVE) | 3 s: decay −50%, contact rate reduced by evasive push | — |
 | **Adapt** | BALANCE | 2.5 s: +15% to the attribute that counters nearest opponent's primary type (vs ATTACK→DEF, vs DEFENSE→STA, vs STAMINA→ATK) | — |
+### 5.1 Skill → equation modifier mapping (v0.3.1, audit C-04)
+| Skill | Modifier | Value (× Pot(MAG) on the bonus part) | Equation | Cap |
+|---|---|---|---|---|
+| Rail Dash | `K_atk_i` on the next contact event within 1 s; steering speed cap +60% for 0.8 s | 1 + 0.25·Pot | DOC-CMB-001 §4.1 | K_atk ≤ 1.30 |
+| Upper Edge | `K_burst_i` | 1 + 0.20·Pot (only if hitting from below) | DOC-BURST-001 §2.2 | K_burst ∈ [1.0, 1.3] |
+| Iron Stance | knockback received Δv × (1 − 0.40·Pot) | — | DOC-CMB-001 §4.3 | ≥ × 0.52 |
+| Counter Guard | `K_guard_j` | 1 − 0.35·Pot | DOC-BURST-001 §2.2 | K_guard ∈ [0.65, 1.0] |
+| Second Wind | instant Δω = +min(0.08·launch_rps·Pot, 12) | — | DOC-STAT-001 §5 | never above launch_rps |
+| Feather Glide | decay × (1 − 0.50·Pot) for 3 s | — | DOC-STAT-001 §5 | ≥ × 0.40 |
+| Adapt | `K_def_j` or attribute +15%·Pot as listed in §5 | — | DOC-CMB-001 §4.1 | total self-buff ≤ +30% |
+Opponent-directed effects are additionally multiplied by `(1 − 0.3·Res_target)` (DOC-CMB-001 §4.7). With no active skill every modifier is exactly 1.0. **Not yet validated:** no skill is included in the analysis model (DOC-BAL-001 scope).
+
 SPIRIT parts may only carry skills compatible with the build's computed primary **or** secondary type; otherwise the skill works at 50% potency ("mismatched spirit") — keeps skills related to classification (FR-230).

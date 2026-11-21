@@ -13,9 +13,9 @@
 | 010 | Single-VPS deployment | Proposed |
 | 011 | Rooms in Backend + push events (Reverb in v0.2) | Proposed |
 | 012 | Backend: PHP + Laravel 13 + Reverb (heartbeat-pull internal channel); verified & risk-reviewed v0.3 | Proposed — user decision |
-| 013 | Combat stats, Energy (plain mean, v0.3), RPS–Energy model, acceptance criteria AC-1…7 | Proposed (revised v0.3) |
-| 014 | Burst Finish hybrid model (official facts separated) | Proposed (revised v0.3) |
-| 015 | Launch curve, limits & anti-cheat limitations | Proposed (revised v0.3) |
+| 013 | Combat stats, Energy (plain mean, provisional), RPS–Energy model, D-17, acceptance criteria AC-1…9 | Proposed (revised v0.3.1) |
+| 014 | Burst Finish hybrid model, canonical equation, full-lock guarantee | Proposed (revised v0.3.1) |
+| 015 | Launch curve, median cap, FC-1, ranked gate | Proposed (revised v0.3.1) |
 
 ## Sources cited in ADRs
 | Ref | Source | Verified in this session? |

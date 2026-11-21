@@ -71,5 +71,10 @@ Every test case ID `TC-xxx` references requirement IDs; see `../08-planning/trac
 | TC-028 | NFR-045 | Same seed + recorded inputs → identical result (replay) |
 | TC-029 | API-23 | Backend build preview equals Match Server snapshot for golden builds (contract test) |
 | TC-030 | NFR-070..073 | Balance telemetry dashboards populated from bot matches |
-| TC-031 | ADR-013 AC-1…AC-7 | Bot-simulation report (≥ 4,000 duels per pairing, fixed seeds) evaluated against every acceptance criterion |
-| TC-032 | FR-181 | 61st press and press at exactly W0+5000 ms rejected; 60 presses → 144.42 RPS |
+| TC-031 | ADR-013 AC-1…AC-9 | Bot-simulation report (≥ 4,000 duels per pairing, fixed seeds) evaluated against every acceptance criterion |
+| TC-032 | FR-181 | press n_max+1 and press at exactly W0+5000 ms rejected; n_max presses → RPS(n_max) |
+| TC-033 | FR-225 | Boundary/extreme: L = 100 with N = 1, 10, 10³, 10⁶ → L ≥ 51, no burst; L_start = 51 → no critical burst; L_start = 50 → critical allowed; 3 attackers in one tick → summed damage ≤ 49 |
+| TC-034 | NFR-074 / FR-186 | FC-1 computed from S-5 press data + S-1 physics; ranked endpoints return 403 RANKED_DISABLED until FC-1 passes |
+| TC-035 | FR-226 | Same pair contact reported on 6 consecutive ticks → one contact event; v_n ≤ v_min → no effects |
+| TC-036 | FR-202 | Classification guard: P = 0 / 29 → UNCLASSIFIED; P = 30 classified; threshold equalities; tie order |
+| TC-037 | DOC-BAL-001 | `python3 tools/analysis/run_all.py` reproduces `results/` byte-for-byte on the documented numpy version |

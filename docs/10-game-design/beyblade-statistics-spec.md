@@ -1,6 +1,6 @@
 # Beyblade Statistics & Energy Specification
 
-| Document ID | DOC-STAT-001 | Version | 0.3 | Status | Attributes [C]; formulas/values **[P] proposals** — all numbers are starting values for balancing, not final |
+| Document ID | DOC-STAT-001 | Version | 0.3.1 | Status | Attributes [C]; formulas/values **[P] proposals** — all numbers are starting values for balancing, not final |
 |---|---|---|---|---|---|---|---|
 
 ## 1. The six quantities that must never be confused
@@ -64,30 +64,28 @@ Energy is **not** hit points and is not consumed.
 ### 4.4 Known consequence
 Because Energy includes Magic, Magic indirectly affects physical clashes through the advantage function: each Magic point adds `wM/(3 + wM)` Energy (0.21 at wM = 0.8, 0.25 at wM = 1.0), while each physical point adds `1/(3 + wM)` Energy **plus** its direct physical effect.
 
-### 4.5 Review of the Magic weight (v0.3) [MEAS — DOC-BAL-001 §8]
-**Why 0.8 was proposed (v0.2):** Magic acts only through skills (bounded ±20%, ≤ 3 uses per match), so it was judged "slightly less valuable" than physical attributes. This was a judgement, not a derivation.
+### 4.5 Review of the Magic weight [MEAS — `tools/analysis/results/e4_magic_weight.csv`; skills NOT modelled]
+**Why 0.8 was proposed in v0.2:** Magic acts only through skills, so it was judged "slightly less valuable". This was a judgement, not a derivation.
 
-**Test 1 — equal attribute budget (226), Balance 57/57/57/55 vs physical-shift 66/66/66/28** (27 points moved from Magic to physical; N = 4,000, skills not modelled):
+**Equal attribute budget tests (N = 4,000, seat order fixed, v0.3.1 candidate coefficients):**
 
-| wM | E (shift) | E (base) | g | P(physical-shift wins) |
-|---|---|---|---|---|
-| 0.0 | 66.00 | 57.00 | +0.146 | 0.915 |
-| 0.3 | 62.55 | 56.82 | +0.096 | 0.872 |
-| 0.5 | 60.57 | 56.71 | +0.066 | 0.845 |
-| 0.6 | 59.67 | 56.67 | +0.052 | 0.832 |
-| 0.7 | 58.81 | 56.62 | +0.038 | 0.823 |
-| **0.8** | 58.00 | 56.58 | +0.025 | **0.811** |
-| **1.0** | 56.50 | 56.50 | 0.000 | **0.789** |
+| Magic weight | P(physical-shift 66/66/66/28 beats Balance 57/57/57/55) | P(High-Magic 75/40/35/75 beats Attack 85/45/40/55) |
+|---|---|---|
+| 0.0 | 91.5% | 24.3% |
+| 0.3 | 87.1% | 29.1% |
+| 0.5 | 84.8% | 31.6% |
+| 0.6 | 83.5% | 32.6% |
+| 0.7 | 82.6% | 33.6% |
+| **0.8** | 81.5% | 34.4% |
+| **1.0** | 79.4% | 36.0% |
 
-**Test 2 — equal budget (225), Attack 85/45/40/55 vs High-Magic 75/40/35/75:** P(High-Magic wins) = 0.227 (wM 0.0), 0.301 (0.5), 0.315 (0.6), 0.333 (0.8), 0.351 (1.0).
+**Interpretation (corrected v0.3.1, audit H-04):** in a model *without skills*, Magic points are worth less than physical points at every weight; raising the weight reduces the gap only slightly. These tests **cannot** show that any weight is fair, because Magic's direct value comes from skills that the model does not contain. The v0.3 wording "most Magic-friendly option" is withdrawn.
 
-**Interpretation:** at every weight, points in Magic are worth far less in clashes than physical points. A *lower* weight makes Magic investment even worse; the weight is not the main lever. Magic's fairness depends on the **skill system** (not modelled here).
-
-**v0.3 recommendation [P] (CHG-07):** use the **plain mean (wM = 1.0)** — simplest, matches "attributes collectively determine Energy", and is the most Magic-friendly of the tested options. Calibrate skills in spike S-1 until an equal-budget shift between Magic and physical attributes is within 45–55%. If skills cannot reach that, revisit (options: Magic also raises lock strength or gauge-independent passive effects).
+**Proposal [P] (CHG-07, D-07), provisional:** plain mean (weight 1.0) as the simplest reading of "the four attributes collectively determine Energy". It stays provisional until skill-inclusive tests (AC-7: equal-budget Magic/physical shift within 45–55%) are run in spike S-1. If AC-7 fails, the options are: stronger or more frequent skills, Magic also adding a non-skill effect, or a different weight.
 
 ## 5. Spin dynamics (battle variable)
 - Initial: `spin_rps = launch_rps` (launch spec).
-- Natural decay per second: `c_d · (1.25 − STA/100) · friction · (1 + c_move·mobility·|u|)` where `|u|` = joystick magnitude (moving costs spin — the "stamina consumption" of control). v0.3 candidate: `c_d = 0.85`, `c_move = 1.0` (v0.2: 0.55, 0.5).
+- Natural decay per second: `c_d · (1.25 − STA/100) · friction · (1 + c_move·mobility·|u|)` where `|u|` = joystick magnitude (moving costs spin — the "stamina consumption" of control). v0.3.1 candidate: `c_d = 0.85`, `c_move = 1.0` (v0.2: 0.55, 0.5).
 - Collision spin loss: combat spec §4.4.
 - **Wobble:** below 25 RPS stability drops linearly (resistance × 0.45–1.0).
 - **Spin Finish:** `spin_rps < 8 RPS` → eliminated (reason SPIN). Official Spin Finish is spin "becomes zero" (O-2); 8 RPS is a game threshold (a top below it is visually stopping).
