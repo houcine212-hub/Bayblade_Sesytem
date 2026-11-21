@@ -22,3 +22,10 @@ Likelihood/Impact: L/M/H.
 | RK-13 | Version mismatch during store-review delays | M | M | Parallel protocol pools (ADR-008 §5) | Tech lead | Each release |
 | RK-14 | Abuse/harassment harms community | M | M | Block/report/moderation in MVP-Social; minimal chat | Moderators | Report volume |
 | RK-15 | Loss of store signing keys | L | H | Offline backups of keystores/certs | Owner | — |
+| RK-16 | Balance knife-edge: Balance type dominates or is useless with ±1 stat point (report F2) | H | H | Budget parity, telemetry, tune Balance first | Game design | NFR-071 bands |
+| RK-17 | Launch dominates outcomes / device unfairness | M | H | Curve compression, cap, S-5 study, NFR-073 | Game design | Device RPS gap > 5% |
+| RK-18 | Joystick + server authority feels laggy on mobile | M | H | Local prediction, 30 Hz input, S-2 | Tech lead | NFR-011 fail |
+| RK-19 | Burst too rare/too random → "primary" mechanic fails | M | M | Tune c_b/T0/β; staged gauge for readability | Game design | Burst share < 40% |
+| RK-20 | PHP/Godot rule duplication for build preview drifts | M | M | Golden-file contract tests TC-029 | Tech lead | Contract test failure |
+| RK-21 | Official-source facts only seen through search extracts | M | L | Manual verification of R-xx "Verify" items before G0 | Owner | — |
+| RK-22 | IP: mechanics inspired by a franchise | L | H | Original names/art/formulas only; no franchise names in game; legal review before launch | Owner | Before M4 |

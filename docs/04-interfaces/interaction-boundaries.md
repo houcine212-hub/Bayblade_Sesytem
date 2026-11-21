@@ -13,16 +13,17 @@ Trust: **untrusted**. Every request is authenticated, authorised and validated s
 ## 2. Client ↔ Match Server
 | Client may | Client may not |
 |---|---|
-| Connect with its own valid ticket; send launch (and later control) inputs as competitor; receive snapshots | Send positions/velocities/spin; declare eliminations or winners; send input as spectator; reuse tickets |
+| Connect with its own valid ticket; as competitor send launch press batches, joystick vectors and skill requests; receive snapshots | Send positions/velocities/spin/press totals; declare bursts, eliminations or winners; exceed |u| = 1; activate skills without server check; send input as spectator; reuse tickets |
 Trust: **untrusted input source**. Server validates phase, role, rate and value ranges.
 
 ## 3. Backend ↔ Match Server
-Trusted service-to-service channel on loopback/private network (INT-01/02). Responsibilities:
+Trusted service-to-service channel on loopback/private network (INT-01/01b/02 — heartbeat-pull, ADR-012 §5). Responsibilities:
 
 | Concern | Owner |
 |---|---|
 | Who may play / spectate (tickets) | Backend issues; Match Server enforces |
-| Live match state, eliminations, result | **Match Server (sole authority)** |
+| Live match state, launch RPS, combat resolution, bursts, skills, eliminations, result | **Match Server (sole authority)** |
+| Build stats & classification preview before the match | Backend (same Shared Rules formulas; snapshot is passed to the Match Server, which re-validates) |
 | Durable result, history, records, ranks | Backend (after validation) |
 | Which instance runs a match | Backend Match Allocator |
 | Room state before the match | Backend |
@@ -31,4 +32,4 @@ Trusted service-to-service channel on loopback/private network (INT-01/02). Resp
 
 ## 4. Match authorization & result reporting
 See `../02-uml/sequence/SQ-03-match-authorization.puml` and `SQ-07-match-completion.puml`.
-Ticket design [P]: opaque 256-bit random string; Backend sends only `SHA-256(ticket)` with userId/role/expiry to the Match Server; the client presents the raw ticket. Benefits: no signing keys inside Godot, single-use enforced in Match Server memory, a leaked server memory dump does not reveal usable tickets. Alternative considered: signed JWT verified by Match Server (works without the Backend push, but needs key distribution and replay cache anyway).
+Ticket design [P]: opaque 256-bit random string; Backend sends only `SHA-256(ticket)` with userId/role/expiry to the Match Server (inside heartbeat commands); the client presents the raw ticket. Benefits: no signing keys inside Godot, single-use enforced in Match Server memory, a leaked server memory dump does not reveal usable tickets. Alternative considered: signed JWT verified by Match Server (works without the Backend push, but needs key distribution and replay cache anyway).

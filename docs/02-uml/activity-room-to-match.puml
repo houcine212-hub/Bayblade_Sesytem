@@ -1,39 +1,48 @@
 @startuml activity-room-to-match
-title Activity: Room-to-Match Lifecycle [C flow / P details / TBD marked]
+title Activity: Room-to-Match Lifecycle [v0.2]
 start
 :Host creates room (FR-030);
 :Backend generates room code (FR-031);
 repeat
   :Players join by code (FR-032)\nas COMPETITOR (max 5, BR-001) or SPECTATOR;
-  :Competitors select loadout (FR-040) and mark Ready (FR-035);
+  :Competitors select build: parts -> attributes,\nEnergy, type shown (FR-196, FR-202);
+  :Competitors mark Ready (FR-035);
 repeat while (Host has not pressed Start?) is (waiting) not (Start pressed)
 if (all competitors ready AND 2 <= competitors <= 5?) then (yes)
 else (no)
   :Reject start (409);
   stop
 endif
-:Backend allocates Match Server from pool;
+:Backend queues AssignMatch for an IDLE Match Server;
 if (instance available?) then (yes)
 else (no)
   :503 NO_SERVER_AVAILABLE, room stays OPEN;
   stop
 endif
-:Backend issues tickets; clients connect to Match Server;
+:Match Server picks up command on next heartbeat (<= 1 s);
+:Backend pushes tickets (Reverb); clients connect via ENet;
 if (all competitors connected before join timeout?) then (yes)
 else (no)
   :Apply no-show rule [TBD OQ-GP-06/17];
 endif
-:PRE_LAUNCH five-second period [semantics TBD OQ-GP-01];
-:Launch inputs -> initial spin [formula TBD OQ-GP-02];
-:BATTLE: authoritative simulation;
-while (competitors remaining >= 2 AND no timeout [TBD]?) is (yes)
-  :Simulate tick, send snapshots;
-  if (top exits arena?) then (yes)
-    :Eliminate (BR-002);\nplayer becomes spectator (BR-004);
+:READY cue 1.5 s [P];
+:LAUNCH_WINDOW 5 s: rapid presses, server counts (FR-180..184);
+:Launch RPS = RPS(presses) broadcast (FR-185);
+:BATTLE: joystick steering, collisions, skills (server-authoritative);
+while (competitors remaining >= 2?) is (yes)
+  :Tick: resolve contacts with advantage S (FR-210..215);
+  if (Lock Integrity <= 0 or critical burst?) then (yes)
+    :BURST FINISH (primary, BR-015);
+  elseif (left arena?) then (yes)
+    :OVER / XTREME FINISH;
+  elseif (spin < 8 RPS?) then (yes)
+    :SPIN FINISH;
+  else (no)
   endif
+  :Eliminated player -> spectator (BR-004);
 endwhile (no)
-:Determine result: winner (BR-003) / draw [TBD];
-:Match Server reports result to Backend;
+:Winner = last remaining (BR-003); same-tick ties share placement [P];
+:Match Server reports result (finish types, launch & build telemetry);
 :Backend persists result, history, records;
 :Clients show result screen;
 if (room persists for rematch? [TBD OQ-GP-14]) then (yes)

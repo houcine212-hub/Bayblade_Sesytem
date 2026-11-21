@@ -11,7 +11,7 @@ CH -> B : POST /v1/rooms {mode: FFA}
 B -> B : generate code (unguessable, SEC-011)
 B -> DB : INSERT room(status=OPEN), room_member(host, COMPETITOR)
 B --> CH : 201 {roomId, code}
-CH -> B : WSS /v1/events subscribe room:{roomId}
+CH -> B : Reverb subscribe private-room.{roomId} (WSS)
 Host -> Guest : shares code (out of band)
 Guest -> CG : enter code
 CG -> B : POST /v1/rooms/join {code, role: COMPETITOR}
@@ -24,11 +24,11 @@ else competitors == 5 (BR-001)
 else ok
   B -> DB : INSERT room_member
   B --> CG : 200 {room snapshot}
-  B -> CH : event room.updated
-  B -> CG : event room.updated
+  B -> CH : Reverb event room.updated
+  B -> CG : Reverb event room.updated
 end
 Guest -> CG : choose loadout, Ready
-CG -> B : POST /v1/rooms/{roomId}/ready {ready:true, loadoutId}
-B -> DB : verify loadout ownership; UPDATE room_member
-B -> CH : event room.updated
+CG -> B : POST /v1/rooms/{roomId}/ready {ready:true, loadoutId}\n(build = 4 parts: RING, CORE, TIP, SPIRIT)
+B -> DB : verify part ownership + one part per slot; UPDATE room_member
+B -> CH : Reverb event room.updated
 @enduml

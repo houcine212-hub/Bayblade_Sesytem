@@ -7,12 +7,12 @@
 | ID | Milestone | Content | Exit gate |
 |---|---|---|---|
 | M0 | **Design package** (this) | Requirements, UML, ERD, API, ADRs | **G0: user approves design + answers blocking questions** |
-| M1 | Technical spikes (throw-away, after G0) | S-1 physics feel (custom vs Godot physics); S-2 ENet snapshot/interpolation under impairment; S-3 headless process RAM/CPU benchmark; S-4 mobile rendering on low/mid Android | G1: ADR-005/006/007 accepted with evidence |
-| M2 | Battle MVP | Accounts, starter top, loadout, rooms by code, allocation/tickets, FFA match, spectators, results & history, version gate, logging | G2: internal alpha playable on Windows + Android |
+| M1 | Technical spikes (throw-away, after G0) | S-1 physics + combat feel (custom top model, advantage S, burst gauge, triangle emergence with bots); S-2 ENet snapshots + **joystick prediction** under impairment; S-3 headless process RAM/CPU benchmark; S-4 mobile rendering; **S-5 launch press study** (press distributions per device, cap, curve); S-6 Laravel heartbeat-pull + Reverb push latency | G1: ADR-005/006/007/012–015 accepted with evidence |
+| M2 | Battle MVP | E-mail accounts, unique names, parts & builds with stat preview, rooms by code, allocation/tickets, launch window, joystick, skills, combat + burst, FFA, spectators, results & history, version gate, logging, balance telemetry | G2: internal alpha playable on Windows, Android, Linux |
 | M3 | Social MVP | Profiles polish, record/leaderboard, block/report, moderation tool, basic teams | G3: closed beta |
 | M4 | Hardening | Load tests L-100/M-20, backups/restore, monitoring, privacy, store submissions | G4: MVP readiness criteria met → public MVP |
 | M5 | Exploration vertical slice | Small bounded world, chest interaction, challenge/accept, arena transition | User approval of loot rules first |
-| M6 | Competitive expansion | Team Battle rules, organizer workflow, tournaments, rated ranking (ADR-009 D), macOS/iOS release | Rules approved |
+| M6 | Competitive expansion | Team Battle rules, organizer workflow, tournaments, rated ranking (ADR-009 D), macOS/iOS release, opposite-spin mechanics, more skills | Rules approved |
 | M7 | Future | Proximity voice, voice commands, virtual-item stakes (only if approved), seasons, regions | Separate design + approval |
 
 ## 2. Dependency map
@@ -22,7 +22,12 @@ flowchart LR
   G0 --> S2[S-2 Network spike]
   G0 --> S3[S-3 Server benchmark]
   G0 --> S4[S-4 Mobile render spike]
-  Q1[Answers OQ-GP-01/02/15/16/18] --> S1
+  G0 --> S5[S-5 Launch press study]
+  G0 --> S6[S-6 Laravel internal channel]
+  S5 --> LAUNCH[Launch validator]
+  S6 --> ALLOC
+  LAUNCH --> MATCH
+  Q1[Approve CHG-01..06 + blocking OQs] --> S1
   S1 --> SIM[Battle simulation]
   S2 --> NET[Match protocol]
   S3 --> POOL[Process pool + VPS sizing]

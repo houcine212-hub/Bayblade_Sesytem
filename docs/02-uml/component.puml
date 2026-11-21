@@ -1,40 +1,44 @@
 @startuml component
-title Component Diagram [P]
+title Component Diagram v0.2 [P] — Backend: Laravel (ADR-012); Match Server: Godot headless
 skinparam componentStyle rectangle
 
-package "Game Client (Godot 4.x, GDScript)" {
-  [UI / Screens\n(menus, lobby, HUD, results)] as UI
-  [Input Adapter\n(touch / keyboard+mouse / gamepad later)] as INP
-  [API Client\n(HTTPS + WSS events)] as APIC
-  [Match Net Client\n(ENet peer, interpolation buffer)] as MNC
-  [Presentation\n(3D arena, tops, VFX, camera)] as PRES
-  [Shared Rules Lib\n(content schema, protocol defs)] as SRL_C
-  [Quality Settings\n(device tiers)] as QS
+package "Game Client (Godot 4.7.x, GDScript)" {
+  [UI / Screens\n(menus, lobby, build screen, HUD, results)] as UI
+  [Input Adapter\n(virtual joystick, mouse-vector, keys,\ngamepad, skill button, launch zone)] as INP
+  [API Client (HTTPS)\n+ Reverb/Pusher-protocol WS client] as APIC
+  [Match Net Client\n(ENet, prediction for own top,\ninterpolation for others)] as MNC
+  [Presentation\n(arena, tops, burst VFX, gauges)] as PRES
+  [Shared Rules Lib\n(content schema, combat formulas,\nprotocol defs)] as SRL_C
+  [Quality Settings] as QS
 }
 package "Match Server (headless Godot, same project)" {
-  [Control Channel Client\n(WS to Backend internal)] as CCC
-  [Session Gate\n(ticket check, peer roles)] as GATE
-  [Match Controller\n(state machine, rules)] as MC
-  [Battle Simulation\n(fixed tick)] as SIM
-  [Snapshot Replicator] as REP
-  [Result Reporter\n(+ local journal)] as RR
+  [Backend Link\n(1 Hz heartbeat-pull, state/result POST,\nresult journal)] as LINK
+  [Session Gate\n(ticket hashes, peer roles)] as GATE
+  [Match Controller\n(phases, eliminations, placements)] as MC
+  [Launch Validator] as LV
+  [Battle Simulation 60 Hz\n(steering, physics contacts)] as SIM
+  [Combat Resolver\n(advantage S, impact, spin loss)] as CR
+  [Burst Model] as BM
+  [Skill System] as SK
+  [Snapshot Replicator 30 Hz] as REP
   [Shared Rules Lib] as SRL_S
 }
-package "Backend API (Node.js LTS + TypeScript [P])" {
-  [HTTP Router + Validation] as RT
-  [Auth Module] as AUTH
-  [Profile & Inventory Module] as PROF
-  [Room Module] as ROOM
-  [Match Allocator] as ALLOC
-  [Match Record Module] as MREC
-  [Social Module\n(teams, blocks)] as SOC
-  [Moderation & Admin Module] as MOD
-  [Realtime Events Hub (WSS)] as EVT
-  [Internal Control Endpoint\n(WS + result POST)] as ICE
-  [Data Access Layer\n(repositories, migrations)] as DAL
+package "Backend API (PHP + Laravel 13)" {
+  [HTTP API (routes, FormRequest validation,\nSanctum auth, RateLimiter)] as RT
+  [Auth & Accounts\n(e-mail verification, password reset)] as AUTH
+  [Profile & Parts/Inventory\n(build stats & classification preview)] as PROF
+  [Rooms] as ROOM
+  [Match Allocator + Command Outbox] as ALLOC
+  [Match Records & Ranking] as MREC
+  [Social (teams, blocks)] as SOC
+  [Moderation & Admin panel] as MOD
+  [Internal API (/internal/v1)] as ICE
+  [Eloquent / migrations] as DAL
 }
+node "Reverb (WebSocket server)" as REV
+node "Queue worker + Scheduler" as QW
 database "MySQL 8.4" as DB
-folder "Content Data\n(items, arenas, balance;\nversioned JSON/Resources)" as CONTENT
+folder "Content Data\n(parts, skills, BalanceConfig;\nversioned)" as CONTENT
 
 UI --> APIC
 UI --> MNC
@@ -42,16 +46,18 @@ INP --> MNC
 MNC --> PRES
 QS --> PRES
 APIC --> RT : HTTPS
-APIC --> EVT : WSS
+APIC --> REV : WSS (private channels)
 MNC --> GATE : ENet/UDP
 GATE --> MC
+MC --> LV
 MC --> SIM
+SIM --> CR
+CR --> BM
+MC --> SK
 SIM --> REP
 REP --> MNC : snapshots
-MC --> RR
-RR --> ICE : HTTP (internal)
-CCC --> ICE : WS (internal)
-CCC --> MC : AssignMatch / TicketGrant
+MC --> LINK
+LINK --> ICE : HTTP loopback
 RT --> AUTH
 RT --> PROF
 RT --> ROOM
@@ -59,18 +65,21 @@ RT --> MREC
 RT --> SOC
 RT --> MOD
 ROOM --> ALLOC
-ALLOC --> ICE
+ICE --> ALLOC
 ICE --> MREC
-ROOM --> EVT
-MREC --> EVT
+ROOM --> REV : broadcast
+MREC --> REV : broadcast
+AUTH --> QW : mail jobs
+QW --> DAL
 AUTH --> DAL
 PROF --> DAL
 ROOM --> DAL
+ALLOC --> DAL
 MREC --> DAL
 SOC --> DAL
 MOD --> DAL
 DAL --> DB : SQL (localhost)
 CONTENT ..> SRL_C
 CONTENT ..> SRL_S
-CONTENT ..> PROF : item catalog seed
+CONTENT ..> PROF : catalog seed + stat preview
 @enduml

@@ -1,17 +1,27 @@
 @startuml SQ-05
-title SQ-05 Elimination (FFA ring-out) [C rule / P mechanism]
+title SQ-05 Contact resolution & elimination (BURST primary) [C rules / P model]
 participant "Match Server\n(simulation)" as MS
 participant "All Clients" as C
 participant "Eliminated Client" as E
-MS -> MS : physics tick N: top X position\noutside arena boundary
-MS -> MS : record elimination {userId X, reason RING_OUT, tick N}\n(BR-002). Same-tick multiple exits -> rule TBD (OQ-GP-04)
-MS -> C : S2C_Eliminated {userId, reason, tick} (reliable)
-MS -> E : S2C_RoleChanged {SPECTATOR} (see SQ-06)
-alt remaining competitors == 1
-  MS -> MS : winner = remaining (BR-003) -> SQ-07
-else remaining == 0 (simultaneous)
-  MS -> MS : draw / tie-break [TBD OQ-GP-04] -> SQ-07
+MS -> MS : physics tick: contact i<->j (normal, v_n, height diff)
+MS -> MS : S_ij = advantage(E_i, E_j, spin_i, spin_j)\n(Energy-weighted RPS influence)
+MS -> MS : N_ij = I_ij / R_j ; N_ji = I_ji / R_i
+MS -> MS : apply knockback impulse, stagger, spin loss,\nskill gauge gain for both
+MS -> MS : D = c_b * max(0, N*Pb*A(theta) - T_j) * (1+eps)\nL_j -= D
+alt L_j <= 0 or (B >= 2.5*T_j and L_j <= 50)
+  MS -> MS : eliminate j: BURST (BR-015), credit i
+else j outside arena / pocket >= 0.5 s
+  MS -> MS : eliminate j: OVER (or XTREME zone)
+else spin_j < 8 RPS
+  MS -> MS : eliminate j: SPIN
+end
+MS -> C : S2C_Eliminated {userId, finishType, tick, creditedTo} (reliable)
+MS -> E : S2C_RoleChanged {SPECTATOR} (SQ-06)
+alt remaining == 1
+  MS -> MS : winner (BR-003) -> SQ-07
+else remaining == 0 (same tick)
+  MS -> MS : shared placement [P, OQ-GP-04] -> SQ-07
 else remaining >= 2
-  MS -> MS : continue simulation
+  MS -> MS : continue
 end
 @enduml

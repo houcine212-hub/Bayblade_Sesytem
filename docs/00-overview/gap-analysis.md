@@ -116,7 +116,10 @@ release order and minimum specs, backend language, domain/TLS, budget. All are i
 | D7 | **User review & decisions** on blocking questions → revise → approval gate G0 | **Pending user** |
 | D8 | After approval only: technical spikes (physics feel, network, headless benchmark, mobile render) | Not started |
 
-## 8. High-priority questions that block the next step
+## 7b. v0.2 update (Master Update, 2026-11-21)
+G-01 (in-battle control), G-02 (end conditions → Burst primary), G-03 (launch semantics) were answered by the user. Platforms, accounts and exploration timing confirmed. New decisions are tracked in `docs/10-game-design/design-change-proposals.md` and the register (§2.1b). The questions below are kept for history.
+
+## 8. High-priority questions that block the next step (v0.1 — mostly answered in v0.2)
 
 1. **G-01 In-battle control:** after launch, can players influence their top? If yes, roughly how (direction, special ability, none)?
 2. **G-02 End conditions:** besides ring-out, do spin-out or burst eliminate? Should there be a time limit?

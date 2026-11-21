@@ -1,5 +1,5 @@
 @startuml use-case
-title Use Case Diagram [MVP = solid, Post-MVP = <<post>>]
+title Use Case Diagram v0.2 [MVP = solid, Post-MVP = <<post>>]
 left to right direction
 actor Guest
 actor Player
@@ -17,13 +17,15 @@ rectangle "Game System" {
   usecase "UC-01 Register" as UC01
   usecase "UC-02 Log in / out" as UC02
   usecase "UC-03 View / edit profile" as UC03
-  usecase "UC-04 Manage loadout" as UC04
+  usecase "UC-04 Assemble build\n(parts -> attributes, Energy, type)" as UC04
   usecase "UC-05 Create room" as UC05
   usecase "UC-06 Join room by code" as UC06
   usecase "UC-07 Ready / unready" as UC07
   usecase "UC-08 Start match" as UC08
-  usecase "UC-09 Launch top" as UC09
-  usecase "UC-10 Battle (FFA)" as UC10
+  usecase "UC-09 Launch top\n(5 s rapid press)" as UC09
+  usecase "UC-24 Steer top\n(360° joystick)" as UC24
+  usecase "UC-25 Activate skill" as UC25
+  usecase "UC-10 Battle (FFA, Burst primary)" as UC10
   usecase "UC-11 Spectate match" as UC11
   usecase "UC-12 View result & history" as UC12
   usecase "UC-13 Reconnect to match" as UC13
@@ -34,9 +36,9 @@ rectangle "Game System" {
   usecase "UC-23 View rankings" as UC23
   usecase "UC-18 Apply for organizer" as UC18
   usecase "UC-19 Approve / revoke organizer" as UC19
-  usecase "UC-20 Create tournament" <<post>> as UC20
-  usecase "UC-21 Explore & open chest" <<post>> as UC21
-  usecase "UC-22 Challenge in world" <<post>> as UC22
+  usecase "UC-20 Create tournament" as UC20 <<post>>
+  usecase "UC-21 Explore & open chest\n(postponed)" as UC21 <<post>>
+  usecase "UC-22 Challenge in world\n(postponed)" as UC22 <<post>>
   usecase "Report official result" as UCR
 }
 Guest --> UC01
@@ -48,6 +50,8 @@ Player --> UC06
 Player --> UC07
 Player --> UC09
 Player --> UC10
+Player --> UC24
+Player --> UC25
 Player --> UC12
 Player --> UC13
 Player --> UC14
@@ -68,5 +72,8 @@ MS --> UCR
 UC10 ..> UC11 : <<extend>>\non elimination
 UC08 ..> UC09 : <<include>>
 UC22 ..> UC10 : <<include>>
+UC10 ..> UC24 : <<include>>
+UC10 ..> UC25 : <<extend>>
+MS --> UC10 : simulates
 UC12 ..> UCR : depends on
 @enduml

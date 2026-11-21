@@ -31,8 +31,8 @@ Age rating, regions and languages are **[TBD]** (OQ-PL-05, OQ-AC-09).
 - No real-money betting/gambling in MVP. No voice top-control in MVP.
 - No requirement for a huge open world in the first release.
 
-## 5. Product pillars [P]
-1. **Launch & clash** — the launch moment is skill expression; collisions are readable and fair.
+## 5. Product pillars [P] (v0.2: see GDD §3)
+1. **Launch & clash** — rapid-press launch is skill expression; steering and skills shape the clash; Burst Finish is the climax.
 2. **My top, my identity** — loadouts, records and team badges are visible everywhere.
 3. **Play anywhere** — same account, same rules, same results on every platform.
 4. **Fair by construction** — the server decides; clients only ask and display.

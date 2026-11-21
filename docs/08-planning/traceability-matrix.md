@@ -1,6 +1,6 @@
-# Requirements Traceability Matrix
+# Requirements Traceability Matrix (v0.2)
 
-| Document ID | DOC-RTM-001 | Status | [P] — generated from SRS v0.1; keep in sync |
+| Document ID | DOC-RTM-001 | Status | [P] — generated from SRS v0.2; keep in sync |
 |---|---|---|---|
 
 Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protocol (`04-interfaces`) · Test (`07-quality-operations`).
@@ -8,15 +8,15 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | Req | Status | Use case | Diagram | Data | API / Protocol | Test |
 |---|---|---|---|---|---|---|
 | FR-001 | C | UC-02 | context | user_account | API-02 | E2E cross-device login |
-| FR-002 | C need / TBD method | UC-01 | SQ-01 | user_account, player_profile | API-01 | TC-0xx (after OQ-AC-01) |
+| FR-002 | C | UC-01 | SQ-01 | user_account.email, email_verified_at | API-01, API-01b | Auth tests |
 | FR-003 | C need / P mechanism | UC-02 | SQ-01 | auth_session | API-02..04 | Auth integration |
-| FR-004 | TBD | UC-01 | — | user_account | API-05 | TBD |
+| FR-004 | C need / P policy | UC-01 | SQ-01 | user_account | API-05 | Reset flow test |
 | FR-005 | P (privacy, J6) | UC-03 | — | all personal tables (§5 lifecycle) | API-13 | Privacy tests |
 | FR-006 | P | UC-02 | SQ-01 | — | API-02, API-06 | TC-012 |
 | FR-010 | C | UC-03 | domain-model | player_profile | API-10..12 | Profile API tests |
-| FR-011 | P | UC-03 | domain-model | player_profile | API-10..12 | Profile API tests |
+| FR-011 | C | UC-03 | SQ-01 | player_profile.display_name_normalized | API-01, API-11 | Uniqueness test |
 | FR-012 | P | UC-03 | domain-model | player_profile | API-10..12 | Profile API tests |
-| FR-020 | C (E3 separation) / P (format) | UC-04 | component (Content Data) | item_definition | API-20 | Content schema validation |
+| FR-020 | C (E3 separation) / P (format) | UC-04 | combat-model-class | item_definition (slot, contrib, properties) | API-20 | Content schema validation |
 | FR-021 | C | UC-04 | SQ-01 | inventory_item | API-21 | Starter grant test |
 | FR-022 | C | UC-04 | SQ-02 | loadout, loadout_slot | API-22, API-33 | Ownership validation |
 | FR-023 | A (A-04) | UC-04 | SQ-01 | inventory_item | API-21 | Starter grant test |
@@ -35,20 +35,20 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | FR-040 | P | UC-04 | SQ-02 | loadout, loadout_slot | API-22, API-33 | Ownership validation |
 | FR-050 | P | UC-08 | SQ-03, state-match | game_match | API-36, INT-01 | Allocation tests |
 | FR-051 | P | UC-08 | SQ-03 | (memory: ticket hashes) | INT-01 TicketGrant, C2S_Hello | TC-002 |
-| FR-052 | C (exists) / TBD | UC-09 | SQ-04, state-match | match_participant.launch_summary_json | C2S_LaunchInput | Launch unit tests (after OQ-GP-01/02) |
-| FR-053 | C concept / TBD | UC-09 | SQ-04, state-match | match_participant.launch_summary_json | C2S_LaunchInput | Launch unit tests (after OQ-GP-01/02) |
-| FR-054 | C | UC-09 | SQ-04 | item_definition.stats_json | — | Formula unit tests |
+| FR-052 | C / P (cue) | UC-09 | SQ-04, state-match, state-bey-combat | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch, S2C_LaunchResult | TC-016, TC-017 |
+| FR-053 | C | UC-09 | SQ-04, state-match, state-bey-combat | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch, S2C_LaunchResult | TC-016, TC-017 |
+| FR-054 | C / P | UC-09, UC-10 | combat-model-class | match_participant.stat_* | — | TC-022 |
 | FR-055 | C (O-7) / P (method) | UC-10 | SQ-04, component | (memory) | S2C_Snapshot | Simulation golden tests |
-| FR-056 | C | UC-10 | SQ-05, state-match | match_participant.placement, elimination_reason | S2C_Eliminated | TC-003 |
+| FR-056 | C | UC-10 | SQ-05, state-bey-combat | match_participant.finish_type | S2C_Eliminated | TC-003 |
 | FR-057 | C | UC-10 | SQ-05, state-match | match_participant.placement, elimination_reason | S2C_Eliminated | TC-003 |
 | FR-058 | C | UC-11 | SQ-06 | — | S2C_RoleChanged | TC-004 |
 | FR-059 | C (C3) | UC-09, UC-10, UC-12 | SQ-04..07 | — | S2C_* events | E2E UX review |
-| FR-060 | TBD (G-02, OQ-GP-15) | UC-10 | SQ-05, state-match | game_match.end_reason | TBD | TBD after decision |
-| FR-061 | TBD (G-01, OQ-GP-16) | UC-10 | SQ-05, state-match | game_match.end_reason | TBD | TBD after decision |
+| FR-060 | C (burst) / P (spin) | UC-10 | SQ-05, state-bey-combat | match_participant.finish_type | S2C_Eliminated | TC-023, TC-027 |
+| FR-061 | C | UC-24, UC-25 | SQ-09, SQ-10 | — | C2S_ControlInput, C2S_SkillActivate | TC-025, TC-024 |
 | FR-062 | TBD (OQ-GP-04) | UC-10 | SQ-05, state-match | game_match.end_reason | TBD | TBD after decision |
 | FR-063 | TBD (OQ-GP-05) | UC-13 | SQ-08 | match_participant.connection_outcome | API-40, API-41 | TC-007 |
 | FR-064 | TBD rule / P mechanism | UC-13 | SQ-08 | match_participant.connection_outcome | API-40, API-41 | TC-007 |
-| FR-065 | TBD (OQ-GP-06) | UC-10 | SQ-05, state-match | game_match.end_reason | TBD | TBD after decision |
+| FR-065 | P / TBD | UC-09 | SQ-04 | match_participant.launch_presses | S2C_LaunchResult | TC-016 |
 | FR-066 | TBD (OQ-GP-17) | UC-10 | SQ-05, state-match | game_match.end_reason | TBD | TBD after decision |
 | FR-067 | TBD (OQ-GP-04) | UC-10 | SQ-05, state-match | game_match.end_reason | TBD | TBD after decision |
 | FR-068 | TBD rule / P default | UC-10 | SQ-08, state-match | game_match.status=ABORTED | INT-01 heartbeat | TC-008 |
@@ -84,17 +84,60 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | FR-133 | P | UC-16 | — | moderation_action, audit_log | API-70..72 | Moderation tests |
 | FR-134 | P | UC-16 | — | — | — | TBD |
 | FR-135 | TBD (OQ-AC-07) | UC-16 | — | — | — | TBD |
-| FR-140 | C (vision) | UC-21, UC-22 | use-case | inventory_item.source, game_match.room_id NULL | — | Post-MVP |
-| FR-141 | C (vision) | UC-21, UC-22 | use-case | inventory_item.source, game_match.room_id NULL | — | Post-MVP |
+| FR-140 | C | UC-21, UC-22 | use-case | inventory_item.source, game_match.room_id NULL | — | Post-MVP |
+| FR-141 | C | UC-21, UC-22 | use-case | inventory_item.source, game_match.room_id NULL | — | Post-MVP |
 | FR-142 | C (vision) | UC-21, UC-22 | use-case | inventory_item.source, game_match.room_id NULL | — | Post-MVP |
 | FR-150 | C (not authoritative) / P links | — | context | — | API-06 | UI check |
 | FR-151 | C (later) | — | — | — | — | Post-MVP |
 | FR-152 | C (later, excluded from MVP) | — | — | — | — | Post-MVP |
-| FR-160 | C families / TBD order | all | deployment | — | X-Platform header | Cross-platform matrix |
+| FR-160 | C | all | deployment | — | X-Platform header | Cross-platform matrix (Win/Android/Linux) |
 | FR-161 | C | all | deployment | — | X-Platform header | Cross-platform matrix |
 | FR-162 | C | all | deployment | — | X-Platform header | Cross-platform matrix |
-| FR-163 | P (evaluate) | all | deployment | — | X-Platform header | Cross-platform matrix |
+| FR-163 | C | UC-24 | SQ-09 | — | C2S_ControlInput | Device matrix |
 | FR-164 | P | all | deployment | — | X-Platform header | Cross-platform matrix |
+| FR-170 | C | UC-24 | SQ-09, state-bey-combat | (memory) | C2S_ControlInput, S2C_Snapshot.lastProcessedSeq | TC-025, TC-026 |
+| FR-171 | C / P (mappings) | UC-24 | SQ-09, state-bey-combat | (memory) | C2S_ControlInput, S2C_Snapshot.lastProcessedSeq | TC-025, TC-026 |
+| FR-172 | C / P (method) | UC-24 | SQ-09, state-bey-combat | (memory) | C2S_ControlInput, S2C_Snapshot.lastProcessedSeq | TC-025, TC-026 |
+| FR-173 | C | UC-25 | SQ-10, component (Input Adapter) | — | C2S_SkillActivate | UI review |
+| FR-174 | P | UC-25 | SQ-10, component (Input Adapter) | — | C2S_SkillActivate | UI review |
+| FR-175 | P | UC-24 | SQ-09, state-bey-combat | (memory) | C2S_ControlInput, S2C_Snapshot.lastProcessedSeq | TC-025, TC-026 |
+| FR-180 | C | UC-09 | SQ-04 | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch | TC-016, TC-017 |
+| FR-181 | P | UC-09 | SQ-04 | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch | TC-016, TC-017 |
+| FR-182 | C anchor / P curve | UC-09 | SQ-04 | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch | TC-016, TC-017 |
+| FR-183 | P | UC-09 | SQ-04 | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch | TC-016, TC-017 |
+| FR-184 | C (server authority) / P | UC-09 | SQ-04 | match_participant.launch_flags | S2C_LaunchResult | TC-018 |
+| FR-185 | P | UC-09 | SQ-04 | match_participant.launch_flags | S2C_LaunchResult | TC-018 |
+| FR-190 | C | UC-04 | combat-model-class, domain-model | match_participant.stat_*, energy, launch_rps, final_spin_rps | API-23 | TC-019, TC-020 |
+| FR-191 | C | UC-04 | combat-model-class, domain-model | match_participant.stat_*, energy, launch_rps, final_spin_rps | API-23 | TC-019, TC-020 |
+| FR-192 | P (ADR-013) | UC-04 | combat-model-class, domain-model | match_participant.stat_*, energy, launch_rps, final_spin_rps | API-23 | TC-019, TC-020 |
+| FR-193 | C | UC-04 | combat-model-class, domain-model | match_participant.stat_*, energy, launch_rps, final_spin_rps | API-23 | TC-019, TC-020 |
+| FR-194 | C | UC-04 | combat-model-class, domain-model | match_participant.stat_*, energy, launch_rps, final_spin_rps | API-23 | TC-019, TC-020 |
+| FR-195 | P (CHG-02) | UC-04 | combat-model-class | item_definition.properties_json, contrib_* | API-20, API-23 | TC-029 |
+| FR-196 | P | UC-04 | combat-model-class | item_definition.properties_json, contrib_* | API-20, API-23 | TC-029 |
+| FR-200 | C (investigate) / P (definitions per DOC-CLS-001) | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
+| FR-201 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
+| FR-202 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
+| FR-203 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
+| FR-204 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
+| FR-205 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
+| FR-210 | C | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
+| FR-211 | C | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
+| FR-212 | C / P (value) | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
+| FR-213 | C (list) / P (equations) | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
+| FR-214 | P | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
+| FR-215 | C | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
+| FR-220 | C | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
+| FR-221 | P (ADR-014) | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
+| FR-222 | C | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
+| FR-223 | P | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
+| FR-224 | P | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
+| FR-230 | C / P | UC-25 | SQ-10, state-bey-combat | item_definition.skill_key, match_participant.skill_uses | C2S_SkillActivate, S2C_SkillEvent | TC-024 |
+| FR-231 | C (need) / P (values) | UC-25 | SQ-10, state-bey-combat | item_definition.skill_key, match_participant.skill_uses | C2S_SkillActivate, S2C_SkillEvent | TC-024 |
+| FR-232 | C (investigate) / P | UC-25 | SQ-10, state-bey-combat | item_definition.skill_key, match_participant.skill_uses | C2S_SkillActivate, S2C_SkillEvent | TC-024 |
+| FR-233 | C (not unlimited) / P | UC-25 | SQ-10, state-bey-combat | item_definition.skill_key, match_participant.skill_uses | C2S_SkillActivate, S2C_SkillEvent | TC-024 |
+| FR-234 | P | UC-25 | SQ-10, state-bey-combat | item_definition.skill_key, match_participant.skill_uses | C2S_SkillActivate, S2C_SkillEvent | TC-024 |
+| FR-240 | C | — | combat-model-class (BalanceConfig) | game_match.content_version, match_participant telemetry | INT-02 | TC-030 |
+| FR-241 | P | — | combat-model-class (BalanceConfig) | game_match.content_version, match_participant telemetry | INT-02 | TC-030 |
 | BR-001 | C | UC-06, UC-08 | SQ-02, SQ-03, state-room | match_participant.slot CHECK | API-31, INT-01 | TC-001 |
 | BR-002 | C | UC-10, UC-11 | SQ-05, SQ-06 | match_participant | S2C_Eliminated | TC-003, TC-004 |
 | BR-003 | C | UC-10, UC-11 | SQ-05, SQ-06 | match_participant | S2C_Eliminated | TC-003, TC-004 |
@@ -109,12 +152,19 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | BR-012 | A (A-01) | UC-08 | SQ-03 | — | API-36 | Start validation |
 | BR-013 | P | UC-10 | SQ-08 | game_match.status | — | TC-008 |
 | BR-014 | P | UC-08 | SQ-03 | game_match.protocol_version | C2S_Hello | TC-002 |
+| BR-015 | C | UC-10 | SQ-05 | finish_type | S2C_Eliminated | TC-027 |
+| BR-016 | C | UC-09 | SQ-04 | launch_presses | C2S_LaunchPressBatch | TC-018 |
+| BR-017 | C | UC-04 | combat-model-class | energy (snapshot) | API-23 | TC-019 |
+| BR-018 | C (not unlimited) / P | UC-25 | SQ-10 | skill_uses | S2C_SkillEvent | TC-024 |
+| BR-019 | C | UC-01, UC-03 | SQ-01 | display_name_normalized | API-01, API-11 | Uniqueness test |
 | NFR-001 | C target | — | deployment | — | — | L-10..L-100 |
 | NFR-002 | C | UC-06 | SQ-02, SQ-03 | slot CHECK | API-31, INT-01 | TC-001 |
 | NFR-003 | C intent / P mechanism | — | deployment | — | INT-01 | M-churn |
 | NFR-004 | C | — | deployment | — | — | L-10..L-100 |
 | NFR-005 | C | — | deployment | — | — | M-20 |
-| NFR-006 | P (benchmark) | UC-10 | SQ-04 | — | S2C_Snapshot | Spike S-2, impairment tests |
+| NFR-006 | P (benchmark) | UC-24 | SQ-09 | — | C2S_ControlInput, S2C_Snapshot | TC-025, spike S-2 |
+| NFR-011 | P | UC-24 | SQ-09 | — | C2S_ControlInput, S2C_Snapshot | TC-025, spike S-2 |
+| NFR-012 | P | UC-24 | SQ-09 | — | C2S_ControlInput, S2C_Snapshot | TC-025, spike S-2 |
 | NFR-007 | P (spike) | UC-10 | SQ-04 | — | S2C_Snapshot | Spike S-2, impairment tests |
 | NFR-008 | P (estimate in protocol doc) | UC-10 | SQ-04 | — | S2C_Snapshot | Spike S-2, impairment tests |
 | NFR-009 | P | UC-08 | SQ-03 | — | API-36 | Load metric |
@@ -131,6 +181,11 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | NFR-042 | C | — | component | — | — | Repo/CI review |
 | NFR-043 | C | — | component | — | — | Repo/CI review |
 | NFR-044 | C intent / P format | — | component | — | — | Repo/CI review |
+| NFR-045 | P | UC-10 | — | game_match.sim_seed | — | TC-028 |
+| NFR-070 | P | — | — | match_participant telemetry | INT-02 | TC-030, beta telemetry |
+| NFR-071 | P | — | — | match_participant telemetry | INT-02 | TC-030, beta telemetry |
+| NFR-072 | P | — | — | match_participant telemetry | INT-02 | TC-030, beta telemetry |
+| NFR-073 | P | — | — | match_participant telemetry | INT-02 | TC-030, beta telemetry |
 | NFR-050 | C | — | deployment | — | — | Cross-platform matrix |
 | NFR-051 | C | — | deployment | — | — | Cross-platform matrix |
 | NFR-060 | C | UC-03 | — | data dictionary §5 | API-13 | Privacy review |
@@ -147,7 +202,9 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | SEC-010 | C (analyse) / P | UC-16, UC-19 | — | audit_log | API-72 | Audit tests |
 | SEC-011 | P | UC-06 | SQ-02 | room.active_code | API-31 | TC-015 |
 | SEC-012 | P | — | SQ-03, SQ-07 | — | INT-01, INT-02 | Service auth tests |
-| SEC-013 | TBD | UC-09 | SQ-04 | — | C2S_LaunchInput | TBD |
+| SEC-013 | P | UC-09 | SQ-04 | launch_flags | C2S_LaunchPressBatch | TC-017, TC-018 |
+| SEC-015 | P | UC-24 | SQ-09, SQ-06 | — | C2S_ControlInput | TC-026 |
+| SEC-016 | P | UC-25 | SQ-10 | — | C2S_SkillActivate | TC-024 |
 | SEC-014 | P | — | — | — | protocol §7 | Flood test |
 | OPS-001 | C | — | deployment | — | — | Ops checklist |
 | OPS-002 | P | — | deployment | — | — | Ops checklist |

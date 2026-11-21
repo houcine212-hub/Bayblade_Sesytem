@@ -4,20 +4,20 @@ participant "Match Server" as MS
 participant "All Clients" as C
 participant "Backend API" as B
 database MySQL as DB
-MS -> MS : end condition met (last top / draw / timeout TBD / abort)
-MS -> MS : build MatchResult {matchId, endReason, placements[],\neliminations[], launchSummaries[], durationMs, summaryEvents[]}
-MS -> C : S2C_MatchEnded {placements, endReason} (provisional until persisted)
-MS -> B : POST /internal/v1/matches/{matchId}/result\nAuthorization: service credential\nIdempotency-Key: matchId
-B -> B : validate: instance owns matchId, participants match\nallocation, placements consistent
-B -> DB : BEGIN; UPDATE game_match status=COMPLETED;\nUPDATE match_participant placements;\nINSERT match_event summaries;\nUPDATE competitive_record (rules TBD);\nUPDATE room status=OPEN|CLOSED [TBD OQ-GP-14]; COMMIT
+MS -> MS : remaining <= 1 (or time limit/sudden death [TBD])
+MS -> MS : MatchResult {matchId, endReason, placements[],\neliminations[{userId, finishType, tick, creditedTo}],\nlaunch[{presses, launchRps, flags}], skillUses[], finalSpin[],\nfinalLock[], durationMs, contentVersion, seed}
+MS -> C : S2C_MatchEnded {placements, finishTypes} (provisional)
+MS -> B : POST /internal/v1/matches/{matchId}/result\nAuthorization: Service <secret>; Idempotency-Key: matchId
+B -> B : validate: instance owns match, participants = allocation,\nplacements consistent, finish types valid
+B -> DB : BEGIN; game_match COMPLETED; match_participant (placement,\nfinish_type, launch_presses, launch_rps, ...);\nmatch_event summaries; competitive_record; room status; COMMIT
 alt first report
   B --> MS : 200 {persisted: true}
-else duplicate (retry)
+else duplicate
   B --> MS : 200 {persisted: true, duplicate: true}
-else validation failure
-  B --> MS : 422 RESULT_REJECTED + alert, match status=DISPUTED
+else invalid
+  B --> MS : 422 RESULT_REJECTED; match DISPUTED + alert
 end
-B -> C : event match.completed {matchId}
-note over MS : On 5xx/timeout: retry with backoff\nup to 24 h, results kept in local\njournal file (NFR-031)
-MS -> MS : disconnect peers after 10 s;\nreset; state=IDLE; Heartbeat(IDLE)
+B -> C : Reverb: match.completed {matchId}
+note over MS : On 5xx/timeout: retry with backoff (journal file)\nuntil accepted (NFR-031)
+MS -> MS : reset; heartbeat {state: IDLE}
 @enduml

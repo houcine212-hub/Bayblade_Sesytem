@@ -1,5 +1,5 @@
 # ADR-005: Server authority & battle simulation model
-- **Status:** Proposed — depends on OQ-GP-15/16 · **Date:** 2026-11-21
+- **Status:** Proposed — **updated v0.2**: in-battle 360° joystick control is now confirmed · **Date:** 2026-11-21
 ## Context
 Official results must come from a trusted server (O-7). Tops collide, lose spin, and ring out. Mobile clients have variable latency. Physics fidelity is not specified (G-04).
 ## Options
@@ -11,5 +11,8 @@ Official results must come from a trusted server (O-7). Tops collide, lose spin,
 | D. Deterministic lockstep | Low bandwidth | Requires bit-exact determinism across ARM/x86 float — impractical with Godot | Rejected |
 ## Decision (proposed)
 **A** — server simulates at 60 Hz; clients interpolate snapshots; no client prediction unless in-battle control is confirmed. Spike S-1 compares A vs B for feel and CPU before final acceptance.
+## v0.2 update (joystick confirmed)
+The revisit trigger fired: players steer during battle. Decision becomes: server-authoritative simulation at 60 Hz **plus client-side prediction of the local top's movement** with reconciliation on each snapshot; collisions, spin, burst and skills are confirmed only by the server; remote tops interpolated (~100 ms). Combat rules: ADR-013/014.
+
 ## Revisit when
 S-1 shows B is clearly better, or OQ-GP-16 confirms responsive in-battle control (add local prediction + reconciliation).

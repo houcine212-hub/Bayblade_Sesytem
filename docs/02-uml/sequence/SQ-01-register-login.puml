@@ -1,30 +1,40 @@
 @startuml SQ-01
-title SQ-01 Registration & Login [P] — registration method TBD (OQ-AC-01)
+title SQ-01 Registration (e-mail + password) & Login [C method / P mechanism]
 actor Player
 participant "Game Client" as C
-participant "Backend API" as B
+participant "Backend API\n(Laravel)" as B
+participant "Queue worker" as Q
+participant "E-mail provider" as M
 database MySQL as DB
-== Registration (example: e-mail + password, pending OQ-AC-01) ==
-Player -> C : enter credentials
-C -> B : POST /v1/auth/register\n{username, email?, password}\nheader X-Client-Version, X-Platform
-B -> B : validate input, rate-limit per IP (SEC-008)
-B -> B : hash password Argon2id (SEC-004)
-B -> DB : INSERT user_account, player_profile,\ncompetitive_record, starter inventory_item [A-04]
-DB --> B : ok
-B --> C : 201 {userId}
+== Registration ==
+Player -> C : e-mail, password, display name
+C -> B : POST /v1/auth/register {email, password, displayName}\nX-Client-Version, X-Platform
+B -> B : validate (FormRequest), rate-limit per IP (SEC-008)
+B -> DB : check display name unique (case-insensitive, BR-019)
+alt name taken / email taken
+  B --> C : 409 NAME_TAKEN | 422 VALIDATION_FAILED (generic for email)
+else ok
+  B -> B : hash password (SEC-004)
+  B -> DB : INSERT user_account, player_profile, competitive_record,\nstarter parts (inventory_item) [A-04]
+  B -> Q : queue VerifyEmail notification
+  Q -> M : send verification link
+  B --> C : 201 {userId, emailVerified:false}
+end
+Player -> M : opens link
+M -> B : GET /v1/auth/email/verify/{id}/{hash}?signature=…
+B -> DB : UPDATE user_account.email_verified_at
 == Login ==
-Player -> C : log in
-C -> B : POST /v1/auth/login {login, password}\nX-Client-Version
+C -> B : POST /v1/auth/login {email, password}
 alt client version < minimum (FR-006)
   B --> C : 426 CLIENT_UPDATE_REQUIRED {storeUrl}
-else credentials valid
-  B -> DB : SELECT user_account; INSERT auth_session (refresh token hash)
-  B --> C : 200 {accessToken (15 min), refreshToken, user}
+else valid
+  B -> DB : INSERT auth_session (refresh token hash); create Sanctum access token (15 min)
+  B --> C : 200 {accessToken, refreshToken, user}
 else invalid
-  B --> C : 401 INVALID_CREDENTIALS (generic message)
+  B --> C : 401 INVALID_CREDENTIALS
 end
-== Token refresh (rotation) ==
-C -> B : POST /v1/auth/refresh {refreshToken}
-B -> DB : verify hash, revoke old, store new
-B --> C : 200 {accessToken, refreshToken}
+== Password reset (FR-004) ==
+C -> B : POST /v1/auth/password/forgot {email}
+B -> Q : queue reset link (60 min, single use)
+B --> C : 202 (same response whether or not e-mail exists)
 @enduml

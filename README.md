@@ -1,13 +1,13 @@
 # Multiplayer Spinning-Top Battle Game — Design Package
 
-> **Current phase: DESIGN (Milestone M0).** This repository contains **documentation only**:
+> **Current phase: DESIGN (Milestone M0), package v0.2.** This repository contains **documentation only**:
 > no game code, scenes, scripts, migrations or infrastructure. Implementation starts only after the
 > owner approves the design at **Gate G0** (`docs/09-review/design-review-report.md`).
 
 ## Product overview
 A 3D online spinning-top battle game built with Godot for Windows, Linux, macOS, Android and iOS,
 sharing one account, backend and multiplayer ecosystem. Rooms are joined by code; each match has
-**at most 5 competitors**; FFA = ring-out eliminates, last top wins; the server decides results.
+**at most 5 competitors**; players launch by rapid-pressing for 5 s, steer with a 360° joystick, use skills; **Burst Finish** is the primary elimination (ring-out and spin-out also eliminate, proposed); last top wins; the server decides everything.
 The initial deployment is planned for **~100 concurrent connected players at peak** (planning target, not proven).
 
 ## Documentation map
@@ -23,6 +23,7 @@ The initial deployment is planned for **~100 concurrent connected players at pea
 | `docs/07-quality-operations/` | test strategy, load-test plan, operations, MVP readiness |
 | `docs/08-planning/` | roadmap + dependency map, traceability matrix, risk register |
 | `docs/09-review/` | design review report and approval gate |
+| `docs/10-game-design/` | **GDD**, statistics, classification, combat interaction, launch, burst, skills, controls specs; balancing report; research references; change proposals |
 
 ## Status labels
 **[C]** confirmed by owner · **[P]** proposed recommendation · **[A]** assumption · **[TBD]** open question.
@@ -31,13 +32,14 @@ Only [C] items are binding. See `docs/01-requirements/assumptions-and-open-quest
 ## Approved decisions vs TBD (summary)
 | Confirmed | Proposed (needs approval) | Open (blocking) |
 |---|---|---|
-| Godot; desktop + mobile; shared ecosystem | Godot 4.7.x, GDScript, one project | In-battle control? |
-| Max 5 competitors; 100 = peak CCU target | ENet/UDP; 1 match per process | Spin-out / burst / time limit? |
-| FFA ring-out, last top wins, eliminated spectate | Custom server-side top simulation | Five-second launch semantics & formula |
-| MySQL, never exposed to clients | MySQL 8.4 LTS; TypeScript/Node backend | First platforms |
-| Server-side official results | Rooms in Backend + WSS events | Registration method |
-| Organizers need admin approval | Single VPS with systemd limits | Exploration timing |
-| No real-money wagering / voice control in MVP | MVP = battle + small social layer | Backend language |
+| Godot; desktop + mobile; Windows/Android/Linux first, macOS/iOS later | Godot 4.7.x, GDScript, one project | Launch curve vs literal ×10 (CHG-01) |
+| Max 5 competitors; 100 = peak CCU target | ENet/UDP; 1 match per process; local prediction | Component properties (CHG-02) |
+| 360° joystick + Skill button; 5 s rapid-press launch (5 presses = 50 RPS) | Backend PHP + Laravel 13 + Reverb (ADR-012) | Magic scope & Energy weight (CHG-03, OQ-ST-02) |
+| ATK/DEF/STA/MAG; Energy derived; RPS separate | Energy formula, advantage S (ADR-013) | Elimination set (CHG-04) |
+| Burst Finish primary elimination; ring-out; last top wins | Hybrid burst model (ADR-014) | Time limit / tie rules |
+| E-mail + password; unique display names | Skills catalogue & limits | Skill limits & catalogue |
+| MySQL private; server-authoritative combat | Rooms in Backend + Reverb push | Backend stack approval (ADR-012) |
+| Exploration postponed; no real-money wagering | MVP = battle + small social layer | — |
 
 ## Viewing / editing diagrams
 Sources are `.puml` (PlantUML) and one Mermaid block (`docs/08-planning/roadmap.md`).

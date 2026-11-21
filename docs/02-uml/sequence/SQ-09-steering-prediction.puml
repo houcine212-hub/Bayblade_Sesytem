@@ -1,0 +1,24 @@
+@startuml SQ-09
+title SQ-09 Joystick steering: prediction & reconciliation [C requirement / P netcode]
+actor Player
+participant "Own Client" as C
+participant "Match Server" as MS
+participant "Other Clients" as O
+loop client frame
+  Player -> C : joystick vector u (touch / mouse / stick / keys)
+  C -> C : quantise u (int8 x,y); store input[seq]
+  C -> C : PREDICT own top movement:\nF = Fmax*u*mobility*Stab(spin)*(1-stagger)
+end
+loop 30 Hz
+  C -> MS : C2S_ControlInput {seq, tick, u, last 3 inputs} (unreliable-sequenced)
+end
+MS -> MS : clamp |u| <= 1, rate <= 60/s, role COMPETITOR (SEC-015)
+MS -> MS : authoritative tick 60 Hz: steering + physics + collisions
+loop 30 Hz
+  MS -> C : S2C_Snapshot {tick, lastProcessedSeq[own], tops[]}
+  MS -> O : S2C_Snapshot
+end
+C -> C : RECONCILE: reset own top to server state at tick,\nreplay inputs with seq > lastProcessedSeq;\nsmooth correction < 100 ms
+O -> O : interpolate remote tops (~100 ms buffer)
+note over C,MS : Collisions, spin loss, burst and skills are only\nconfirmed by the server (never final on client).
+@enduml

@@ -4,31 +4,25 @@ participant "Competitor Client" as C
 participant "Match Server" as MS
 participant "Backend API" as B
 == Disconnect ==
-C -x MS : connection lost (ENet timeout or app closed)
-MS -> MS : peer slot -> DISCONNECTED, start grace timer\n(P: 15 s; top behaviour during grace TBD)
-MS -> B : MatchStateChanged {participantDisconnected userId}
+C ->x MS : connection lost (ENet timeout / app backgrounded)
+MS -> MS : slot DISCONNECTED; top keeps simulating with zero input;\ngrace timer 15 s [P]
+MS -> B : POST /internal/v1/matches/{id}/state {participantDisconnected}
 == Reconnect within grace ==
 C -> B : GET /v1/me/active-match
 B --> C : {matchId, status: IN_PROGRESS}
 C -> B : POST /v1/matches/{matchId}/tickets {role: COMPETITOR}
-B -> B : verify user is participant of active match
-B -> MS : TicketGrant {hash, userId, COMPETITOR, exp}
+B -> B : verify participant; INSERT command TicketGrant
 B --> C : {host, udpPort, ticket}
+MS -> B : heartbeat
+B --> MS : {commands: [TicketGrant]}
 C -> MS : connect + C2S_Hello {ticket}
-MS -> MS : rebind userId to new peer; cancel grace timer
-MS --> C : S2C_Welcome {role, phase} + full snapshot
+MS -> MS : rebind userId; cancel grace
+MS --> C : S2C_Welcome + full snapshot (prediction re-seeded)
 == Grace expired ==
-MS -> MS : apply disconnect rule [TBD]: e.g. eliminate\nreason DISCONNECT, or keep top simulated
+MS -> MS : apply rule [TBD]: keep simulating (default proposal)\nor eliminate with reason DISCONNECT
 == Match Server failure ==
-MS -x B : control WS closed AND no re-register\nwithin 30 s (heartbeat 5 s) [P]
-B -> B : match status=ABORTED (BR-013: no competitive effect)
-note right of B
-  A Backend restart is NOT a match failure:
-  Match Servers reconnect and re-register
-  with {state: BUSY, matchId}; Backend reconciles.
-  If a result later arrives for a match aborted
-  only due to lost contact, it is accepted (P).
-end note
-B -> C : event match.aborted {matchId}
-note over B : Supervisor (systemd) restarts the process;\nit re-registers as IDLE.
+B -> B : scheduler: instance heartbeat older than 10 s [P]
+B -> B : game_match ABORTED (BR-013), instance OFFLINE
+B -> C : Reverb: match.aborted
+note over B : Backend restart is not a match failure:\nservers keep heartbeating once it is back;\nlate results for contact-lost matches are accepted (P).
 @enduml

@@ -7,8 +7,9 @@
 | Layer | Metrics |
 |---|---|
 | Host | CPU, load, RAM, swap, disk %, disk I/O, network in/out (TCP/UDP) |
-| Backend | request rate/latency/errors per route, WSS connections, CCU, rooms open, allocations, 503 count |
-| Match Server | instances IDLE/BUSY, tick time, peers, snapshot bytes/s, kicks by reason, matches/hour |
+| Backend (Laravel) | request rate/latency/errors per route, PHP-FPM active/idle workers, queue length & failed jobs, Reverb connections, CCU, rooms open, allocations, 503 count, heartbeat age per instance |
+| Match Server | instances IDLE/BUSY, tick time, peers, snapshot bytes/s, kicks by reason, matches/hour, launch flags, skill rejects |
+| Balance (telemetry) | finish-type shares, win rate per type pair, launch RPS by device, match length |
 | MySQL | connections, slow queries, buffer pool hit rate, replication/binlog size |
 | Backups | last success time, size |
 Candidate stack [P]: Prometheus node_exporter + app `/metrics` + Grafana, or a hosted free tier; or minimal: Netdata. Decision TBD (OQ-TO-08).

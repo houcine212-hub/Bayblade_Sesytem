@@ -39,6 +39,23 @@ Accounts & credentials · official match results & records · inventory · roles
 | T-18 | Ticket sniffing on unencrypted UDP | I | Tickets single-use & 60 s expiry; DTLS evaluated in S-2 | SEC-006 |
 | T-19 | Harassment via names/chat | — | Name filter + report + rename action; chat scope minimal (OQ-AC-07) | FR-131 |
 | T-20 | Loss of data | D | Off-site backups + restore tests | OPS-004 |
+| T-21 | Launch macro / autoclicker / turbo button | T | 12 Hz counted cap, saturating curve, edge+release rule, regularity flags → review | SEC-013 |
+| T-22 | Back-dated or future-dated launch presses | T | Offset conversion bounded by arrival time (launch spec §6) | SEC-013 |
+| T-23 | Modified client reports its own press total / launch RPS | T | Server counts presses; client totals ignored | FR-184 |
+| T-24 | Joystick input injection (|u| > 1, high rate, speed hacks) | T | Clamp, rate cap, server-side steering physics; client positions ignored | SEC-015 |
+| T-25 | Skill spam / activation outside rules | T/E | Server validates gauge, cooldown, uses, phase, spin | SEC-016 |
+| T-26 | Aim/steer bots (automated steering) | T | Not preventable server-side in MVP; telemetry (input entropy), reports, moderation | FR-131 |
+| T-27 | Burst RNG manipulation | T | Variance seeded server-side per match, bounded ±10%, seed stored for audit/replay | FR-221 |
+| T-28 | Build stat tampering (client claims stats) | T | Backend computes build from owned parts; Match Server re-validates snapshot against content data | FR-196 |
+
+## 4b. Combat integrity summary (v0.2)
+| Value | Who decides | Client influence |
+|---|---|---|
+| Launch RPS | Match Server (accepted presses → curve) | Only real, in-window presses within cap |
+| Steering | Match Server physics | Bounded input vector |
+| Collisions, spin, burst, eliminations | Match Server | None |
+| Skills | Match Server | Request only |
+| Build attributes/Energy/type | Backend + Match Server from content data | Part choice only |
 
 ## 4. Anti-cheat stance [P]
 Server authority removes most cheats in this design. Client-side anti-tamper is **not** planned for MVP (low value, high cost); integrity comes from server validation and moderation of reports. Revisit if in-battle control is added.

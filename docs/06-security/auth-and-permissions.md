@@ -4,8 +4,9 @@
 |---|---|---|---|
 
 ## 1. Authentication [P]
-- Registration/login method TBD (OQ-AC-01). Proposed default: username + e-mail + password (Argon2id), e-mail verification optional at MVP, Sign in with Apple/Google later (check App Store rules before iOS release).
-- Access token: signed JWT (HS256/EdDSA, Backend-only key), 15 min, contains `sub`, `roles`, `sid`. Refresh token: opaque 256-bit, stored hashed, 30 days, rotated each use.
+- **Confirmed:** e-mail + password; unique display name; third-party authentication postponed (check App Store rules on sign-in options before the later iOS release).
+- Passwords hashed with Laravel `Hash` (Argon2id driver proposed, bcrypt acceptable); e-mail verification required before ranked/social features [P]; password reset by signed single-use link.
+- Access token: Laravel **Sanctum** personal access token (opaque, stored hashed), 15-min expiry, abilities scoped. Refresh token: opaque 256-bit, stored hashed in `auth_session`, 30 days, rotated each use (reuse → revoke family).
 - Suspended accounts: login returns 403 ACCOUNT_SUSPENDED with end time.
 - Tokens stored on device in the app's user data folder; acceptable for a game (not banking); revisit for platform keychain later.
 

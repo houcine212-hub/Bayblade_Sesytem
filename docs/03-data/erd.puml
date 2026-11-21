@@ -1,5 +1,5 @@
 @startuml erd
-title ERD — MySQL 8.4 (InnoDB, utf8mb4) [P] — <<C>> confirmed entity, <<P>> proposed, <<post>> later
+title ERD v0.2 — MySQL 8.4 (InnoDB, utf8mb4) [P] — <<C>> confirmed entity, <<P>> proposed, <<post>> later
 hide circle
 skinparam linetype ortho
 ' Note: table is game_match because MATCH is a MySQL reserved word.
@@ -8,9 +8,9 @@ skinparam linetype ortho
 entity user_account <<C>> {
   * id : BIGINT PK
   --
-  * username : VARCHAR(32) UNIQUE
-  email : VARCHAR(254) UNIQUE NULL [TBD OQ-AC-01]
-  password_hash : VARCHAR(255) NULL
+  * email : VARCHAR(254) UNIQUE [C]
+  email_verified_at : DATETIME(3) NULL
+  * password_hash : VARCHAR(255) [C]
   * status : ENUM(ACTIVE,SUSPENDED,DELETION_PENDING,DELETED)
   * created_at : DATETIME(3)
   last_login_at : DATETIME(3)
@@ -28,7 +28,8 @@ entity auth_session <<P>> {
 entity player_profile <<C>> {
   * user_id : PK FK
   --
-  * display_name : VARCHAR(32) UNIQUE [A-09]
+  * display_name : VARCHAR(24) [C unique]
+  * display_name_normalized : VARCHAR(24) UNIQUE (lower-case)
   avatar_ref : VARCHAR(64)
   * updated_at : DATETIME(3)
 }
@@ -48,9 +49,16 @@ entity item_definition <<C>> {
   * id : BIGINT PK
   --
   * item_key : VARCHAR(64) UNIQUE
-  * category : VARCHAR(32) [TBD categories]
+  * slot : ENUM(RING,CORE,TIP,SPIRIT) [P]
+  * tier : TINYINT
   * display_name : VARCHAR(64)
-  * stats_json : JSON [TBD schema]
+  * contrib_atk : TINYINT
+  * contrib_def : TINYINT
+  * contrib_sta : TINYINT
+  * contrib_mag : TINYINT
+  designed_type : ENUM(ATTACK,DEFENSE,STAMINA,BALANCE) NULL
+  * properties_json : JSON (mass, lock_strength, mobility, friction, height, contact_profile, spin_direction)
+  skill_key : VARCHAR(64) NULL (SPIRIT only)
   * content_version : VARCHAR(16)
   * is_starter : BOOLEAN
   * is_enabled : BOOLEAN
@@ -72,7 +80,7 @@ entity loadout <<C>> {
 }
 entity loadout_slot <<P>> {
   * loadout_id : FK
-  * slot_type : VARCHAR(32) [TBD]
+  * slot_type : ENUM(RING,CORE,TIP,SPIRIT)
   --
   * inventory_item_id : FK
 }
@@ -108,6 +116,7 @@ entity game_match <<C>> {
   * server_instance_id : VARCHAR(64)
   * protocol_version : INT
   * content_version : VARCHAR(16)
+  * sim_seed : BIGINT UNSIGNED
   * client_build_min : VARCHAR(32)
   * created_at : DATETIME(3)
   started_at : DATETIME(3)
@@ -120,11 +129,24 @@ entity match_participant <<C>> {
   --
   * slot : TINYINT (1..5) [BR-001]
   side_id : TINYINT NULL [post: Team Battle]
-  * loadout_snapshot_json : JSON
+  * loadout_snapshot_json : JSON (parts, attributes, properties, skill)
+  * stat_atk : TINYINT
+  * stat_def : TINYINT
+  * stat_sta : TINYINT
+  * stat_mag : TINYINT
+  * energy : DECIMAL(5,2) (derived snapshot)
+  * primary_type : ENUM(ATTACK,DEFENSE,STAMINA,BALANCE)
+  secondary_type : ENUM(...) NULL
+  launch_presses : TINYINT NULL
+  launch_rps : DECIMAL(5,1) NULL
+  launch_flags : SET(REGULARITY,LATE_BATCH) NULL
   placement : TINYINT NULL
-  elimination_reason : VARCHAR(32) NULL
+  finish_type : ENUM(BURST,OVER,XTREME,SPIN,DISCONNECT) NULL
+  credited_to_user_id : FK NULL
   eliminated_at_ms : INT NULL
-  launch_summary_json : JSON NULL
+  final_spin_rps : DECIMAL(5,1) NULL
+  final_lock_integrity : DECIMAL(5,1) NULL
+  skill_uses : TINYINT
   * connection_outcome : ENUM(OK,DISCONNECTED,NO_SHOW)
 }
 entity match_event <<P>> {
@@ -134,6 +156,27 @@ entity match_event <<P>> {
   * t_ms : INT
   * type : VARCHAR(32)
   payload_json : JSON
+}
+entity match_server_instance <<P>> {
+  * instance_id : VARCHAR(64) PK
+  --
+  * host : VARCHAR(64)
+  * udp_port : SMALLINT
+  * protocol_version : INT
+  * build_id : VARCHAR(32)
+  * state : ENUM(IDLE,BUSY,DRAINING,OFFLINE)
+  current_match_id : FK NULL
+  * last_heartbeat_at : DATETIME(3)
+}
+entity match_server_command <<P>> {
+  * id : BIGINT PK
+  --
+  * instance_id : FK
+  * type : ENUM(ASSIGN_MATCH,TICKET_GRANT,TICKET_REVOKE,DRAIN)
+  * payload_json : JSON (ticket HASHES only)
+  * status : ENUM(PENDING,DELIVERED,ACKED,EXPIRED)
+  * created_at : DATETIME(3)
+  acked_at : DATETIME(3) NULL
 }
 entity competitive_record <<P>> {
   * user_id : PK FK
@@ -246,6 +289,8 @@ room |o--o{ game_match
 game_match ||--|{ match_participant
 user_account ||--o{ match_participant
 game_match ||--o{ match_event
+match_server_instance ||--o{ match_server_command
+match_server_instance |o--o| game_match : current
 user_account ||--|| competitive_record
 team ||--|{ team_membership
 user_account ||--o{ team_membership

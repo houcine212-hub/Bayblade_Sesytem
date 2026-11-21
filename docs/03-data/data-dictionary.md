@@ -1,6 +1,6 @@
 # Data Design: Dictionary, Relationships, Lifecycle, Integrity
 
-| Document ID | DOC-DATA-001 | Status | **[P] Proposed** — columns are provisional until domain rules are answered |
+| Document ID | DOC-DATA-001 | Version 0.2 | **[P] Proposed** — updated for parts, combat telemetry, Laravel internal channel |
 |---|---|---|---|
 
 Source diagram: `erd.puml`. Database: MySQL 8.4 LTS, InnoDB, `utf8mb4_0900_ai_ci`, all times UTC `DATETIME(3)` (ADR-004).
@@ -12,12 +12,14 @@ Source diagram: `erd.puml`. Database: MySQL 8.4 LTS, InnoDB, `utf8mb4_0900_ai_ci
 | auth_session | P | Refresh-token sessions per device | N:1 user_account | FR-003, SEC-004 |
 | player_profile | C | Public identity | 1:1 user_account | FR-010…012 |
 | role / user_role | P | Global roles (MODERATOR, ADMIN, ORGANIZER) — PLAYER is implicit | N:M | SEC-003, FR-122 |
-| item_definition | C | Catalogue of tops/parts + stats (mirrors versioned content files) | 1:N inventory_item | FR-020 |
+| item_definition | C | Catalogue of parts per slot (RING/CORE/TIP/SPIRIT) with attribute contributions and component properties (mirrors versioned content files) | 1:N inventory_item | FR-020, FR-195 |
 | inventory_item | C | Ownership instance | N:1 definition, user | FR-021, FR-023 |
 | loadout / loadout_slot | C / P | Equipped configuration | slot → owned inventory_item | FR-022 |
 | room / room_member | C | Pre-match gathering | N:1 host; members | FR-030…040 |
 | game_match | C | One battle (MATCH is a reserved word in MySQL) | N:1 room (nullable for future world challenges) | FR-050…071, FR-100 |
 | match_participant | C | Competitor in a match + outcome | composite PK (match_id,user_id) | FR-100, BR-001 |
+| match_server_instance | P | Registry of Match Server processes (heartbeat 1 Hz) | 1:N commands | ADR-012 §5 |
+| match_server_command | P | Outbox of commands delivered in heartbeat responses (stores **ticket hashes only**) | N:1 instance | SEC-006 |
 | match_event | P | **Selected summary events only** (eliminations, launches, disconnects) — never per-frame state | N:1 match | FR-100, I4 |
 | competitive_record | P | Aggregated record / rating | 1:1 user | FR-102, FR-103 |
 | team / team_membership / team_invitation | C / C / P | Social teams; membership history by `left_at` | | FR-110…115 |
@@ -40,6 +42,16 @@ Source diagram: `erd.puml`. Database: MySQL 8.4 LTS, InnoDB, `utf8mb4_0900_ai_ci
 | `room.active_code` | Generated column = `code` while not CLOSED else NULL, with UNIQUE index → codes unique among live rooms while allowing reuse later. |
 | `item_definition.stats_json` | JSON until stat schema is decided (OQ-GP-03); promote to columns when stable and queried. |
 | `user_account.email` | Nullable until registration method decided; personal data. |
+
+## 2b. Combat data rules (v0.2)
+| Rule | Detail |
+|---|---|
+| Attributes vs Energy | `stat_atk/def/sta/mag` are stored in **match snapshots** only; build attributes are recomputed from parts. `energy` is a **derived snapshot** column (for history/telemetry), never an input. |
+| Stamina vs spin | `stat_sta` (attribute) and `final_spin_rps` / `launch_rps` (battle variables) are different columns with different names; no column is named just `stamina` or `spin`. |
+| Transient only | `spin_rps`, `lock_integrity`, `skill_gauge`, steering inputs, per-contact data — Match Server memory; only final values persisted. |
+| Balance coefficients | Not in MySQL; versioned content files referenced by `content_version` (FR-240). |
+| Finish types | `finish_type` ENUM BURST/OVER/XTREME/SPIN (+DISCONNECT if that rule is chosen). |
+| Display name | Uniqueness on `display_name_normalized` (lower-case, trimmed) — BR-019. |
 
 ## 3. Integrity rules
 - FK constraints everywhere; `ON DELETE RESTRICT` by default (history must not silently disappear). Account deletion is a **pseudonymisation** process, not a cascade (see §5).
@@ -86,9 +98,13 @@ Indexes are revisited with real query plans after load tests.
 | Backend memory only | |
 | Match Server registry (instances, state, heartbeats) — rebuilt from re-registration | room/match rows (Backend restart-safe) |
 
-## 7. Item stats schema (example only — not approved)
+## 7. Part definition schema (example only — not approved content)
 ```json
-{ "_example": true, "item_key": "top_starter_a", "category": "TOP",
-  "stats": { "mass": 1.0, "attack": 0.5, "defense": 0.5, "stamina": 0.5 },
-  "abilities": [] }
+{ "_example": true, "item_key": "ring_t1_smash_a", "slot": "RING", "tier": 1,
+  "contrib": { "atk": 40, "def": 15, "sta": 5, "mag": 0 },
+  "designed_type": "ATTACK",
+  "properties": { "mass": 1.0, "contact_profile": "SMASH" } }
+{ "_example": true, "item_key": "spirit_t1_dash", "slot": "SPIRIT", "tier": 1,
+  "contrib": { "atk": 0, "def": 0, "sta": 0, "mag": 55 },
+  "properties": { "spin_direction": "RIGHT" }, "skill_key": "rail_dash" }
 ```

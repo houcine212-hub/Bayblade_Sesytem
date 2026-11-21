@@ -4,20 +4,19 @@ participant "Eliminated Client" as E
 participant "Room Spectator Client" as S
 participant "Match Server" as MS
 participant "Backend API" as B
-== Eliminated competitor becomes spectator (FR-058) ==
+== Eliminated competitor becomes spectator (FR-058, FR-222) ==
 MS -> MS : peerRole[E] = SPECTATOR
 MS -> E : S2C_RoleChanged {SPECTATOR}
-E -> E : switch UI to spectator camera
-E -> MS : C2S_LaunchInput / control input (stale or malicious)
-MS -> MS : drop: role != COMPETITOR; increment counter (FR-090)
-== Spectator joining (mid-match allowed? TBD OQ-GP-07) ==
+E -> E : switch to spectator camera; hide joystick/skill
+E -> MS : C2S_ControlInput / C2S_SkillActivate (stale or malicious)
+MS -> MS : drop: role != COMPETITOR; increment counter (FR-090, SEC-015)
+== Spectator joining mid-match (TBD OQ-GP-07) ==
 S -> B : POST /v1/matches/{matchId}/tickets {role: SPECTATOR}
 B -> B : check room membership, spectator capacity [TBD]
-B -> MS : TicketGrant {hash, userId, SPECTATOR, exp}
+B -> B : INSERT match_server_command TicketGrant
 B --> S : 200 {host, udpPort, ticket}
+MS -> B : heartbeat (<= 1 s later)
+B --> MS : {commands: [TicketGrant]}
 S -> MS : connect + C2S_Hello {ticket}
-MS --> S : S2C_Welcome {role: SPECTATOR, phase} + full state snapshot
-loop
-  MS -> S : S2C_Snapshot (optionally delayed, P)
-end
+MS --> S : S2C_Welcome {role: SPECTATOR} + full snapshot
 @enduml

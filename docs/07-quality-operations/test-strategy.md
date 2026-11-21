@@ -15,6 +15,14 @@
 | Security | Auth, authZ matrix, rate limits, port scan | Automated API tests, nmap | MySQL port closed externally |
 | Platform | Cross-platform matrix | Device lab | See below |
 
+## 1b. Combat balancing test levels (v0.2)
+| Level | What | Labels |
+|---|---|---|
+| Analytic model | Spreadsheet/script duel predictions (done) | [PRED] |
+| Headless bot simulation | Thousands of bot matches per build pair with randomised launch distributions and steering policies | [PRED] at scale |
+| Internal playtest | Humans, telemetry, surveys (feel, fairness, burst randomness) | [PLAY] |
+| Closed beta telemetry | Win rate per type pair, finish shares, match length, launch RPS per device | [PLAY] |
+
 ## 2. Determinism for tests
 Simulation accepts a seed and fixed tick; tests replay recorded launch inputs and assert outcomes (golden tests). Balance changes update golden files intentionally.
 
@@ -48,3 +56,18 @@ Every test case ID `TC-xxx` references requirement IDs; see `../08-planning/trac
 | TC-013 | FR-130/131 | Block & report flows; rate limit |
 | TC-014 | FR-024 | Edit loadout after match → history unchanged |
 | TC-015 | SEC-008/011 | Room-code brute force throttled |
+| TC-016 | FR-182/183 | Launch curve: 0→20.0, 5→50.0, 60→144.4, monotonic, never > 150 |
+| TC-017 | FR-181 | Key repeat, held key, presses < 83 ms apart, presses outside zone not counted |
+| TC-018 | FR-184/SEC-013 | Back-dated / future / late batches rejected; 300 ms RTT player loses no valid presses |
+| TC-019 | FR-191/192 | Energy recomputed from attributes; API rejects Energy as input |
+| TC-020 | FR-194 | Schema & UI lint: no ambiguous `stamina` field for current spin |
+| TC-021 | FR-202/203 | Classification golden tests (examples in CLS spec), threshold changes via config only |
+| TC-022 | FR-211/212 | Advantage S table (combat spec §3.1) reproduced to 3 decimals; w ≥ 0.15 for g up to 2.0 |
+| TC-023 | FR-221 | L=100 never bursts in one contact; critical burst only at L ≤ 50; seeded variance within ±10% |
+| TC-024 | FR-231/233 | Skill rejected for gauge/cooldown/limit/opening/spin; 4th use rejected |
+| TC-025 | FR-172/NFR-011 | Prediction: own-input visual response ≤ 100 ms at 150 ms RTT; correction < 100 ms |
+| TC-026 | SEC-015 | |u| > 1 clamped; > 60 inputs/s dropped then kicked |
+| TC-027 | FR-222 | Burst at tick T → all clients receive Eliminated(BURST) and role change; remaining fight continues |
+| TC-028 | NFR-045 | Same seed + recorded inputs → identical result (replay) |
+| TC-029 | API-23 | Backend build preview equals Match Server snapshot for golden builds (contract test) |
+| TC-030 | NFR-070..073 | Balance telemetry dashboards populated from bot matches |

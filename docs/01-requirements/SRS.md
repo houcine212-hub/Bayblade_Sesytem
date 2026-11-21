@@ -3,9 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | DOC-SRS-001 |
-| Version | 0.1 (draft for Gate G0 review) |
+| Version | 0.2 (gameplay & combat update, draft for Gate G0 review) |
 | Status | Requirements marked [C] are user-confirmed; [P]/[A]/[TBD] are not |
-| Related | `MVP-scope.md`, `assumptions-and-open-questions.md`, `glossary.md`, `../08-planning/traceability-matrix.md` |
+| Related | `MVP-scope.md`, `assumptions-and-open-questions.md`, `glossary.md`, `../08-planning/traceability-matrix.md`, `../10-game-design/` (GDD and combat specifications) |
+| Change log | v0.2: joystick, skill button, rapid-press launch, Burst Finish, attributes/Energy confirmed; email+password accounts, unique display names, first platforms confirmed; backend stack re-evaluated (ADR-012). |
 
 **Status column:** C = Confirmed, P = Proposed, A = Assumption-based, TBD = placeholder for an open rule.
 **Tier column:** Core = MVP-Core, Soc = MVP-Social, Post = Post-MVP, Excl = Excluded.
@@ -20,8 +21,8 @@ constraints, so that design, implementation and tests can be traced to user inte
 
 ### 1.2 System overview
 Four logical subsystems (see `../05-architecture/architecture.md`):
-**Game Client** (Godot), **Backend API**, **Match Server** (headless Godot, authoritative),
-**MySQL database**. External: app stores/distribution, e-mail provider [TBD], community channels.
+**Game Client** (Godot), **Backend API** (Laravel, proposed ADR-012), **Match Server** (headless Godot, authoritative real-time),
+**MySQL database**. External: app stores/distribution, e-mail provider (needed: e-mail accounts confirmed), community channels.
 
 ### 1.3 Definitions
 See `glossary.md`. Note the distinction **Team** (social group) vs **MatchSide** (in-match grouping) [P].
@@ -51,9 +52,9 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 | ID | Requirement | Status | Tier |
 |---|---|---|---|
 | FR-001 | One account works on all supported platforms, with the same profile, inventory, team, rank and history. | C | Core |
-| FR-002 | A guest can register an account. Registration method (e-mail, username, platform identity) is TBD (OQ-AC-01). | C need / TBD method | Core |
+| FR-002 | A guest registers with **e-mail and password**; e-mail verification required before ranked/social features [P]. Third-party authentication is postponed. | C | Core |
 | FR-003 | A player can log in and log out; the Backend issues a session (access + refresh token) [P mechanism]. | C need / P mechanism | Core |
-| FR-004 | Password/credential recovery. Policy TBD (OQ-AC-02). | TBD | Core (if passwords used) |
+| FR-004 | Password reset via e-mailed single-use link (expiry 60 min [P]). | C need / P policy | Core |
 | FR-005 | A player can request account deletion and personal-data export. | P (privacy, J6) | Core |
 | FR-006 | The Backend rejects login from client builds below the minimum supported version, telling the user to update. | P | Core |
 
@@ -61,13 +62,13 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 | ID | Requirement | Status | Tier |
 |---|---|---|---|
 | FR-010 | Each account has a player profile showing display name, team (if any), competitive record/rank, and recent matches. | C | Core |
-| FR-011 | A player can edit their own display name/avatar within validation rules (name uniqueness TBD). | P | Core |
+| FR-011 | Every player has a **unique in-game display name** (case-insensitive uniqueness [P]); editable within validation and rename-limit rules [P]. | C | Core |
 | FR-012 | A player can view other players' public profiles. | P | Core |
 
 ### 3.3 Items, inventory and loadout
 | ID | Requirement | Status | Tier |
 |---|---|---|---|
-| FR-020 | Top/part definitions and balance statistics are data-driven (versioned content data), not hard-coded in unrelated systems. | C (E3 separation) / P (format) | Core |
+| FR-020 | Top/part definitions and balance statistics are data-driven (versioned content data), not hard-coded in unrelated systems. Part slots RING/CORE/TIP/SPIRIT [P]. | C (E3 separation) / P (format) | Core |
 | FR-021 | Each player owns persistent inventory items referencing item definitions. | C | Core |
 | FR-022 | A player selects/equips a loadout (a top, possibly assembled from parts) to use in a match. | C | Core |
 | FR-023 | A new account receives at least one starter top. | A (A-04) | Core |
@@ -94,20 +95,20 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 |---|---|---|---|
 | FR-050 | On start, the Backend allocates an authoritative Match Server instance and issues each participant a short-lived match ticket. | P | Core |
 | FR-051 | Only ticket holders can connect to a match; tickets bind user, match and role (competitor/spectator). | P | Core |
-| FR-052 | A five-second period precedes/accompanies the launch. Exact meaning TBD (OQ-GP-01). | C (exists) / TBD | Core |
-| FR-053 | A designated launch button is pressed by the competitor; presses contribute to the top's spin rate. Input window, limits and formula TBD (OQ-GP-02). | C concept / TBD | Core |
-| FR-054 | The top's characteristics and abilities influence performance. | C | Core |
+| FR-052 | Before each battle a **5-second launch window** opens with a dedicated launch zone (see DOC-LAUNCH-001). A 1.5 s non-counted READY cue before it is proposed (OQ-LN-01). | C / P (cue) | Core |
+| FR-053 | Players **rapid-press** the launch zone; the number of **successful presses** determines initial rotation (reference **5 presses = 50 RPS**). Curve, caps and counting rules: FR-180–FR-185. | C | Core |
+| FR-054 | The top's characteristics and abilities influence performance (through attributes, component properties and skills during battle; launch RPS itself is input-only [P]). | C / P | Core |
 | FR-055 | The Match Server simulates the battle authoritatively; clients send inputs and render state. | C (O-7) / P (method) | Core |
-| FR-056 | **FFA:** a top that exits the arena eliminates its player. | C | Core |
+| FR-056 | **FFA:** a top that exits the arena eliminates its player (finish OVER / XTREME). | C | Core |
 | FR-057 | **FFA:** the last remaining top/player wins. | C | Core |
 | FR-058 | An eliminated player switches to spectating the rest of the battle. | C | Core |
 | FR-059 | All participants see understandable feedback for launch timing, spin state, collisions, elimination and results. | C (C3) | Core |
-| FR-060 | Additional elimination conditions (spin-out, burst). | TBD (G-02, OQ-GP-15) | Core |
-| FR-061 | In-battle player controls after launch. | TBD (G-01, OQ-GP-16) | Core |
+| FR-060 | **Burst Finish is the primary elimination mechanic**; Spin Finish (spin below stop threshold) also eliminates [P, CHG-04]. Details FR-220–FR-224. | C (burst) / P (spin) | Core |
+| FR-061 | In battle each player steers with a 360° analog joystick and activates skills with a Skill button (FR-170–FR-175, FR-230–FR-234). | C | Core |
 | FR-062 | Simultaneous/near-simultaneous ring-outs. | TBD (OQ-GP-04) | Core |
 | FR-063 | Competitor disconnect / app close during match. | TBD (OQ-GP-05) | Core |
 | FR-064 | Competitor reconnect during active match (proposal: grace period, see sequence SQ-08). | TBD rule / P mechanism | Core |
-| FR-065 | Competitor inactive / does not launch. | TBD (OQ-GP-06) | Core |
+| FR-065 | Competitor with zero presses is auto-launched at minimum 20 RPS [P]; idle (no input) during battle: rule TBD (OQ-GP-06). | P / TBD | Core |
 | FR-066 | Only one competitor left before battle begins (e.g. others left). | TBD (OQ-GP-17) | Core |
 | FR-067 | Draw / no valid winner. | TBD (OQ-GP-04) | Core |
 | FR-068 | Match Server interruption → match marked aborted; no competitive effect (proposed). | TBD rule / P default | Core |
@@ -171,8 +172,8 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 ### 3.12 Exploration (vision)
 | ID | Requirement | Status | Tier |
 |---|---|---|---|
-| FR-140 | Bounded first-person exploration area. | C (vision) | Post |
-| FR-141 | Chests containing parts/items. | C (vision) | Post |
+| FR-140 | Bounded first-person exploration area — **postponed beyond the Battle MVP**. | C | Post |
+| FR-141 | Chests containing parts/items — postponed. | C | Post |
 | FR-142 | Challenge another player in the world; on acceptance a battle starts (arena rises). | C (vision) | Post |
 
 ### 3.13 Community & voice
@@ -185,11 +186,86 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 ### 3.14 Client platforms & input
 | ID | Requirement | Status | Tier |
 |---|---|---|---|
-| FR-160 | Clients for Windows, Linux, macOS, Android, iOS from one Godot project. Release order TBD. | C families / TBD order | Core (subset per OQ-PL-02) |
+| FR-160 | Clients from one cross-platform Godot project. **Initial release: Windows, Android, Linux; macOS and iOS in later releases.** | C | Core (Win/Android/Linux) |
 | FR-161 | Mobile: touch controls, touch-friendly UI, safe-area handling. | C | Core |
 | FR-162 | Desktop: keyboard and mouse. | C | Core |
-| FR-163 | Gamepad support. | P (evaluate) | Post |
+| FR-163 | Game-controller support for joystick, skill and launch (confirmed by joystick requirement). | C | Core |
 | FR-164 | Graphics quality presets for device tiers. | P | Core |
+
+### 3.15 Battle controls (v0.2)
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-170 | Each competitor has a 360° **analog** directional joystick controlling direction and trajectory of their top during battle. | C | Core |
+| FR-171 | Joystick input works on touchscreen, keyboard/mouse (mouse-vector analog mode; keyboard 8-way with ramp) and game controllers. | C / P (mappings) | Core |
+| FR-172 | Steering is responsive (local prediction) and synchronised by the authoritative server. | C / P (method) | Core |
+| FR-173 | A Skill button is placed on the opposite side of the joystick. | C | Core |
+| FR-174 | Mirrored (left-handed) layout option. | P | Core |
+| FR-175 | Steering authority scales with mobility and spin; steering consumes spin. | P | Core |
+
+### 3.16 Launch (v0.2)
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-180 | A launch zone appears for the 5-second window; presses outside it do not count (touch/mouse). | C | Core |
+| FR-181 | A successful press is edge-triggered, released before the next, inside the window, ≥ 83.3 ms after the previous counted press (12 Hz cap), key repeat ignored. | P | Core |
+| FR-182 | Launch RPS = 20 + 130·(1 − e^(−n/19.06)) (passes 5 → 50 RPS); alternative linear model documented (CHG-01). | C anchor / P curve | Core |
+| FR-183 | Launch RPS range 20 (zero presses) to 144.4 (cap); asymptote 150. | P | Core |
+| FR-184 | The Match Server counts presses from timestamped batches and determines launch RPS; client counts are cosmetic. | C (server authority) / P | Core |
+| FR-185 | All competitors see every launch result (presses, RPS) before battle starts. | P | Core |
+
+### 3.17 Statistics & Energy (v0.2)
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-190 | Each Bey build has four primary attributes: Attack, Defense, Stamina, Magic (0–100). | C | Core |
+| FR-191 | Energy is derived from the four attributes and is not an independent attribute. | C | Core |
+| FR-192 | Energy = (ATK + DEF + STA + 0.8·MAG) / 3.8. | P (ADR-013) | Core |
+| FR-193 | RPS (launch and current spin) is a separate battle variable, not an attribute. | C | Core |
+| FR-194 | The Stamina attribute (decay resistance) is distinct from current spin (remaining rotation) in data, calculations and UI ("Stamina" vs "Spin"). | C | Core |
+| FR-195 | Component properties mass, lock strength, mobility, friction, height, contact profile, spin direction exist separately from attributes. | P (CHG-02) | Core |
+| FR-196 | Attributes are computed from equipped parts within a tier budget; shown on the build screen with Energy and type. | P | Core |
+
+### 3.18 Classification (v0.2)
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-200 | Primary types ATTACK, DEFENSE, STAMINA, BALANCE. | C (investigate) / P (definitions per DOC-CLS-001) | Core |
+| FR-201 | Builds may have a secondary type (hybrid) when shares are close. | P | Core |
+| FR-202 | Type computed from attribute distribution; subtype from component properties; designed part type shown for reference. | P | Core |
+| FR-203 | Classification thresholds are configurable content data. | P | Core |
+| FR-204 | Spin direction (RIGHT/LEFT/DUAL) is a separate badge; no MVP gameplay effect. | P | Core |
+| FR-205 | Subtypes SMASH, UPPER, ANCHOR, ABSORB, ENDURANCE, EVASIVE, ADAPTIVE. | P | Core |
+
+### 3.19 Combat interaction (v0.2)
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-210 | Every collision effect is computed from the characteristics of **both** Beys involved. | C | Core |
+| FR-211 | RPS influence depends on the relative Energy: strong at similar Energy, progressively weaker with larger gaps. | C | Core |
+| FR-212 | The transition is smooth and RPS influence never reaches zero (w ≥ 0.15). | C / P (value) | Core |
+| FR-213 | Collisions determine impact, knockback, stability (stagger), spin loss, lock damage (burst) and skill effectiveness per DOC-CMB-001. | C (list) / P (equations) | Core |
+| FR-214 | Type advantages emerge from attributes/properties; optional bounded type modifiers (±5%) disabled by default. | P | Core |
+| FR-215 | No absolute counter rule exists (any matchup can be overturned by RPS, Energy, steering or skills). | C | Core |
+
+### 3.20 Burst Finish & finishes (v0.2)
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-220 | A sufficiently powerful impact (cumulatively) separates components → BURST elimination. | C | Core |
+| FR-221 | Hybrid burst model: Lock Integrity gauge, spin-dependent threshold, critical burst only at L ≤ 50, bounded seeded variance. | P (ADR-014) | Core |
+| FR-222 | Burst/elimination determined and broadcast by the Match Server; eliminated player becomes spectator; remaining competitors continue; results recorded. | C | Core |
+| FR-223 | Finish types BURST, OVER, XTREME, SPIN recorded per elimination. | P | Core |
+| FR-224 | Burst gauge shown in 4 stages. | P | Core |
+
+### 3.21 Skills & Magic (v0.2)
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-230 | Beys have special skills related to their characteristics and classification (granted by SPIRIT part, type compatibility). | C / P | Core |
+| FR-231 | Skills have gauge cost, cooldown, activation conditions and per-match limits. | C (need) / P (values) | Core |
+| FR-232 | Magic influences skill gauge charge (×0.85–1.15), potency (×0.80–1.20) and skill resistance. | C (investigate) / P | Core |
+| FR-233 | Skills are bounded: no direct elimination, no stacking, ≤ +30% self-buff, max 3 uses per match. | C (not unlimited) / P | Core |
+| FR-234 | Skill activation validated by the Match Server. | P | Core |
+
+### 3.22 Balance data & telemetry (v0.2)
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-240 | All combat coefficients, curves, thresholds and part stats are versioned content data (`content_version`). | C | Core |
+| FR-241 | Match results include balancing telemetry: per-participant type, Energy, launch presses/RPS, finish type, skill uses. | P | Core |
 
 ---
 
@@ -210,6 +286,11 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 | BR-012 | Minimum competitors to start = 2. | A (A-01) |
 | BR-013 | Aborted matches (server failure) have no competitive effect. | P |
 | BR-014 | A client may only join a match server whose protocol version matches its own. | P |
+| BR-015 | Burst Finish is the primary elimination mechanic. | C |
+| BR-016 | Initial rotation is determined only by successful launch presses counted by the server. | C |
+| BR-017 | Energy is derived; never edited or stored as an input attribute. | C |
+| BR-018 | Skills are limited and cannot eliminate directly. | C (not unlimited) / P |
+| BR-019 | Each display name is unique. | C |
 
 ## 5. Non-functional requirements
 Provisional numeric targets are **examples to validate by benchmark**, not achieved capacity.
@@ -222,7 +303,9 @@ Provisional numeric targets are **examples to validate by benchmark**, not achie
 | NFR-003 | Resource use scales with active matches; idle capacity at low population stays small (e.g. a small warm pool). | C intent / P mechanism |
 | NFR-004 | Load tests at 10, 25, 50, 100 connected clients pass the criteria in `../07-quality-operations/load-test-plan.md`. | C |
 | NFR-005 | Concurrent-match test up to 20 simultaneous 5-competitor matches (theoretical scenario). | C |
-| NFR-006 | Match Server simulation tick: provisional 60 Hz; state snapshots to clients: provisional 20–30 Hz. | P (benchmark) |
+| NFR-006 | Match Server simulation tick: provisional 60 Hz; state snapshots to clients: provisional 30 Hz (joystick play). | P (benchmark) |
+| NFR-011 | Own-input-to-visual response for steering ≤ 100 ms on target devices (local prediction). | P |
+| NFR-012 | Control input upload 30 Hz with 3-input redundancy; ≤ 2 kbit/s per player. | P |
 | NFR-007 | Gameplay remains acceptable up to a provisional 150 ms RTT and 2% packet loss. | P (spike) |
 | NFR-008 | Downstream bandwidth per match client: provisional ≤ 64 kbit/s average. | P (estimate in protocol doc) |
 | NFR-009 | Time from host "Start" to all clients in pre-launch phase: provisional ≤ 5 s (p95). | P |
@@ -251,6 +334,15 @@ Provisional numeric targets are **examples to validate by benchmark**, not achie
 | NFR-042 | Documentation, ADRs and diagrams source-controlled and kept in sync with code. | C |
 | NFR-043 | Automated tests at unit, integration, contract, simulation and E2E levels. | C |
 | NFR-044 | Balance data externalised and versioned (content version). | C intent / P format |
+| NFR-045 | Combat simulation deterministic per tick given seed + inputs (replay tests). | P |
+
+### 5.4b Gameplay balance targets (tuning goals, not guarantees)
+| ID | Requirement | Status |
+|---|---|---|
+| NFR-070 | BURST ≥ 40% of eliminations across matches. | P |
+| NFR-071 | Each primary type 45–55% win rate in equal-Energy 1-v-1 samples; no build > 55% FFA win share. | P |
+| NFR-072 | Median match length 30–90 s; time limit to be decided. | P |
+| NFR-073 | Median launch RPS per input device type within 5%. | P |
 
 ### 5.5 Cross-platform
 | ID | Requirement | Status |
@@ -279,7 +371,9 @@ Provisional numeric targets are **examples to validate by benchmark**, not achie
 | SEC-010 | Audit log for privileged actions (role grants, organizer approval, moderation). | C (analyse) / P |
 | SEC-011 | Room codes resistant to enumeration (sufficient entropy + join rate limits). | P |
 | SEC-012 | Backend↔Match Server calls authenticated with a service credential over a private channel. | P |
-| SEC-013 | Launch-input anti-automation measures, depending on the final launch rule. | TBD |
+| SEC-013 | Launch anti-automation: 12 Hz cap, edge/release rule, server timestamp validation, regularity flags (no auto-penalty in MVP). | P |
+| SEC-015 | Control inputs clamped (|u| ≤ 1) and rate-limited (≤ 60/s); spectator inputs dropped. | P |
+| SEC-016 | Skill activation validated server-side (gauge, cooldown, limits, phase). | P |
 | SEC-014 | Match message flood protection (per-peer message rate caps). | P |
 
 ### 5.8 Operations
@@ -298,6 +392,7 @@ Provisional numeric targets are **examples to validate by benchmark**, not achie
 |---|---|---|
 | CON-01 | Game engine: Godot. Version: ADR-001 (proposed 4.7.x). | C engine / P version |
 | CON-02 | Persistent database: MySQL (re-evaluated in ADR-004). | C planned |
+| CON-07 | Backend stack chosen by objective comparison (ADR-012), not by familiarity alone. | C |
 | CON-03 | Initial hosting: single Linux VPS; Hostinger KVM is a candidate only. | C candidate |
 | CON-04 | Services logically separated to allow later split. | C |
 | CON-05 | Must support UDP if ENet is chosen. | C |
@@ -312,6 +407,10 @@ MVP-readiness criteria are in `../07-quality-operations/mvp-readiness.md`. Examp
 | FR-033 | Given a room with 5 competitors, when a 6th player joins as competitor, then the Backend returns `409 ROOM_FULL` and the room still lists 5 competitors. |
 | FR-051 | Given an expired, reused, or other-match ticket, the Match Server rejects the connection within 1 s and logs `TICKET_INVALID`. |
 | FR-056/057 | In a simulated 3-top match where tops A and B ring out at distinct ticks, C is recorded as winner, placements are C=1, B=2, A=3. |
+| FR-182 | 5 accepted presses → launch RPS 50.0 ± 0.1; 0 → 20.0; 60+ → 144.4. |
+| FR-211 | With E_A = E_B the RPS weight w = 0.60; with g = 0.30, w = 0.257; for any g, w ≥ 0.15. |
+| FR-221 | A Bey at L = 100 never bursts from a single contact; L ≤ 0 always bursts. |
+| FR-233 | A 4th skill activation in one match is rejected with `SKILL_LIMIT`. |
 | FR-058 | After elimination the client receives `RoleChanged(spectator)` and further gameplay inputs from that peer are dropped and counted. |
 | FR-070 | Reporting the same result twice yields exactly one persisted result (idempotency). |
 | FR-071 | A crafted client RPC claiming victory has no effect on the persisted result. |

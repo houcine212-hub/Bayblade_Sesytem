@@ -1,5 +1,5 @@
 # ADR-003: Backend language and framework
-- **Status:** Proposed — **user decision required (OQ-TO-01)** · **Date:** 2026-11-21
+- **Status:** **Superseded by ADR-012** (2026-11-21) — kept for history · **Date:** 2026-11-21
 ## Criteria
 Learnability for the user, hiring pool, MySQL support, WebSocket support, typing, testability, low memory on a small VPS.
 ## Options

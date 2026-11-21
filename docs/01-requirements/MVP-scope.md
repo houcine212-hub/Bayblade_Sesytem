@@ -1,6 +1,6 @@
 # MVP Scope (recommendation for approval)
 
-| Document ID | DOC-MVP-001 | Status | **[P] Proposed** — requires user approval at Gate G0 |
+| Document ID | DOC-MVP-001 | Status | v0.2 — battle-first focus, platforms & exploration deferral **confirmed**; remaining boundaries [P] |
 |---|---|---|---|
 
 ## 1. MVP definition
@@ -14,7 +14,7 @@ small social layer + operational readiness. It is delivered in three internal st
 | Hardening + 100-CCU load test | M4 | Public MVP |
 
 ## 2. In scope
-**MVP-Core:** FR-001–006, FR-010–012, FR-020–024, FR-030–040, FR-050–071 (open rules must be answered
+**MVP-Core:** FR-170–FR-241 (controls, launch, stats, classification, combat, burst, skills, balance data), FR-001–006, FR-010–012, FR-020–024, FR-030–040, FR-050–071 (open rules must be answered
 first), FR-080, FR-081, FR-090, FR-091 (once decided), FR-100, FR-101, FR-150 (optional), FR-160 (first
 platforms only), FR-161, FR-162, FR-164; all NFR/SEC/OPS marked Core.
 
@@ -28,7 +28,7 @@ Exploration (FR-140–142), Team Battle (FR-082), stakes (FR-083), tournaments (
 voice (FR-151/152), gamepad (FR-163), loot economy (FR-025), appeals tooling (FR-134), seasons.
 Real-money wagering (FR-084) is excluded permanently unless the user decides otherwise.
 
-## 4. Recommended first platforms [P]
+## 4. First platforms — **confirmed v0.2**: Windows, Android, Linux (macOS, iOS later)
 | Platform | MVP? | Reason |
 |---|---|---|
 | Windows | Yes | Largest desktop audience; simple distribution (direct download/itch.io/Steam TBD) |
@@ -37,11 +37,10 @@ Real-money wagering (FR-084) is excluded permanently unless the user decides oth
 | macOS | After MVP | Signing/notarization requires Apple developer account |
 | iOS | After MVP | Requires Mac + Xcode, paid account, App Store review |
 
-The architecture supports all five from day one (FR-160); only *release order* is staged. **Decision required (OQ-PL-02).**
+The architecture supports all five from day one (FR-160); only release order is staged (confirmed).
 
 ## 5. Minimum content [P]
-One arena, 3–4 starter tops (to test balance-data pipeline), one game mode (FFA, friendly).
+One arena (dash rail; Xtreme zone optional), ~8–12 parts per slot (RING/CORE/TIP/SPIRIT) giving at least one build of each primary type and two hybrids, 7 skills, FFA friendly mode. Starter set: one build per type.
 
 ## 6. Pre-conditions before implementation of M2
-Answers to G-01, G-02, G-03 (in-battle control, end conditions, launch semantics), and successful
-technical spikes S-1…S-4 (see roadmap).
+G-01…G-03 answered in v0.2. Remaining: approval of CHG-01…06 and the blocking OQs in the register; successful technical spikes S-1…S-5 (roadmap).

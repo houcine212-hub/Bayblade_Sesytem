@@ -20,7 +20,9 @@
 | Create room, room code, join by code, ready | MVP-Core | [C] |
 | ≤5 competitors per match | MVP-Core | [C] |
 | FFA, ring-out, last-top-wins | MVP-Core | [C] |
-| Launch mechanic (rules after G-03 answered) | MVP-Core | [C] concept |
+| Launch mechanic — 5 s rapid press | MVP-Core | [C] v0.2 |
+| 360° joystick steering + Skill button | MVP-Core | [C] v0.2 |
+| Attributes ATK/DEF/STA/MAG, derived Energy, types, opponent-relative combat, Burst Finish | MVP-Core | [C] v0.2 concepts / [P] formulas |
 | Server-authoritative match & result | MVP-Core | [C] |
 | Spectating (eliminated players + room spectators) | MVP-Core | [C] eliminated / [P] room spectators |
 | Match history | MVP-Core | [C] |
@@ -32,9 +34,9 @@
 | Basic teams (create, invite, leave, leader) | MVP-Social (recommended last item; can slip) | [P] |
 | Organizer application + admin approval | Post-MVP (data model ready in MVP) | [C] concept |
 | Tournaments | Post-MVP | [C] concept |
-| Exploration vertical slice | Post-MVP (milestone M5) | [P] — Brief asks for recommendation |
+| Exploration vertical slice | Post-MVP (milestone M5) | **[C] v0.2: postponed beyond Battle MVP** |
 | Team Battle mode | Post-MVP | [TBD] rules |
-| Loot/chests economy | Post-MVP | [TBD] |
+| Loot/chests economy | Post-MVP | [C] postponed |
 | Proximity voice chat | Post-MVP | [C] later |
 | Voice commands for tops | Post-MVP | [C] later |
 | Virtual-item stakes | Post-MVP, only after explicit approval | [C] |

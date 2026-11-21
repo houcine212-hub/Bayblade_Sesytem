@@ -5,7 +5,8 @@
 
 The public MVP may launch only when:
 1. All MVP-Core and MVP-Social requirements have passing acceptance tests (traceability matrix complete).
-2. All blocking gameplay questions (OQ-GP-01, 02, 04, 05, 06, 15, 16, 17, 18) are decided and implemented.
+2. All blocking gameplay questions (OQ-GP-04, 05, 06, 17, 18 and the v0.2 OQ-LN/ST/BU/CB/SK items marked B) are decided and implemented.
+2b. Balance telemetry within NFR-070…073 bands on closed-beta data (or deviations accepted by the owner).
 3. Load tests L-100 and M-20 pass the criteria in `load-test-plan.md` on the production-sized VPS.
 4. TC-008/TC-009 (server/backend failure) pass.
 5. External port scan shows only 443/tcp, the UDP match range, and restricted SSH.
