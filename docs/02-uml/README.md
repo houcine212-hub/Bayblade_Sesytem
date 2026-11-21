@@ -32,8 +32,14 @@ All diagrams are **PlantUML** sources (`.puml`). Labels: [C] confirmed, [P] prop
 - **JetBrains IDEs:** PlantUML Integration plugin.
 - Avoid pasting diagrams into public online renderers if they ever contain non-public information.
 
-## Validation status (v0.2)
-All 21 `.puml` files pass a static lint (start/end, unique diagram names, declared participants/endpoints, alt/loop/end, if/endif, notes, braces). **Not yet rendered by PlantUML itself** — see `../09-review/design-review-report.md` §2.
+## Validation status (v0.3, 2026-11-21)
+| Check | Tool | Result |
+|---|---|---|
+| **PlantUML syntax check** | `plantuml -checkonly` — PlantUML **1.2020.02** (Ubuntu package) + Graphviz | **21/21 files pass** |
+| **PlantUML rendering** | `plantuml -tsvg` (same version) | **21/21 render to SVG**; no embedded error text in any SVG; 4 diagrams inspected visually as PNG (state-bey-combat, SQ-05, combat-model-class, use-case) |
+| **Mermaid rendering** (`../08-planning/roadmap.md`) | `@mermaid-js/mermaid-cli` 11.x with headless Chromium | renders, no parse error |
+| Static lint (participants, endpoints, block balance) | custom script | 21/21 pass — this is a structural check only and is **not** a substitute for rendering |
+Caveat: PlantUML 1.2020.02 is older than current releases; syntax accepted by it is expected to be accepted by newer versions, but newer-only features are not used. Rendered images are not committed (sources are the truth); render locally with `plantuml -tsvg docs/**/*.puml`.
 
 ## Consistency rules
 State names, message names and endpoint paths in diagrams must match

@@ -19,6 +19,7 @@ When a question is answered, move it to §3 (Decision log) with date and source;
 | A-11 | Human sustained tapping ≈ 5–9 presses/s (sets launch curve expectations) | DOC-LAUNCH-001 | Spike S-5 measurements differ |
 | A-12 | One skill per Bey in MVP (granted by SPIRIT part) | DOC-SKILL-001 | User wants multiple skills |
 | A-13 | No persistent part wear between matches | DOC-BURST-001 | User wants durability economy |
+| A-14 | Steering skill varies between players with SD ≈ 15% of impact speed (analysis proxy) | DOC-BAL-001 §2 | Spike S-1/S-2 measures real steering variance |
 | A-08 | No web-browser client | ADR-007 transport | Web build becomes required |
 | A-09 | ~~Players are identified in-game by a unique display name~~ **Now confirmed (BR-019)** | FR-011 | — |
 | A-10 | Spectators do not count against the 5-competitor cap | BR-001 | — (strongly implied by Brief) |
@@ -30,7 +31,7 @@ When a question is answered, move it to §3 (Decision log) with date and source;
 | OQ-GP-01 | Meaning of the five-second period: countdown before presses? press window? delay after all enter? | ~~**B**~~ **ANSWERED v0.2: 5-second rapid-press launch window (see decision log)** | (a) 5 s press window then release; (b) 3 s countdown + 2 s window; (c) 5 s wait then single-timing press | FR-052, ST-MATCH |
 | OQ-GP-02 | Launch input: count presses? rhythm/timing? press limit? formula with top stats? | ~~**B**~~ **ANSWERED v0.2: press count → RPS (5 = 50); curve proposed CHG-01** | Press-count is the most macro/hardware-sensitive; timing-based is fairer across devices | FR-053, SEC-013 |
 | OQ-GP-03 | Top stats, part categories, abilities, physics model | H | Proposed data schema in data dictionary | FR-020, FR-025 |
-| OQ-GP-04 | Simultaneous ring-out; draw / no winner | H | (a) same tick = shared placement; (b) tie-break by remaining spin; (c) draw | FR-062, FR-067 |
+| OQ-GP-04 | Simultaneous ring-out; draw / no winner (official: draw **and restart**, O-2; proposal CHG-11: shared placement) | **B** | (a) same tick = shared placement; (b) tie-break by remaining spin; (c) draw | FR-062, FR-067 |
 | OQ-GP-05 | Disconnect rules | H | (a) top keeps spinning under simulation; (b) top removed = eliminated after grace | FR-063 |
 | OQ-GP-06 | AFK / no launch | H | (a) auto-launch at minimum spin; (b) eliminated before battle | FR-065 |
 | OQ-GP-07 | Spectator capacity; mid-match join | H | Proposed default: up to 10 spectators, join allowed any time | FR-037, FR-091 |
@@ -44,7 +45,7 @@ When a question is answered, move it to §3 (Decision log) with date and source;
 | OQ-GP-15 | Elimination by spin-out/burst? | ~~**B**~~ **ANSWERED v0.2: Burst Finish primary; Spin Finish proposed (CHG-04)** | Strongly affects physics model and match length | FR-060 |
 | OQ-GP-16 | Any in-battle control after launch? | ~~**B**~~ **ANSWERED v0.2: 360° joystick + skill button** | Affects prediction, input protocol, UI | FR-061 |
 | OQ-GP-17 | Only one competitor left before battle starts | H | (a) cancel match; (b) walkover win (no rank effect) | FR-066 |
-| OQ-GP-18 | Match time limit and what happens at time-out | **B** | Needed if no spin-out exists | FR-069 |
+| OQ-GP-18 | Match time limit and what happens at time-out | **B** | Proposal (G0 D-16): 120 s, then remaining Beys ranked by current spin (higher = better), ties shared. Longest measured pairing median 99 s | FR-069 |
 | OQ-GP-19 | Does launch aiming (position/angle/direction) exist? | H | | FR-053 |
 
 ### 2.1b Combat, launch, stats (OQ-LN / OQ-ST / OQ-BU / OQ-CB / OQ-SK) — v0.2
@@ -56,7 +57,7 @@ When a question is answered, move it to §3 (Decision log) with date and source;
 | OQ-LN-04 | Accept saturating curve (CHG-01) or literal linear ×10? | **B** | Curve | FR-182 |
 | OQ-LN-05 | Can the joystick aim the launch direction during the window? | H | Proposal: yes, initial heading only | FR-170 |
 | OQ-ST-01 | Accept component properties beside the four attributes (CHG-02)? | **B** | Yes | FR-195 |
-| OQ-ST-02 | Magic's indirect effect through Energy: accept weight 0.8, use 0.5, or exclude from the Energy advantage term? | **B** | Accept 0.8 | FR-192 |
+| OQ-ST-02 | ~~Magic's indirect effect through Energy: accept weight 0.8…~~ **superseded by OQ-ST-06 (v0.3)** | — | — | FR-192 |
 | OQ-ST-03 | Keep the name "Magic" in UI, or "Spirit"? | L | User choice | FR-190 |
 | OQ-ST-04 | Opposite-spin (left vs right) gameplay effects — MVP or later? | L | Later (secondary evidence only) | FR-204 |
 | OQ-ST-05 | Part tier budget values and progression | H | Needs economy decision (still TBD) | FR-196 |
@@ -71,6 +72,14 @@ When a question is answered, move it to §3 (Decision log) with date and source;
 | OQ-SK-01 | Accept skill limits (cooldown 10 s, 3 uses, opening lockout 3 s)? | H | Yes as tuning start | FR-231 |
 | OQ-SK-02 | Skill catalogue (7 skills) for MVP? | H | Review list in skills spec | FR-230 |
 | OQ-SK-03 | Mismatched SPIRIT part allowed at 50% potency, or forbidden? | L | 50% | FR-230 |
+| OQ-ST-06 | Energy weight of Magic: 1.0 (plain mean, v0.3 recommendation) or 0.8 (v0.2)? | **B** | 1.0 (CHG-07) | FR-192 |
+| OQ-ST-07 | Headline type rule: A computed only / B TIP decides (official-style) / C TIP headline + computed profile? | **B** | C (CHG-10) | FR-202 |
+| OQ-CB-06 | Numeric meaning of "Burst is primary": keep ≥ 40% uniform mix (a), adopt (b) ≥ 30% overall + most frequent in Attack/Balance pairings on telemetry, or (c) add a stronger burst mechanic later? | **B** | (b) (CHG-09) | NFR-070 |
+| OQ-CB-07 | Adopt revised acceptance criteria AC-1…AC-7 as the exit gate of spike S-1? | **B** | Yes (CHG-12) | ADR-013 |
+| OQ-CB-08 | Outcome-level RPS requirement only for Energy gaps g ≤ 0.20; Energy-band matchmaking for ranked play? | H | Yes / yes for ranked | FR-211 |
+| OQ-CB-09 | Adopt v0.3 coefficient set + recoil as S-1 starting point? | **B** | Yes (CHG-08) | DOC-CMB-001 §4.8 |
+| OQ-LN-06 | Launch press cap: keep 12/s until S-5 data, or choose 10/s / 8/s now? | H | Keep 12/s, decide after S-5 | FR-181 |
+| OQ-LN-07 | Zero presses: 20 RPS auto-launch, or 0 RPS = immediate Spin Finish? | H | 20 RPS | FR-183 |
 
 ### 2.2 Accounts & social (OQ-AC)
 | ID | Question | Pri | Notes |

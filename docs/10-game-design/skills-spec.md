@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|---|---|
 
 ## 1. Research basis
-Charge-then-unleash special attacks: Hasbro app Avatar attacks (R-18, official); skills chosen per Bey in EVOBATTLE (R-17, official); gauges in XONE (R-16, official); Xtreme Dash acceleration (R-13, official). Magic itself is an original attribute.
+**Verified official precedent:** BEYBLADE X XONE (FURYU) — "Active Gauge … increases over time" and "Active Move — A command that uses the Active Gauge to perform an Attack or Counter"; "Xtreme Gauge — increases through attacks and counters" (O-5). X Dash acceleration (O-1). **Search-index only:** Hasbro app Avatar attacks (R-18), EVOBATTLE skills (R-17). Magic itself and every number below are original [P].
 
 ## 2. Magic options
 | Option | Verdict |

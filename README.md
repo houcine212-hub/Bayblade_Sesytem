@@ -1,6 +1,6 @@
 # Multiplayer Spinning-Top Battle Game — Design Package
 
-> **Current phase: DESIGN (Milestone M0), package v0.2.** This repository contains **documentation only**:
+> **Current phase: DESIGN (Milestone M0), package v0.3 — awaiting Gate G0 decisions (`docs/09-review/G0-decision-sheet.md`).** This repository contains **documentation only**:
 > no game code, scenes, scripts, migrations or infrastructure. Implementation starts only after the
 > owner approves the design at **Gate G0** (`docs/09-review/design-review-report.md`).
 
@@ -22,7 +22,7 @@ The initial deployment is planned for **~100 concurrent connected players at pea
 | `docs/06-security/` | threat model, auth & permissions, moderation, secrets & backups |
 | `docs/07-quality-operations/` | test strategy, load-test plan, operations, MVP readiness |
 | `docs/08-planning/` | roadmap + dependency map, traceability matrix, risk register |
-| `docs/09-review/` | design review report and approval gate |
+| `docs/09-review/` | design review report and **G0 decision sheet** |
 | `docs/10-game-design/` | **GDD**, statistics, classification, combat interaction, launch, burst, skills, controls specs; balancing report; research references; change proposals |
 
 ## Status labels
@@ -35,7 +35,7 @@ Only [C] items are binding. See `docs/01-requirements/assumptions-and-open-quest
 | Godot; desktop + mobile; Windows/Android/Linux first, macOS/iOS later | Godot 4.7.x, GDScript, one project | Launch curve vs literal ×10 (CHG-01) |
 | Max 5 competitors; 100 = peak CCU target | ENet/UDP; 1 match per process; local prediction | Component properties (CHG-02) |
 | 360° joystick + Skill button; 5 s rapid-press launch (5 presses = 50 RPS) | Backend PHP + Laravel 13 + Reverb (ADR-012) | Magic scope & Energy weight (CHG-03, OQ-ST-02) |
-| ATK/DEF/STA/MAG; Energy derived; RPS separate | Energy formula, advantage S (ADR-013) | Elimination set (CHG-04) |
+| ATK/DEF/STA/MAG; Energy derived; RPS separate | Energy = plain mean (CHG-07), advantage S, v0.3 coefficients as spike start (ADR-013) | Burst-primary metric (CHG-09) |
 | Burst Finish primary elimination; ring-out; last top wins | Hybrid burst model (ADR-014) | Time limit / tie rules |
 | E-mail + password; unique display names | Skills catalogue & limits | Skill limits & catalogue |
 | MySQL private; server-authoritative combat | Rooms in Backend + Reverb push | Backend stack approval (ADR-012) |

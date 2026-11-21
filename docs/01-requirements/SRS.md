@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | DOC-SRS-001 |
-| Version | 0.2 (gameplay & combat update, draft for Gate G0 review) |
+| Version | 0.3 (correction pass, draft for Gate G0 review) |
 | Status | Requirements marked [C] are user-confirmed; [P]/[A]/[TBD] are not |
 | Related | `MVP-scope.md`, `assumptions-and-open-questions.md`, `glossary.md`, `../08-planning/traceability-matrix.md`, `../10-game-design/` (GDD and combat specifications) |
-| Change log | v0.2: joystick, skill button, rapid-press launch, Burst Finish, attributes/Energy confirmed; email+password accounts, unique display names, first platforms confirmed; backend stack re-evaluated (ADR-012). |
+| Change log | v0.3: official sources verified; Energy recommendation, combat coefficients, burst targets, launch boundaries and acceptance criteria corrected (CHG-07…12). v0.2: joystick, skill button, rapid-press launch, Burst Finish, attributes/Energy confirmed; email+password accounts, unique display names, first platforms confirmed; backend stack re-evaluated (ADR-012). |
 
 **Status column:** C = Confirmed, P = Proposed, A = Assumption-based, TBD = placeholder for an open rule.
 **Tier column:** Core = MVP-Core, Soc = MVP-Social, Post = Post-MVP, Excl = Excluded.
@@ -206,9 +206,9 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 | ID | Requirement | Status | Tier |
 |---|---|---|---|
 | FR-180 | A launch zone appears for the 5-second window; presses outside it do not count (touch/mouse). | C | Core |
-| FR-181 | A successful press is edge-triggered, released before the next, inside the window, ≥ 83.3 ms after the previous counted press (12 Hz cap), key repeat ignored. | P | Core |
-| FR-182 | Launch RPS = 20 + 130·(1 − e^(−n/19.06)) (passes 5 → 50 RPS); alternative linear model documented (CHG-01). | C anchor / P curve | Core |
-| FR-183 | Launch RPS range 20 (zero presses) to 144.4 (cap); asymptote 150. | P | Core |
+| FR-181 | A successful press is edge-triggered, released before the next, inside the half-open window [W0, W0+5000 ms), ≥ 83.3 ms after the previous counted press, at most 60 counted presses, key repeat ignored. | P | Core |
+| FR-182 | Launch RPS = 20 + 130·(1 − e^(−n/19.0575)) (passes 5 → 50.000 RPS); alternative linear model documented (CHG-01). | C anchor / P curve | Core |
+| FR-183 | Launch RPS range 20.00 (zero presses) to 144.42 (60 presses); asymptote 150 never reached. | P | Core |
 | FR-184 | The Match Server counts presses from timestamped batches and determines launch RPS; client counts are cosmetic. | C (server authority) / P | Core |
 | FR-185 | All competitors see every launch result (presses, RPS) before battle starts. | P | Core |
 
@@ -217,7 +217,7 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 |---|---|---|---|
 | FR-190 | Each Bey build has four primary attributes: Attack, Defense, Stamina, Magic (0–100). | C | Core |
 | FR-191 | Energy is derived from the four attributes and is not an independent attribute. | C | Core |
-| FR-192 | Energy = (ATK + DEF + STA + 0.8·MAG) / 3.8. | P (ADR-013) | Core |
+| FR-192 | Energy = (ATK + DEF + STA + MAG) / 4 (v0.3 proposal, CHG-07); documented alternative (ATK + DEF + STA + 0.8·MAG) / 3.8. | P (ADR-013) | Core |
 | FR-193 | RPS (launch and current spin) is a separate battle variable, not an attribute. | C | Core |
 | FR-194 | The Stamina attribute (decay resistance) is distinct from current spin (remaining rotation) in data, calculations and UI ("Stamina" vs "Spin"). | C | Core |
 | FR-195 | Component properties mass, lock strength, mobility, friction, height, contact profile, spin direction exist separately from attributes. | P (CHG-02) | Core |
@@ -228,7 +228,7 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 |---|---|---|---|
 | FR-200 | Primary types ATTACK, DEFENSE, STAMINA, BALANCE. | C (investigate) / P (definitions per DOC-CLS-001) | Core |
 | FR-201 | Builds may have a secondary type (hybrid) when shares are close. | P | Core |
-| FR-202 | Type computed from attribute distribution; subtype from component properties; designed part type shown for reference. | P | Core |
+| FR-202 | Headline type per CHG-10 (proposal: TIP part's designed type, as in official Beyblade X where the Bit decides the type) with a computed profile (hybrid/subtype) from attributes and properties; alternative: computed type only. | P | Core |
 | FR-203 | Classification thresholds are configurable content data. | P | Core |
 | FR-204 | Spin direction (RIGHT/LEFT/DUAL) is a separate badge; no MVP gameplay effect. | P | Core |
 | FR-205 | Subtypes SMASH, UPPER, ANCHOR, ABSORB, ENDURANCE, EVASIVE, ADAPTIVE. | P | Core |
@@ -241,15 +241,15 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 | FR-212 | The transition is smooth and RPS influence never reaches zero (w ≥ 0.15). | C / P (value) | Core |
 | FR-213 | Collisions determine impact, knockback, stability (stagger), spin loss, lock damage (burst) and skill effectiveness per DOC-CMB-001. | C (list) / P (equations) | Core |
 | FR-214 | Type advantages emerge from attributes/properties; optional bounded type modifiers (±5%) disabled by default. | P | Core |
-| FR-215 | No absolute counter rule exists (any matchup can be overturned by RPS, Energy, steering or skills). | C | Core |
+| FR-215 | No absolute counter rule exists (any matchup can be overturned by RPS, Energy, steering or skills). Measurable target: favoured matchups 55–80% (ADR-013 AC-2; current candidate 83–90% — open). | C / P (target) | Core |
 
 ### 3.20 Burst Finish & finishes (v0.2)
 | ID | Requirement | Status | Tier |
 |---|---|---|---|
 | FR-220 | A sufficiently powerful impact (cumulatively) separates components → BURST elimination. | C | Core |
-| FR-221 | Hybrid burst model: Lock Integrity gauge, spin-dependent threshold, critical burst only at L ≤ 50, bounded seeded variance. | P (ADR-014) | Core |
+| FR-221 | Hybrid burst model (original design; official sources define only that parts separate): Lock Integrity gauge, spin-dependent threshold, critical burst only at L ≤ 50, bounded seeded variance. | P (ADR-014) | Core |
 | FR-222 | Burst/elimination determined and broadcast by the Match Server; eliminated player becomes spectator; remaining competitors continue; results recorded. | C | Core |
-| FR-223 | Finish types BURST, OVER, XTREME, SPIN recorded per elimination. | P | Core |
+| FR-223 | Finish types recorded per elimination: BURST (primary, C), OVER (secondary, C), SPIN (secondary, required, P), XTREME (optional, P). | C / P | Core |
 | FR-224 | Burst gauge shown in 4 stages. | P | Core |
 
 ### 3.21 Skills & Magic (v0.2)
@@ -339,8 +339,8 @@ Provisional numeric targets are **examples to validate by benchmark**, not achie
 ### 5.4b Gameplay balance targets (tuning goals, not guarantees)
 | ID | Requirement | Status |
 |---|---|---|
-| NFR-070 | BURST ≥ 40% of eliminations across matches. | P |
-| NFR-071 | Each primary type 45–55% win rate in equal-Energy 1-v-1 samples; no build > 55% FFA win share. | P |
+| NFR-070 | BURST ≥ 40% of eliminations across matches — **conflict**: measured 35.0% in a uniform matchup mix; decision CHG-09 (proposal: ≥ 30% overall and most frequent finish in Attack/Balance pairings, on real telemetry). | P |
+| NFR-071 | ADR-013 AC-1 (each type 45–55% vs other types) and AC-2 (favoured matchups 55–80%); no build > 55% FFA win share. Current candidate fails AC-1/AC-2 (DOC-BAL-001 §5.3). | P |
 | NFR-072 | Median match length 30–90 s; time limit to be decided. | P |
 | NFR-073 | Median launch RPS per input device type within 5%. | P |
 

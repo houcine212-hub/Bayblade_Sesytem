@@ -1,57 +1,78 @@
 # Burst Finish & Elimination Specification
 
-| Document ID | DOC-BURST-001 | Version | 0.2 | Status | Burst = primary elimination [C]; model [P] (ADR-014) |
+| Document ID | DOC-BURST-001 | Version | 0.3 | Status | Burst = primary elimination **[C]**; Lock Integrity model and all numbers **[P]** (ADR-014) |
 |---|---|---|---|---|---|---|---|
 
-## 1. Research basis
-Repeated clicking impacts lead to a burst (R-08, official); burst rates vary by top (R-09, official); a strong launch can engage burst protection (R-10, official); burst resistance comes from lock/spring parts and tooth wear (R-11, secondary); the official game XONE shows a staged gauge leading to burst (R-16, official). Official finish types: Spin, Over, Burst, Xtreme (R-05).
-
-## 2. Model options
-| Option | Pros | Cons | Fit |
-|---|---|---|---|
-| Deterministic single-impact threshold | Predictable | Ignores cumulative clicking; one-shot bursts feel unfair | Partial |
-| Component-specific durability (cumulative) | Matches "click over and over" | Purely deterministic → mirrors are identical | Good |
-| Pure probability per hit | Captures "rates vary" | Feels random; hurts competitive fairness | Poor |
-| **Hybrid: cumulative Lock Integrity + capped single-hit critical + bounded seeded variance** | Faithful + fair + readable | More parameters | **Recommended** |
-
-## 3. Recommended hybrid model
-Each Bey starts the match with `L = 100` (Lock Integrity, "burst gauge").
-```
-Threshold      T_j  = T0 · lock_strength_j · (1 + β · ω_j / 150)            T0 = 0.95, β = 0.35   (strong spin protects, R-10)
-Burst load     B_ij = N_ij · Pb(prof_i, prof_j) · A(θ) · K_burst_skill
-Angle factor   A(θ) = 1 + 0.5 · sin(θ_up)   θ_up = upward contact angle (hits from below)
-Damage         D    = c_b · max(0, B_ij − T_j) · (1 + ε),  ε ∈ [−0.10, +0.10]  (server RNG, seeded per match)   c_b = 6 (start value)
-L_j ← L_j − D
-BURST when  L_j ≤ 0
-   OR  (B_ij ≥ 2.5·T_j  AND  L_j ≤ 50)       "critical burst" only after the lock is already weakened
-```
-- Relative velocity enters through `v_n` in N; RPS through S and T; Energy through S; Defense through R; attack through I; configuration through lock, profile, mass, height.
-- No burst from impacts below the threshold → light contacts never burst.
-- A Bey at full lock **cannot be one-shot** (fairness).
-- Persistent part wear across matches: **not in MVP** (would create repair economy; OQ-BU-02).
-
-### 3.1 Burst gauge UI stages (inspired by R-16)
-| L | Stage | UI |
+## 1. Official Burst mechanics (verified, DOC-RES-001 §2)
+| # | Official fact | Quote / source |
 |---|---|---|
-| 100–76 | SECURE | green |
-| 75–51 | LOOSENING | yellow |
-| 50–26 | CRITICAL (critical bursts possible) | orange, pulsing |
-| 25–1 | DANGER | red |
-Whether opponents see each other's stage: OQ-BU-03 (proposal: yes).
+| OB-1 | Definition | Burst Finish "occurs when the parts of the opponent's Bey detach and separate before your Bey. (such as the blade, ratchet, or bit)" — Regulation 6th ed. (O-2) |
+| OB-2 | Timing | "The moment a Bey's parts detach and separate." First finish in time wins. (O-2) |
+| OB-3 | Points | Burst Finish = 2 points (Over 2, Xtreme 3, Spin 1; first to 4). (O-2, O-4) |
+| OB-4 | Burst resistance depends on parts | "Dash performance and burst resistance are depending on the type of bit." (O-1) |
+| OB-5 | Strong launch protects | Cho-Z "Burst Stopper that activates upon a strong shoot to prevent bursting". (O-3) |
+| OB-6 | Character of bursts | Burst Finish added "thrilling, unpredictable battles". (O-3) |
+| OB-7 | Opposite-spin burst tactic | "low-speed burst … to burst an opponent's Beyblade with the opposite spin". (O-3) |
+| OB-8 | Staged burst state in an official game | XONE "Burst Gauge … changes in stages according to the Bey's condition". (O-5) |
+| OB-9 | Simultaneous finishes | "considered a draw, and the battle will be restarted". (O-2) |
 
-## 4. All finish types [P — CHG-04]
-| Finish | Condition (server) | Inspiration | Eliminates? |
+**Not official:** any numeric threshold, damage accumulation, durability value, or probability. The spring/teeth wear explanation is secondary (fan sources, R-11). The v0.2 claim that Takara Tomy describes tops "clicking together over and over" before bursting was **not found** on the cited page and has been removed (DOC-RES-001 §5).
+
+## 2. Our proposed model — "Lock Integrity" (original game design) [P]
+### 2.1 Options compared
+| Option | Official fit | Fairness | Verdict |
 |---|---|---|---|
-| **BURST** (primary) | L ≤ 0 or critical burst | R-05, R-08 | Yes |
-| **OVER** | Top fully crosses arena boundary or settles in an over pocket for ≥ 0.5 s | R-05 (Over Finish); v0.1 ring-out rule | Yes |
-| **XTREME** | Over via the special Xtreme zone (if arena has one) | R-05 | Yes (score bonus only) |
-| **SPIN** | `spin_rps < 8` | R-05 | Yes |
-Design target (NFR-070): BURST ≥ 40% of eliminations across all matches; tuned via `c_b`, `T0`, `β`.
+| Single-impact threshold | OB-1 (parts separate on a hit) | predictable; one-shots feel unfair | partial |
+| Cumulative durability | not stated officially; plausible from wear (secondary R-11) and OB-8's staged gauge | readable | good |
+| Pure probability per hit | OB-6 ("unpredictable") | hurts competitive fairness | rejected |
+| **Hybrid: cumulative Lock Integrity + critical burst after weakening + bounded seeded variance** | OB-1, OB-4 (lock from parts), OB-5 (spin-dependent threshold), OB-6 (bounded variance), OB-8 (stages) | readable, no one-shots at full lock | **recommended** |
 
-## 5. Elimination flow (authoritative)
-1. Detection in the server tick → elimination record `{userId, finishType, tick, creditedTo?}` (credit: opponent who dealt the last lock damage/knockback within 3 s).
-2. Same-tick eliminations share a placement (R-06 analogue; OQ-GP-04 proposal).
-3. `S2C_Eliminated` (reliable) to all; the burst visual (parts separating) is client-side presentation of that event.
-4. Eliminated peer → SPECTATOR role (`S2C_RoleChanged`); inputs ignored.
-5. Remaining competitors continue; when ≤ 1 remain → ENDED; result with finish types sent to Backend (SQ-07).
+### 2.2 Equations (proposal)
+Each Bey starts with `L = 100`.
+```
+Threshold      T_j = T0 · lock_strength_j · (1 + β · ω_j / 150)                    (OB-5 analogue: faster spin → harder to burst)
+Burst load     B_ij = N_ij · Pb(prof_i, prof_j) · A(θ) · K_burst_skill
+Angle factor   A(θ) = 1 + 0.5 · sin(θ_up)
+Damage         D = c_b · max(0, B_ij − T_j) · (1 + ε),   ε ~ U[−0.10, +0.10], server RNG seeded per match
+L_j ← L_j − D
+BURST  if  L_j ≤ 0   or   (B_ij ≥ 2.5 · T_j  and  L_j ≤ 50)
+```
+| Coefficient | v0.2 set | v0.3 candidate | Effect (measured, DOC-BAL-001) |
+|---|---|---|---|
+| T0 | 0.95 | **0.20** | low base threshold … |
+| β | 0.35 | **2.0** | … but strongly spin-dependent: at 140 RPS T = 0.57·lock, at 20 RPS T = 0.25·lock |
+| c_b | 6 | **3** | slower accumulation |
+| Burst share (uniform matchup mix) | 14.8% | **34.9%** | |
+`lock_strength` comes mostly from CORE and TIP parts (official OB-4: burst resistance depends on the bit).
+
+### 2.3 Burst gauge UI (inspired by OB-8)
+| L | Stage |
+|---|---|
+| 100–76 | SECURE |
+| 75–51 | LOOSENING |
+| 50–26 | CRITICAL (critical bursts possible) |
+| 25–1 | DANGER |
+Opponent visibility of stages: OQ-BU-03 (proposal: visible).
+
+## 3. Primary vs secondary elimination
+### 3.1 Primary — BURST [C]
+Burst Finish is the **primary elimination mechanic** (BR-015): the featured finish (UI, effects, event feed, highest emphasis in skills and parts design). **Open measurement question:** in the analysis model with a uniform matchup mix, Burst is 34.9% of eliminations and SPIN is the most frequent (46.2%); Burst dominates in pairings with an Attack- or Balance-type Bey (56–72%) and almost never occurs in Defense-vs-Defense/Stamina pairings (0–3%). See CHG-09 for the decision on what "primary" must mean numerically.
+
+### 3.2 Secondary eliminations
+| Finish | Condition (server) | Official basis | Status | Can it be switched off? |
+|---|---|---|---|---|
+| **OVER** (ring-out) | Bey fully leaves the arena or settles in an over pocket ≥ 0.5 s and cannot return | Over Finish (O-2) | **[C]** — Brief §E1: "When a player's spinning top exits the arena, that player is eliminated." | Only by changing a confirmed decision |
+| **SPIN** | `spin_rps < 8` (game stop threshold) | Spin Finish: spin "becomes zero" (O-2) | **[P] required** — a stopped top cannot stay in the match; without SPIN a match could never end without a time limit | No (structural); the threshold value is tunable |
+| **XTREME** | Over via a dedicated Xtreme zone | Xtreme Finish (O-2) | **[P] optional**, arena-dependent (OQ-CB-03) | Yes — arena without Xtreme zone |
+| **DISCONNECT** | Grace period expired (if that rule is chosen) | none | **[TBD]** OQ-GP-05 | Yes |
+| **TIME LIMIT** | Not an elimination; ends the match (sudden-death/placement rule TBD) | none | **[TBD]** OQ-GP-18 | Yes |
+
+### 3.3 Same-tick eliminations
+Official rule: draw and **restart** (OB-9). Online FFA proposal: eliminated competitors share the placement, no restart (OQ-GP-04) — a deliberate deviation needing approval.
+
+## 4. Elimination flow (authoritative)
+1. Detection in the server tick → `{userId, finishType, tick, creditedTo?}` (credit: opponent who dealt the last lock damage/knockback within 3 s).
+2. `S2C_Eliminated` (reliable) to all; burst visual = client presentation of that event.
+3. Eliminated peer → SPECTATOR (`S2C_RoleChanged`); inputs ignored.
+4. Remaining competitors continue; ≤ 1 remaining → ENDED; result with finish types to Backend (SQ-07).
 Sequence: `../02-uml/sequence/SQ-05-elimination.puml`.

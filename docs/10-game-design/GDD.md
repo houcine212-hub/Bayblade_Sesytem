@@ -1,6 +1,6 @@
 # Game Design Document (GDD) — Battle MVP
 
-| Document ID | DOC-GDD-001 | Version | 0.2 | Status | Draft for Gate G0 |
+| Document ID | DOC-GDD-001 | Version | 0.3 | Status | Draft for Gate G0 — combat numbers are spike starting values, not balanced |
 |---|---|---|---|---|---|---|---|
 
 ## 1. Pitch
@@ -26,7 +26,7 @@ Build (parts → attributes, type, Energy) → room by code → ready → **laun
 | Skills & Magic | `skills-spec.md` |
 | Controls (joystick, skill button) | `input-controls-spec.md` |
 | Balancing predictions | `balancing-simulation-report.md` |
-| Research sources | `research-references.md` |
+| Research sources (official vs ours, §3) | `research-references.md` |
 | Changes to confirmed decisions | `design-change-proposals.md` |
 
 ## 5. Match flow (FFA, ≤ 5 competitors)

@@ -6,7 +6,7 @@
 ## 1. Confirmed
 - Every player has a **360° analog directional joystick** during battle to steer direction and trajectory; works on touch, keyboard/mouse and controllers; responsive and correctly synchronised.
 - A **Skill button** on the **opposite side** of the joystick activates the Bey's special ability.
-- Precedent: official digital control of tops exists (Hasbro digital-control tops & app: spin direction/speed, speed boost, attack mode — R-18). Physical tops are not steerable; steering is a deliberate game-design addition.
+- Precedent: the official licensed game BEYBLADE X XONE gives players in-battle commands ("Active Move … to perform an Attack or Counter", O-5, verified); Hasbro digital-control tops (R-18, search index only). Physical tops are not steerable; 360° steering is a deliberate game-design addition [C].
 
 ## 2. Control vector
 `u = (x, y)`, `|u| ≤ 1`, arena plane, camera-relative. Sent quantised as two int8 values (−127…127) → 254² directions/magnitudes.

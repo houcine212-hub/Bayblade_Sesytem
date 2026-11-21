@@ -62,7 +62,7 @@ Every test case ID `TC-xxx` references requirement IDs; see `../08-planning/trac
 | TC-019 | FR-191/192 | Energy recomputed from attributes; API rejects Energy as input |
 | TC-020 | FR-194 | Schema & UI lint: no ambiguous `stamina` field for current spin |
 | TC-021 | FR-202/203 | Classification golden tests (examples in CLS spec), threshold changes via config only |
-| TC-022 | FR-211/212 | Advantage S table (combat spec §3.1) reproduced to 3 decimals; w ≥ 0.15 for g up to 2.0 |
+| TC-022 | FR-211/212 | Advantage S table (DOC-BAL-001 §4, S1–S9) reproduced to 4 decimals; w ≥ 0.15 for all g in (−2, 2) |
 | TC-023 | FR-221 | L=100 never bursts in one contact; critical burst only at L ≤ 50; seeded variance within ±10% |
 | TC-024 | FR-231/233 | Skill rejected for gauge/cooldown/limit/opening/spin; 4th use rejected |
 | TC-025 | FR-172/NFR-011 | Prediction: own-input visual response ≤ 100 ms at 150 ms RTT; correction < 100 ms |
@@ -71,3 +71,5 @@ Every test case ID `TC-xxx` references requirement IDs; see `../08-planning/trac
 | TC-028 | NFR-045 | Same seed + recorded inputs → identical result (replay) |
 | TC-029 | API-23 | Backend build preview equals Match Server snapshot for golden builds (contract test) |
 | TC-030 | NFR-070..073 | Balance telemetry dashboards populated from bot matches |
+| TC-031 | ADR-013 AC-1…AC-7 | Bot-simulation report (≥ 4,000 duels per pairing, fixed seeds) evaluated against every acceptance criterion |
+| TC-032 | FR-181 | 61st press and press at exactly W0+5000 ms rejected; 60 presses → 144.42 RPS |

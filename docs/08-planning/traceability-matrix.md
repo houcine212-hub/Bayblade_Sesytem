@@ -1,6 +1,6 @@
-# Requirements Traceability Matrix (v0.2)
+# Requirements Traceability Matrix (v0.3)
 
-| Document ID | DOC-RTM-001 | Status | [P] — generated from SRS v0.2; keep in sync |
+| Document ID | DOC-RTM-001 | Status | [P] — generated from SRS v0.3; keep in sync |
 |---|---|---|---|
 
 Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protocol (`04-interfaces`) · Test (`07-quality-operations`).
@@ -125,11 +125,11 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | FR-212 | C / P (value) | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
 | FR-213 | C (list) / P (equations) | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
 | FR-214 | P | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
-| FR-215 | C | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
+| FR-215 | C / P (target) | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
 | FR-220 | C | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
 | FR-221 | P (ADR-014) | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
 | FR-222 | C | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
-| FR-223 | P | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
+| FR-223 | C / P | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
 | FR-224 | P | UC-10, UC-11 | SQ-05, SQ-06, state-bey-combat | match_participant.finish_type, final_lock_integrity, game_match.sim_seed | S2C_Eliminated, INT-02 | TC-023, TC-027 |
 | FR-230 | C / P | UC-25 | SQ-10, state-bey-combat | item_definition.skill_key, match_participant.skill_uses | C2S_SkillActivate, S2C_SkillEvent | TC-024 |
 | FR-231 | C (need) / P (values) | UC-25 | SQ-10, state-bey-combat | item_definition.skill_key, match_participant.skill_uses | C2S_SkillActivate, S2C_SkillEvent | TC-024 |

@@ -1,65 +1,51 @@
-# Design Review Report — Gate G0 (package v0.2)
+# Design Review Report — Gate G0 (package v0.3)
 
-| Document ID | DOC-REV-001 | Version | 0.2 | Status | **Gate G0 NOT approved** — awaiting user decisions |
+| Document ID | DOC-REV-001 | Version | 0.3 (final correction pass, 2026-11-21) | Status | **Gate G0 NOT approved** — every item below that is not marked [C] is a proposal awaiting the user's decision |
 |---|---|---|---|---|---|---|---|
 
-## 1. Acceptance checklist (Brief §O + Master Update)
-| # | Criterion | Status | Where |
+Decision sheet for approval: `G0-decision-sheet.md`.
+
+## 1. Correction pass results (user request of 2026-11-21)
+| # | Request | What was done | Where |
 |---|---|---|---|
-| 1 | Confirmed requirements in SRS with stable IDs | ✔ (206 IDs) | SRS v0.2 |
-| 2 | Uncertain rules in register | ✔ (+21 v0.2 questions) | register §2.1b |
-| 3 | Five-competitor max consistent | ✔ | BR-001, ERD slot CHECK, SQ-02/03, TC-001 |
-| 4 | 100 CCU = peak planning target | ✔ | NFR-001 |
-| 5 | Client / Backend / Match Server / MySQL separated; general backend vs real-time server distinguished | ✔ | architecture §1, ADR-012 §1 |
-| 6 | No client → MySQL; DB private | ✔ | SEC-001, deployment |
-| 7 | Server-authoritative combat (launch, steering, collisions, burst, skills) | ✔ | threat model §4b |
-| 8 | Joystick, skill button, rapid-press launch specified | ✔ | controls & launch specs |
-| 9 | Attributes / Energy / RPS / Stamina-vs-spin distinguished in DB, calc and UI | ✔ | stats spec §1, data dictionary §2b |
-| 10 | Classification with hybrids/subtypes and matrix | ✔ | classification spec |
-| 11 | Opponent-relative interaction model + RPS–Energy model with numeric scenarios | ✔ | combat spec §3–5 |
-| 12 | Burst Finish primary, model options compared | ✔ | burst spec, ADR-014 |
-| 13 | Research with source URLs, official vs secondary | ✔ with limitation (official pages seen via search extracts) | research references |
-| 14 | Changes to confirmed decisions documented before applying | ✔ | design-change-proposals CHG-01…06 |
-| 15 | Theoretical simulations; predictions vs findings vs recommendations labelled | ✔ | balancing report |
-| 16 | Backend stack objectively compared, ADR | ✔ | ADR-012 |
-| 17 | Diagrams/DB/API/requirements consistent; traceability | ✔ (static checks) | traceability v0.2 |
-| 18 | Diagram syntax validated | ◐ static lint only — renderer not available (§2) | below |
-| 19 | No implementation code, scenes or scripts; PR not merged; nothing pushed to main | ✔ | — |
+| 1 | Recalculate RPS/Energy scenarios; define g and r; fix ADR-013 contradiction; actual numbers | g, r, w, S defined normatively; S1–S9 recalculated to 4 decimals (values unchanged, labels corrected); spec-consistent Monte Carlo model replaced the deterministic one; seven contradictions (C1–C7) documented with measured numbers; ADR-013 rewritten with measurable criteria AC-1…AC-7 | DOC-BAL-001 §1–6, DOC-CMB-001 §2–3, ADR-013 |
+| 2 | Official vs original; verify Takara Tomy references | Official pages downloaded and read directly (Start Dash Guide, Regulation 6th ed., History, Hasbro Parents Guide, FURYU XONE). Corrections: official type is **determined by the Bit**; the "click together" quote was **not on** the cited page (removed); simultaneous finishes = draw + restart; opposite-spin effects are official; 3-player battles official | DOC-RES-001 §1–5, DOC-CLS-001 §1–2 |
+| 3 | Review Energy formula and 0.8 weight | 0.8 had no derivation; equal-budget tests at weights 0–1.0: moving Magic into physical attributes wins 78.9–91.5%; recommendation changed to plain mean (CHG-07) | DOC-STAT-001 §4.5 |
+| 4 | Launch zero/max/fairness/anti-cheat | 0 presses → 20.00 RPS (wins 0.1–3.5%); max 60 presses (half-open window + explicit cap); max 144.42 RPS; device-fairness and anti-cheat limitations with measured macro advantage (68.6–93.3%); cap options measured | DOC-LAUNCH-001 §4–7, ADR-015 |
+| 5 | Official Burst vs Lock Integrity; primary vs secondary | Burst spec split into official facts (§1) and our model (§2); BURST primary [C]; OVER secondary [C]; SPIN secondary-required [P]; XTREME optional [P]; Burst share measured 35.0% → decision CHG-09 | DOC-BURST-001, ADR-014 |
+| 6 | Review Laravel 13 + Reverb + Godot | Facts verified on laravel.com (13.x) and docs.godotengine.org/en/4.7; corrections (Sanctum tokens never expire by default → custom refresh; Echo is JavaScript → custom Godot client; Reverb scaling uses Redis; secondary "database driver" claim removed); comparison robust under three weightings; 10 technical risks | ADR-012 §7 |
+| 7 | Render and validate UML | **Rendered**: 21/21 PlantUML files pass `-checkonly` and render to SVG (PlantUML 1.2020.02 + Graphviz); Mermaid roadmap renders (mermaid-cli 11.x); 4 diagrams inspected visually. Static lint reported separately | `../02-uml/README.md` |
+| 8 | Update review report, keep proposals marked | This report, decision sheet, CHG-07…12, register v0.3 | — |
 
 ## 2. Validation results
 | Check | Result |
 |---|---|
-| PlantUML static lint (21 files) | **21/21 pass** — start/end markers, unique diagram names, all sequence participants declared, all class/ERD/component relation endpoints declared, alt/loop/end, if/endif, while, repeat, notes, braces. The linter was confirmed to flag deliberately broken input. |
-| Fixes made by review | use-case stereotypes moved after aliases (`as UC20 <<post>>`); lost-message arrows changed to `->x`; one-line class bodies made multi-line; enums multi-line; member stereotypes replaced by bracket notes. |
-| PlantUML render | **Not done.** Two attempts to download the PlantUML renderer into the scratch area were blocked by this session's permission policy. **Action R-1:** render once locally (`java -jar plantuml.jar -checkonly docs/**/*.puml`) or allow the download, then fix any reported error. |
-| Mermaid (roadmap) | Node IDs checked manually; not rendered (GitHub renders it on the PR). |
-| Cross-references | All relative document references resolve. |
-| Traceability | 206 requirement IDs; 0 unmapped. |
-| Godot references vs 4.7.x | Latest stable 4.7.2 confirmed (T-01); 4.7.2 multiplayer fix noted (T-02). `InputEvent.is_echo()`, `ENetMultiplayerPeer`, DTLS on `ENetConnection` and the dedicated-server export are cited from the stable docs structure — **re-verify against the 4.7 class reference and migration guide** (R-2). |
-| Laravel references | Reverb event-loop/`nofile` limits from official docs index (T-04); Laravel 13 release date from a secondary source (T-05) — verify. |
-| Official Beyblade sources | Hosts unreachable from this environment; facts taken from search extracts are marked "Verify" in research references (R-3). |
+| PlantUML syntax check (`-checkonly`) | **21/21 pass** (PlantUML 1.2020.02) |
+| PlantUML render to SVG | **21/21 rendered**, no error text in output; visual inspection of 4 renders |
+| Mermaid render | 1/1 rendered (mermaid-cli 11.x, headless Chromium) |
+| Static lint | 21/21 pass (structural only; not counted as rendering) |
+| Cross-references | all relative document references resolve |
+| Traceability | 206 requirement IDs mapped, 0 unmapped |
+| Official Beyblade facts | verified directly in 5 official documents (DOC-RES-001 §1.1); remaining INDEX/SEC items labelled |
+| Godot 4.7 API names | verified in the 4.7 documentation (DOC-RES-001 T-03) |
+| Laravel 13 facts | verified in the 13.x documentation (T-04, T-05, T-08…T-10) |
+| Combat model vs acceptance criteria | **not met**: AC-1, AC-2, AC-4, AC-7 fail; AC-5, AC-6 pass; AC-3 depends on CHG-09 (DOC-BAL-001 §5.3) |
 
-## 3. Remaining items
+## 3. What this means for Gate G0
+The **architecture, requirements, data, interfaces and official-source research** are ready for approval. The **combat numbers are not balanced** and must not be approved as final; the proposal is to approve the *equations and the starting coefficient set* as the input to spike S-1, with AC-1…AC-7 as that spike's exit criteria. This is why the decision sheet separates "approve structure" from "approve values".
+
+## 4. Remaining items (not blocking G0 if accepted as spike work)
 | ID | Item |
 |---|---|
-| R-1 | Render all PlantUML once; fix errors. |
-| R-2 | Re-verify Godot 4.7 API names used in specs. |
-| R-3 | Open the official Takara Tomy / Hasbro / FURYU pages and confirm the R-xx facts marked Verify. |
-| R-4 | Spikes S-1…S-6 after approval (no implementation before). |
+| R-1 | ~~Render PlantUML~~ done in v0.3 |
+| R-2 | ~~Re-verify Godot API names~~ done in v0.3 |
+| R-3 | Confirm that Regulation **Vol.11** (latest, image-based PDF) did not change finish rules from the 6th edition |
+| R-4 | Spikes S-1…S-6 after approval (no implementation before) |
+| R-5 | Combat acceptance criteria AC-1, AC-2, AC-4, AC-7 (spike S-1) |
+| R-6 | Real skill model to evaluate Magic (AC-7) |
 
-## 4. Decisions required from the user (v0.2)
-**Blocking:**
-1. CHG-01 launch curve (recommended) vs literal ×10 linear — OQ-LN-04.
-2. OQ-LN-01 1.5 s READY cue before the 5 s window.
-3. CHG-02 component properties beside the four attributes — OQ-ST-01.
-4. CHG-03 / OQ-ST-02 Magic scope and its Energy weight (0.8).
-5. CHG-04 / OQ-CB-05 elimination set: BURST primary + OVER + SPIN (+ XTREME).
-6. ADR-013 advantage model & starting coefficients — OQ-CB-01.
-7. ADR-014 hybrid burst model — OQ-BU-01.
-8. ADR-012 backend: PHP + Laravel 13 + Reverb (supersedes ADR-003) and CHG-06 heartbeat-pull channel.
-9. OQ-GP-18 time limit & sudden death; OQ-GP-04 tie rule (same-tick shared placement proposed).
+## 5. Decisions required
+See `G0-decision-sheet.md` (D-01 … D-16).
 
-**Needed before building the feature:** skills catalogue & limits (OQ-SK-01/02), burst stage visibility (OQ-BU-03), arena Xtreme zone/dash rail (OQ-CB-03), accessibility launch (OQ-LN-02), remaining H items.
-
-## 5. Approval statement (to be completed by user)
-> I approve design package v0.2 [with changes: …] and authorise Milestone M1 (technical spikes only). — Name, date
+## 6. Approval statement (to be completed by the user)
+> I approve design package v0.3 with the decisions recorded in the G0 decision sheet [with changes: …] and authorise Milestone M1 (technical spikes only). — Name, date
