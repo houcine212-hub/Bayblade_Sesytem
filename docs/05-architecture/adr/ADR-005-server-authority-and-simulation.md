@@ -1,0 +1,15 @@
+# ADR-005: Server authority & battle simulation model
+- **Status:** Proposed — depends on OQ-GP-15/16 · **Date:** 2026-11-21
+## Context
+Official results must come from a trusted server (O-7). Tops collide, lose spin, and ring out. Mobile clients have variable latency. Physics fidelity is not specified (G-04).
+## Options
+| Option | Description | Pros | Cons |
+|---|---|---|---|
+| A. Server-authoritative, **custom simplified top model** (planar motion in bowl + spin decay + collision impulses), fixed tick | Small deterministic-ish code under our control | Tunable "feel"; cheap CPU; data-driven parameters; easy to unit-test | Must design the model; less "realistic" |
+| B. Server-authoritative, Godot 3D physics (RigidBody3D) | Engine handles collisions | Fast to start | Spinning bodies are hard to tune; CPU cost × 20 processes; non-determinism makes tests harder |
+| C. Client-authoritative / P2P host | No server cost | Violates O-7; cheatable | **Rejected** |
+| D. Deterministic lockstep | Low bandwidth | Requires bit-exact determinism across ARM/x86 float — impractical with Godot | Rejected |
+## Decision (proposed)
+**A** — server simulates at 60 Hz; clients interpolate snapshots; no client prediction unless in-battle control is confirmed. Spike S-1 compares A vs B for feel and CPU before final acceptance.
+## Revisit when
+S-1 shows B is clearly better, or OQ-GP-16 confirms responsive in-battle control (add local prediction + reconciliation).

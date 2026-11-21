@@ -1,0 +1,28 @@
+@startuml state-match
+title State Machine: Match (authority: Match Server; mirrored status in Backend) [P]
+[*] --> ALLOCATING : Backend creates match
+ALLOCATING --> WAITING_FOR_PLAYERS : AssignAck
+ALLOCATING --> ABORTED : assign failed / timeout
+WAITING_FOR_PLAYERS --> PRE_LAUNCH : all competitors connected\nor join timeout + no-show rule [TBD]
+WAITING_FOR_PLAYERS --> CANCELLED : < 2 competitors present [TBD OQ-GP-17]
+PRE_LAUNCH --> BATTLE : 5 s period elapsed [semantics TBD OQ-GP-01]
+state BATTLE {
+  [*] --> RUNNING
+  RUNNING --> RUNNING : tick / elimination (BR-002)
+}
+BATTLE --> ENDED : remaining <= 1 (BR-003)\nor timeout [TBD OQ-GP-18]
+ENDED --> COMPLETED : result accepted by Backend
+ENDED --> DISPUTED : result rejected by validation
+PRE_LAUNCH --> ABORTED : server failure
+BATTLE --> ABORTED : server failure (BR-013)
+WAITING_FOR_PLAYERS --> ABORTED : server failure
+COMPLETED --> [*]
+CANCELLED --> [*]
+ABORTED --> [*]
+DISPUTED --> [*] : resolved by admin
+note right of BATTLE
+  Per-competitor sub-state:
+  CONNECTED -> DISCONNECTED (grace) -> CONNECTED
+  ACTIVE -> ELIMINATED(reason) -> spectating
+end note
+@enduml

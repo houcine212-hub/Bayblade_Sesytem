@@ -1,0 +1,318 @@
+# Software Requirements Specification (SRS)
+
+| Field | Value |
+|---|---|
+| Document ID | DOC-SRS-001 |
+| Version | 0.1 (draft for Gate G0 review) |
+| Status | Requirements marked [C] are user-confirmed; [P]/[A]/[TBD] are not |
+| Related | `MVP-scope.md`, `assumptions-and-open-questions.md`, `glossary.md`, `../08-planning/traceability-matrix.md` |
+
+**Status column:** C = Confirmed, P = Proposed, A = Assumption-based, TBD = placeholder for an open rule.
+**Tier column:** Core = MVP-Core, Soc = MVP-Social, Post = Post-MVP, Excl = Excluded.
+
+---
+
+## 1. Introduction
+
+### 1.1 Purpose
+Defines what the system must do (functional), how well (non-functional), under which rules and
+constraints, so that design, implementation and tests can be traced to user intent.
+
+### 1.2 System overview
+Four logical subsystems (see `../05-architecture/architecture.md`):
+**Game Client** (Godot), **Backend API**, **Match Server** (headless Godot, authoritative),
+**MySQL database**. External: app stores/distribution, e-mail provider [TBD], community channels.
+
+### 1.3 Definitions
+See `glossary.md`. Note the distinction **Team** (social group) vs **MatchSide** (in-match grouping) [P].
+
+---
+
+## 2. Roles (actors)
+
+| Role ID | Role | Scope | Status |
+|---|---|---|---|
+| ROLE-GUEST | Unauthenticated user | Can register/log in only | P |
+| ROLE-PLAYER | Registered player | Default role for every account | C |
+| ROLE-TEAM-LEADER | Leader of a specific Team | Scoped to that team | C (concept) |
+| ROLE-ORGANIZER | Approved tournament organizer | Global, granted by Admin | C (concept) |
+| ROLE-MODERATOR | Handles reports, applies sanctions | Global | C (concept), names TBD |
+| ROLE-ADMIN | Owner/admin; approves organizers, grants roles | Global | C |
+| ROLE-SPECTATOR | In-room/in-match participation mode (not an account role) | Per match | C (concept) |
+| SYS-MATCH | Match Server service identity | Trusted service | P |
+
+Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission matrix proposal: `../06-security/auth-and-permissions.md`.
+
+---
+
+## 3. Functional requirements
+
+### 3.1 Accounts & identity
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-001 | One account works on all supported platforms, with the same profile, inventory, team, rank and history. | C | Core |
+| FR-002 | A guest can register an account. Registration method (e-mail, username, platform identity) is TBD (OQ-AC-01). | C need / TBD method | Core |
+| FR-003 | A player can log in and log out; the Backend issues a session (access + refresh token) [P mechanism]. | C need / P mechanism | Core |
+| FR-004 | Password/credential recovery. Policy TBD (OQ-AC-02). | TBD | Core (if passwords used) |
+| FR-005 | A player can request account deletion and personal-data export. | P (privacy, J6) | Core |
+| FR-006 | The Backend rejects login from client builds below the minimum supported version, telling the user to update. | P | Core |
+
+### 3.2 Profile
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-010 | Each account has a player profile showing display name, team (if any), competitive record/rank, and recent matches. | C | Core |
+| FR-011 | A player can edit their own display name/avatar within validation rules (name uniqueness TBD). | P | Core |
+| FR-012 | A player can view other players' public profiles. | P | Core |
+
+### 3.3 Items, inventory and loadout
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-020 | Top/part definitions and balance statistics are data-driven (versioned content data), not hard-coded in unrelated systems. | C (E3 separation) / P (format) | Core |
+| FR-021 | Each player owns persistent inventory items referencing item definitions. | C | Core |
+| FR-022 | A player selects/equips a loadout (a top, possibly assembled from parts) to use in a match. | C | Core |
+| FR-023 | A new account receives at least one starter top. | A (A-04) | Core |
+| FR-024 | The loadout used in a match is snapshotted at match start so later edits do not alter history. | P | Core |
+| FR-025 | Part categories, stats, rarity, duplication, trading, crafting, purchase rules. | TBD (OQ-GP-03, OQ-GP-11) | Post |
+
+### 3.4 Rooms
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-030 | A player can create a room and becomes its host. | C (create) / A (host, A-02) | Core |
+| FR-031 | The system generates a shareable room code for each room. | C | Core |
+| FR-032 | A player can join a room by entering its code. | C | Core |
+| FR-033 | A room admits **at most 5 competitors**; a 6th competitor join is rejected by the Backend. | C | Core |
+| FR-034 | A match may start with fewer than 5 competitors; the minimum is 2. | C (<5) / A (min 2, A-01) | Core |
+| FR-035 | Competitors mark ready/unready before the battle starts. | C | Core |
+| FR-036 | The host starts the match when all competitors are ready. | A (A-02) | Core |
+| FR-037 | A room member may join as a spectator (not counted toward the 5). Capacity TBD (OQ-GP-07). | C concept / TBD capacity | Core |
+| FR-038 | A member can leave a room; host leaving → transfer or close is TBD (OQ-GP-13). | P / TBD | Core |
+| FR-039 | Room visibility (public/private/invite), code lifetime, persistence after match. | TBD (OQ-GP-08, OQ-GP-14) | Core |
+| FR-040 | A player selects their loadout while in the room before readying. | P | Core |
+
+### 3.5 Match lifecycle & battle
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-050 | On start, the Backend allocates an authoritative Match Server instance and issues each participant a short-lived match ticket. | P | Core |
+| FR-051 | Only ticket holders can connect to a match; tickets bind user, match and role (competitor/spectator). | P | Core |
+| FR-052 | A five-second period precedes/accompanies the launch. Exact meaning TBD (OQ-GP-01). | C (exists) / TBD | Core |
+| FR-053 | A designated launch button is pressed by the competitor; presses contribute to the top's spin rate. Input window, limits and formula TBD (OQ-GP-02). | C concept / TBD | Core |
+| FR-054 | The top's characteristics and abilities influence performance. | C | Core |
+| FR-055 | The Match Server simulates the battle authoritatively; clients send inputs and render state. | C (O-7) / P (method) | Core |
+| FR-056 | **FFA:** a top that exits the arena eliminates its player. | C | Core |
+| FR-057 | **FFA:** the last remaining top/player wins. | C | Core |
+| FR-058 | An eliminated player switches to spectating the rest of the battle. | C | Core |
+| FR-059 | All participants see understandable feedback for launch timing, spin state, collisions, elimination and results. | C (C3) | Core |
+| FR-060 | Additional elimination conditions (spin-out, burst). | TBD (G-02, OQ-GP-15) | Core |
+| FR-061 | In-battle player controls after launch. | TBD (G-01, OQ-GP-16) | Core |
+| FR-062 | Simultaneous/near-simultaneous ring-outs. | TBD (OQ-GP-04) | Core |
+| FR-063 | Competitor disconnect / app close during match. | TBD (OQ-GP-05) | Core |
+| FR-064 | Competitor reconnect during active match (proposal: grace period, see sequence SQ-08). | TBD rule / P mechanism | Core |
+| FR-065 | Competitor inactive / does not launch. | TBD (OQ-GP-06) | Core |
+| FR-066 | Only one competitor left before battle begins (e.g. others left). | TBD (OQ-GP-17) | Core |
+| FR-067 | Draw / no valid winner. | TBD (OQ-GP-04) | Core |
+| FR-068 | Match Server interruption → match marked aborted; no competitive effect (proposed). | TBD rule / P default | Core |
+| FR-069 | Match time limit. | TBD (OQ-GP-18) | Core |
+| FR-070 | The Match Server reports the official result to the Backend; the Backend persists it once (idempotent). | P | Core |
+| FR-071 | Clients can never submit or alter official results. | C | Core |
+
+### 3.6 Match modes
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-080 | Free-for-All mode. | C | Core |
+| FR-081 | Friendly (no-stake) match; all MVP matches are friendly. | C concept / A (A-03) | Core |
+| FR-082 | Team Battle mode (team sizes, assignment, friendly fire, elimination, victory). | TBD | Post |
+| FR-083 | Virtual-item stake mode — only after explicit user approval of rules. | C (gate) | Post |
+| FR-084 | Real-money wagering is not supported. | C | Excl |
+
+### 3.7 Spectating
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-090 | Spectators receive match state but cannot submit competitor inputs (enforced server-side). | C concept / P enforcement | Core |
+| FR-091 | Mid-match spectator join. | TBD (OQ-GP-07) | Core |
+
+### 3.8 Match history, records and ranks
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-100 | Completed matches are persisted with participants, loadout snapshots, placements and end reason. | C | Core |
+| FR-101 | A player can view their match history and other players' public history. | C | Core |
+| FR-102 | The system maintains a competitive record per player (matches, wins, placements). | P | Soc |
+| FR-103 | Ranks / competitive standing. Algorithm, seasons, penalties TBD (OQ-AC-04; options in `../05-architecture/adr/ADR-009-ranking-approach.md`). | C concept / TBD | Soc |
+| FR-104 | Leaderboard view. | P | Soc |
+
+### 3.9 Teams (social)
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-110 | A player can create a Team with name, identity (tag/emblem) and description; eligibility TBD. | C concept / TBD rules | Soc |
+| FR-111 | A Team has leader and member roles. | C | Soc |
+| FR-112 | Leaders invite; players request to join; leaders accept/reject; members leave; leaders remove. | C (investigate) / P | Soc |
+| FR-113 | Leader transfer and team dissolution. | C (investigate) / P | Soc |
+| FR-114 | Team membership history is retained. | C (investigate) / P | Soc |
+| FR-115 | Team size limits / multi-team membership. | TBD (OQ-AC-03) | Soc |
+| FR-116 | Team history and achievements. | TBD ("if approved") | Post |
+
+### 3.10 Tournaments & organizer authorization
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-120 | Tournament creation is restricted to approved organizers. | C | Post |
+| FR-121 | A player may apply for organizer status; rank may make them eligible (threshold TBD). | C concept / TBD | Post |
+| FR-122 | Only an Admin can approve or revoke organizer status; every decision is audited. | C / P audit | Post (model in Core) |
+| FR-123 | Tournament formats, registration, brackets. | TBD (OQ-AC-06) | Post |
+
+### 3.11 Safety & moderation
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-130 | A player can block another player (hides chat/invites from them). | P | Soc |
+| FR-131 | A player can report another player with a reason category, optional text and optional match reference. | C (design) | Soc |
+| FR-132 | Moderators view a report queue and apply actions (warn, mute, temporary/permanent suspension). | P | Soc |
+| FR-133 | All moderation actions are recorded in an audit history. | P | Soc |
+| FR-134 | Appeal workflow (MVP: manual via official contact). | P | Post |
+| FR-135 | Chat scope (room chat? global? none?) | TBD (OQ-AC-07) | TBD |
+
+### 3.12 Exploration (vision)
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-140 | Bounded first-person exploration area. | C (vision) | Post |
+| FR-141 | Chests containing parts/items. | C (vision) | Post |
+| FR-142 | Challenge another player in the world; on acceptance a battle starts (arena rises). | C (vision) | Post |
+
+### 3.13 Community & voice
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-150 | The client may show links to official external community channels. No API integration. | C (not authoritative) / P links | Core (optional) |
+| FR-151 | Proximity voice chat in exploration. | C (later) | Post |
+| FR-152 | Voice commands for top control. | C (later, excluded from MVP) | Post |
+
+### 3.14 Client platforms & input
+| ID | Requirement | Status | Tier |
+|---|---|---|---|
+| FR-160 | Clients for Windows, Linux, macOS, Android, iOS from one Godot project. Release order TBD. | C families / TBD order | Core (subset per OQ-PL-02) |
+| FR-161 | Mobile: touch controls, touch-friendly UI, safe-area handling. | C | Core |
+| FR-162 | Desktop: keyboard and mouse. | C | Core |
+| FR-163 | Gamepad support. | P (evaluate) | Post |
+| FR-164 | Graphics quality presets for device tiers. | P | Core |
+
+---
+
+## 4. Business rules
+| ID | Rule | Status |
+|---|---|---|
+| BR-001 | A match has at most 5 active competitors. Spectators are not competitors. | C |
+| BR-002 | FFA: a top that exits the arena is eliminated. | C |
+| BR-003 | FFA: the last remaining top/player wins. | C |
+| BR-004 | An eliminated player may spectate the remainder of the match. | C |
+| BR-005 | Only the Match Server (trusted authority) determines official match results. | C |
+| BR-006 | Tournament creation requires organizer status explicitly approved by Admin. | C |
+| BR-007 | Permissions are enforced by Backend/Match Server, never only by client UI. | C |
+| BR-008 | No real-money wagering in MVP. | C |
+| BR-009 | Virtual-item stakes cannot be enabled without explicit user approval of their rules. | C |
+| BR-010 | Voice-based top control is not part of MVP. | C |
+| BR-011 | External channels (Facebook/Messenger) are not authoritative for membership, rank, results or permissions. | C |
+| BR-012 | Minimum competitors to start = 2. | A (A-01) |
+| BR-013 | Aborted matches (server failure) have no competitive effect. | P |
+| BR-014 | A client may only join a match server whose protocol version matches its own. | P |
+
+## 5. Non-functional requirements
+Provisional numeric targets are **examples to validate by benchmark**, not achieved capacity.
+
+### 5.1 Performance & capacity
+| ID | Requirement | Status |
+|---|---|---|
+| NFR-001 | Plan for ~100 concurrent connected users at peak (lobby + matches + menus). Not a proven capacity until NFR-004 passes. | C target |
+| NFR-002 | Per-match competitor cap of 5 enforced at Backend (room), ticket issuing, and Match Server. | C |
+| NFR-003 | Resource use scales with active matches; idle capacity at low population stays small (e.g. a small warm pool). | C intent / P mechanism |
+| NFR-004 | Load tests at 10, 25, 50, 100 connected clients pass the criteria in `../07-quality-operations/load-test-plan.md`. | C |
+| NFR-005 | Concurrent-match test up to 20 simultaneous 5-competitor matches (theoretical scenario). | C |
+| NFR-006 | Match Server simulation tick: provisional 60 Hz; state snapshots to clients: provisional 20–30 Hz. | P (benchmark) |
+| NFR-007 | Gameplay remains acceptable up to a provisional 150 ms RTT and 2% packet loss. | P (spike) |
+| NFR-008 | Downstream bandwidth per match client: provisional ≤ 64 kbit/s average. | P (estimate in protocol doc) |
+| NFR-009 | Time from host "Start" to all clients in pre-launch phase: provisional ≤ 5 s (p95). | P |
+| NFR-010 | Backend API p95 latency ≤ 300 ms at 100 CCU for non-search endpoints (provisional). | P |
+
+### 5.2 Client performance
+| ID | Requirement | Status |
+|---|---|---|
+| NFR-020 | Designed for mid-range mobile hardware, not only high-end PCs. | C |
+| NFR-021 | Frame-rate, memory and thermal targets defined per representative test device after device selection. | C (define later) |
+| NFR-022 | Scalable rendering/effects via quality presets; physics cost on clients minimal (clients render, not simulate authoritative physics). | P |
+
+### 5.3 Reliability
+| ID | Requirement | Status |
+|---|---|---|
+| NFR-030 | A crash of one match must not end other matches (process isolation, ADR-006). | P |
+| NFR-031 | If the Backend is down, running matches continue to completion; results are retried until accepted. | P |
+| NFR-032 | Database backups: provisional RPO ≤ 24 h (daily full + binlog for tighter RPO later), RTO ≤ 4 h. | P |
+| NFR-033 | Services restart automatically after failure (process supervisor). | P |
+
+### 5.4 Maintainability
+| ID | Requirement | Status |
+|---|---|---|
+| NFR-040 | Clear modular boundaries between Client, Backend, Match Server and data access. | C |
+| NFR-041 | Reproducible local development environment for all services. | C |
+| NFR-042 | Documentation, ADRs and diagrams source-controlled and kept in sync with code. | C |
+| NFR-043 | Automated tests at unit, integration, contract, simulation and E2E levels. | C |
+| NFR-044 | Balance data externalised and versioned (content version). | C intent / P format |
+
+### 5.5 Cross-platform
+| ID | Requirement | Status |
+|---|---|---|
+| NFR-050 | A platform compatibility matrix (min OS, input, graphics, release constraints) is maintained. | C |
+| NFR-051 | Identical gameplay rules on all platforms (single authoritative server rules). | C |
+
+### 5.6 Privacy
+| ID | Requirement | Status |
+|---|---|---|
+| NFR-060 | Collect only data necessary for the stated purposes (data inventory in `../03-data/data-dictionary.md`). | C |
+| NFR-061 | Define retention, deletion and export for personal data; legal review for target markets before public launch. | C |
+
+### 5.7 Security (summary; details in `../06-security/`)
+| ID | Requirement | Status |
+|---|---|---|
+| SEC-001 | Game clients never connect to MySQL; MySQL listens on localhost/private network only. | C |
+| SEC-002 | Official results determined server-side; client claims ignored. | C |
+| SEC-003 | All authorization checks run in Backend/Match Server. | C |
+| SEC-004 | Passwords (if used) hashed with a memory-hard algorithm (Argon2id). | P |
+| SEC-005 | All Client↔Backend traffic uses TLS (HTTPS/WSS). | P |
+| SEC-006 | Match tickets are signed, short-lived (≤ 60 s to first use), single-use, bound to user+match+role+protocol version. | P |
+| SEC-007 | Server-side input validation for all API and match messages; parameterised queries only. | C (analyse) / P |
+| SEC-008 | Rate limiting on auth, room-code join, report and chat endpoints. | C (analyse) / P |
+| SEC-009 | Secrets kept out of source control and client builds. | C |
+| SEC-010 | Audit log for privileged actions (role grants, organizer approval, moderation). | C (analyse) / P |
+| SEC-011 | Room codes resistant to enumeration (sufficient entropy + join rate limits). | P |
+| SEC-012 | Backend↔Match Server calls authenticated with a service credential over a private channel. | P |
+| SEC-013 | Launch-input anti-automation measures, depending on the final launch rule. | TBD |
+| SEC-014 | Match message flood protection (per-peer message rate caps). | P |
+
+### 5.8 Operations
+| ID | Requirement | Status |
+|---|---|---|
+| OPS-001 | Monitor CPU, RAM, disk, network, process health. | C |
+| OPS-002 | Structured logs with correlation IDs (match_id, user_id, request_id). | P |
+| OPS-003 | Alerts for service down, disk > 80%, backup failure, match-server pool exhausted. | P |
+| OPS-004 | Automated off-site backups with periodic restore tests. | C (backups) / P (tests) |
+| OPS-005 | Deliberate firewall: only HTTPS and the match UDP port range public; SSH restricted. | C |
+| OPS-006 | Versioned, repeatable deployments with rollback. | P |
+| OPS-007 | VPS sizing decided from benchmarks, not from the 100-CCU figure alone. | C |
+
+## 6. Constraints
+| ID | Constraint | Status |
+|---|---|---|
+| CON-01 | Game engine: Godot. Version: ADR-001 (proposed 4.7.x). | C engine / P version |
+| CON-02 | Persistent database: MySQL (re-evaluated in ADR-004). | C planned |
+| CON-03 | Initial hosting: single Linux VPS; Hostinger KVM is a candidate only. | C candidate |
+| CON-04 | Services logically separated to allow later split. | C |
+| CON-05 | Must support UDP if ENet is chosen. | C |
+| CON-06 | iOS export requires macOS + Xcode and Apple developer programme. | Fact to verify per ADR-008 |
+
+## 7. Acceptance criteria (MVP level)
+High-level acceptance criteria per requirement are traced in `../08-planning/traceability-matrix.md`;
+MVP-readiness criteria are in `../07-quality-operations/mvp-readiness.md`. Example criteria:
+
+| Req | Acceptance criterion |
+|---|---|
+| FR-033 | Given a room with 5 competitors, when a 6th player joins as competitor, then the Backend returns `409 ROOM_FULL` and the room still lists 5 competitors. |
+| FR-051 | Given an expired, reused, or other-match ticket, the Match Server rejects the connection within 1 s and logs `TICKET_INVALID`. |
+| FR-056/057 | In a simulated 3-top match where tops A and B ring out at distinct ticks, C is recorded as winner, placements are C=1, B=2, A=3. |
+| FR-058 | After elimination the client receives `RoleChanged(spectator)` and further gameplay inputs from that peer are dropped and counted. |
+| FR-070 | Reporting the same result twice yields exactly one persisted result (idempotency). |
+| FR-071 | A crafted client RPC claiming victory has no effect on the persisted result. |
+| SEC-001 | External port scan of the VPS shows MySQL port closed. |

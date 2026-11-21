@@ -1,0 +1,12 @@
+# Rendered diagrams (sources are the truth)
+*.svg
+*.png
+# Secrets
+.env
+*.env
+!.env.example
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.zip

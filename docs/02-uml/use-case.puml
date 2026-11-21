@@ -1,0 +1,72 @@
+@startuml use-case
+title Use Case Diagram [MVP = solid, Post-MVP = <<post>>]
+left to right direction
+actor Guest
+actor Player
+actor "Team Leader" as Leader
+actor Spectator
+actor Moderator
+actor Admin
+actor "Organizer" as Org
+actor "Match Server" as MS <<system>>
+Player --|> Guest
+Leader --|> Player
+Org --|> Player
+
+rectangle "Game System" {
+  usecase "UC-01 Register" as UC01
+  usecase "UC-02 Log in / out" as UC02
+  usecase "UC-03 View / edit profile" as UC03
+  usecase "UC-04 Manage loadout" as UC04
+  usecase "UC-05 Create room" as UC05
+  usecase "UC-06 Join room by code" as UC06
+  usecase "UC-07 Ready / unready" as UC07
+  usecase "UC-08 Start match" as UC08
+  usecase "UC-09 Launch top" as UC09
+  usecase "UC-10 Battle (FFA)" as UC10
+  usecase "UC-11 Spectate match" as UC11
+  usecase "UC-12 View result & history" as UC12
+  usecase "UC-13 Reconnect to match" as UC13
+  usecase "UC-14 Block player" as UC14
+  usecase "UC-15 Report player" as UC15
+  usecase "UC-16 Review report & act" as UC16
+  usecase "UC-17 Manage team" as UC17
+  usecase "UC-23 View rankings" as UC23
+  usecase "UC-18 Apply for organizer" as UC18
+  usecase "UC-19 Approve / revoke organizer" as UC19
+  usecase "UC-20 Create tournament" <<post>> as UC20
+  usecase "UC-21 Explore & open chest" <<post>> as UC21
+  usecase "UC-22 Challenge in world" <<post>> as UC22
+  usecase "Report official result" as UCR
+}
+Guest --> UC01
+Guest --> UC02
+Player --> UC03
+Player --> UC04
+Player --> UC05
+Player --> UC06
+Player --> UC07
+Player --> UC09
+Player --> UC10
+Player --> UC12
+Player --> UC13
+Player --> UC14
+Player --> UC15
+Player --> UC17
+Player --> UC23
+Player --> UC18
+Player --> UC21
+Player --> UC22
+Leader --> UC17 : manage members
+Spectator --> UC11
+Player --> UC08 : as host [A-02]
+Moderator --> UC16
+Admin --> UC19
+Admin --> UC16
+Org --> UC20
+MS --> UCR
+UC10 ..> UC11 : <<extend>>\non elimination
+UC08 ..> UC09 : <<include>>
+UC22 ..> UC10 : <<include>>
+UC12 ..> UCR : depends on
+@enduml

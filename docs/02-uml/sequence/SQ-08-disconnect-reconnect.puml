@@ -1,0 +1,34 @@
+@startuml SQ-08
+title SQ-08 Disconnect, reconnect & server failure [P mechanism — rules TBD OQ-GP-05]
+participant "Competitor Client" as C
+participant "Match Server" as MS
+participant "Backend API" as B
+== Disconnect ==
+C -x MS : connection lost (ENet timeout or app closed)
+MS -> MS : peer slot -> DISCONNECTED, start grace timer\n(P: 15 s; top behaviour during grace TBD)
+MS -> B : MatchStateChanged {participantDisconnected userId}
+== Reconnect within grace ==
+C -> B : GET /v1/me/active-match
+B --> C : {matchId, status: IN_PROGRESS}
+C -> B : POST /v1/matches/{matchId}/tickets {role: COMPETITOR}
+B -> B : verify user is participant of active match
+B -> MS : TicketGrant {hash, userId, COMPETITOR, exp}
+B --> C : {host, udpPort, ticket}
+C -> MS : connect + C2S_Hello {ticket}
+MS -> MS : rebind userId to new peer; cancel grace timer
+MS --> C : S2C_Welcome {role, phase} + full snapshot
+== Grace expired ==
+MS -> MS : apply disconnect rule [TBD]: e.g. eliminate\nreason DISCONNECT, or keep top simulated
+== Match Server failure ==
+MS -x B : control WS closed AND no re-register\nwithin 30 s (heartbeat 5 s) [P]
+B -> B : match status=ABORTED (BR-013: no competitive effect)
+note right of B
+  A Backend restart is NOT a match failure:
+  Match Servers reconnect and re-register
+  with {state: BUSY, matchId}; Backend reconciles.
+  If a result later arrives for a match aborted
+  only due to lost contact, it is accepted (P).
+end note
+B -> C : event match.aborted {matchId}
+note over B : Supervisor (systemd) restarts the process;\nit re-registers as IDLE.
+@enduml

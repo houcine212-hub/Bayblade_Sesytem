@@ -1,0 +1,47 @@
+# MVP Scope (recommendation for approval)
+
+| Document ID | DOC-MVP-001 | Status | **[P] Proposed** — requires user approval at Gate G0 |
+|---|---|---|---|
+
+## 1. MVP definition
+The **public MVP** is the first release real players can download and play online: battle loop +
+small social layer + operational readiness. It is delivered in three internal steps (see roadmap):
+
+| Step | Milestone | Audience |
+|---|---|---|
+| Battle MVP | M2 | Internal alpha (team + friends) |
+| Social MVP | M3 | Closed beta |
+| Hardening + 100-CCU load test | M4 | Public MVP |
+
+## 2. In scope
+**MVP-Core:** FR-001–006, FR-010–012, FR-020–024, FR-030–040, FR-050–071 (open rules must be answered
+first), FR-080, FR-081, FR-090, FR-091 (once decided), FR-100, FR-101, FR-150 (optional), FR-160 (first
+platforms only), FR-161, FR-162, FR-164; all NFR/SEC/OPS marked Core.
+
+**MVP-Social:** FR-102–104 (simple record/rank), FR-110–115 (basic teams — may slip to M5 if needed),
+FR-130–133 (block, report, moderation queue, audit).
+
+**Data model ready but feature off:** organizer application/approval (FR-121/122).
+
+## 3. Out of scope for MVP
+Exploration (FR-140–142), Team Battle (FR-082), stakes (FR-083), tournaments (FR-120, FR-123),
+voice (FR-151/152), gamepad (FR-163), loot economy (FR-025), appeals tooling (FR-134), seasons.
+Real-money wagering (FR-084) is excluded permanently unless the user decides otherwise.
+
+## 4. Recommended first platforms [P]
+| Platform | MVP? | Reason |
+|---|---|---|
+| Windows | Yes | Largest desktop audience; simple distribution (direct download/itch.io/Steam TBD) |
+| Android | Yes | Large mobile audience; sideload/closed testing tracks make beta easy |
+| Linux | Yes (low cost) | Same export pipeline; server already Linux; low extra test cost |
+| macOS | After MVP | Signing/notarization requires Apple developer account |
+| iOS | After MVP | Requires Mac + Xcode, paid account, App Store review |
+
+The architecture supports all five from day one (FR-160); only *release order* is staged. **Decision required (OQ-PL-02).**
+
+## 5. Minimum content [P]
+One arena, 3–4 starter tops (to test balance-data pipeline), one game mode (FFA, friendly).
+
+## 6. Pre-conditions before implementation of M2
+Answers to G-01, G-02, G-03 (in-battle control, end conditions, launch semantics), and successful
+technical spikes S-1…S-4 (see roadmap).

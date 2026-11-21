@@ -1,0 +1,41 @@
+@startuml SQ-03
+title SQ-03 Start Match: Allocation & Match Authorization [P]
+actor Host
+participant "Clients (all\nroom members)" as C
+participant "Backend API" as B
+participant "Match Allocator\n(Backend module)" as AL
+participant "Match Server\n(idle pool process)" as MS
+database MySQL as DB
+note over MS,B : At boot each Match Server opened\nWS /internal/v1/control, sent Register\n{instanceId, udpPort, protocolVersion},\nand sends Heartbeat every 5 s [P]
+Host -> C : Start
+C -> B : POST /v1/rooms/{roomId}/start
+B -> DB : SELECT room, members FOR UPDATE
+alt not host / not all ready / competitors < 2 (A-01) / > 5
+  B --> C : 403 NOT_HOST | 409 NOT_READY | 409 NOT_ENOUGH_PLAYERS
+else ok
+  B -> AL : allocate(protocolVersion)
+  AL -> AL : pick IDLE instance with\nmatching protocolVersion
+  alt none available
+    AL --> B : POOL_EXHAUSTED
+    B --> C : 503 NO_SERVER_AVAILABLE (retry later)\n+ alert OPS-003
+  else instance found
+    B -> DB : INSERT game_match(status=ALLOCATING), match_participant rows,\nloadout snapshots; UPDATE room status=STARTING
+    loop for each member
+      B -> B : ticket = 256-bit random;\nstore SHA-256(ticket), userId, role, exp=now+60s
+    end
+    B -> MS : AssignMatch {matchId, mode, contentVersion,\nparticipants[{userId, role, loadoutSnapshot}],\nticketHashes[{hash, userId, role, exp}]}
+    MS --> B : AssignAck {matchId}
+    B -> DB : UPDATE game_match status=WAITING_FOR_PLAYERS
+    B -> C : event match.allocated {matchId, host, udpPort,\nticket (each client receives only its own)}
+  end
+end
+C -> MS : ENet connect host:udpPort
+C -> MS : rpc C2S_Hello {ticket, protocolVersion, matchId}
+MS -> MS : hash(ticket) in expected set? not expired?\nnot used? protocol match? (SEC-006, BR-014)
+alt valid
+  MS -> MS : mark ticket used; bind peerId -> userId, role
+  MS --> C : rpc S2C_Welcome {role, slot, phase, serverTime}
+else invalid
+  MS --> C : rpc S2C_Kick {TICKET_INVALID}; disconnect
+end
+@enduml

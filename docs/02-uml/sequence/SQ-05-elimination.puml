@@ -1,0 +1,17 @@
+@startuml SQ-05
+title SQ-05 Elimination (FFA ring-out) [C rule / P mechanism]
+participant "Match Server\n(simulation)" as MS
+participant "All Clients" as C
+participant "Eliminated Client" as E
+MS -> MS : physics tick N: top X position\noutside arena boundary
+MS -> MS : record elimination {userId X, reason RING_OUT, tick N}\n(BR-002). Same-tick multiple exits -> rule TBD (OQ-GP-04)
+MS -> C : S2C_Eliminated {userId, reason, tick} (reliable)
+MS -> E : S2C_RoleChanged {SPECTATOR} (see SQ-06)
+alt remaining competitors == 1
+  MS -> MS : winner = remaining (BR-003) -> SQ-07
+else remaining == 0 (simultaneous)
+  MS -> MS : draw / tie-break [TBD OQ-GP-04] -> SQ-07
+else remaining >= 2
+  MS -> MS : continue simulation
+end
+@enduml

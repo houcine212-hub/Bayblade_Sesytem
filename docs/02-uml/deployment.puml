@@ -1,0 +1,35 @@
+@startuml deployment
+title Deployment — Initial single-VPS candidate [P] (Hostinger KVM = candidate only)
+node "Player device\n(Windows/Linux/macOS/Android/iOS)" as DEV {
+  artifact "Game Client build\n(.exe/.apk/.ipa/...)" as CLIENT
+}
+cloud "Internet" as NET
+node "Linux VPS (Ubuntu LTS [P])" as VPS {
+  node "Provider firewall + UFW" as FW
+  node "Reverse proxy\n(Caddy [P], TLS, :443)" as RP
+  node "systemd unit: backend.service\n(MemoryMax, CPUQuota)" as BE {
+    artifact "Backend API (Node.js)\nlistens 127.0.0.1:8080" as API
+  }
+  node "systemd template: match-server@N.service\n(N = 1..pool size; MemoryMax each)" as MSN {
+    artifact "Godot headless Match Server\nUDP :40000+N (example range)" as MS
+  }
+  node "systemd unit: mysql.service" as DBN {
+    database "MySQL 8.4\nbind 127.0.0.1:3306" as DB
+  }
+  node "Ops agents" as OPS {
+    artifact "metrics exporter / log shipper\n(choice in operations doc)" as MON
+  }
+}
+node "Off-site backup storage\n(object storage, TBD)" as BK
+
+CLIENT --> NET
+NET --> FW : TCP 443 (HTTPS/WSS)\nUDP 40001-40032 (example)\nTCP 22 (restricted)
+FW --> RP : 443
+RP --> API : HTTP localhost
+FW --> MS : UDP
+MS --> API : internal WS + HTTP\n127.0.0.1 (not via proxy)
+API --> DB : localhost
+DB ..> BK : encrypted nightly dump + binlogs
+MON ..> VPS : CPU/RAM/disk/net/process
+note bottom of DB : Port 3306 never opened in firewall (SEC-001)
+@enduml

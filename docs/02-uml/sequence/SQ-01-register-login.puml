@@ -1,0 +1,30 @@
+@startuml SQ-01
+title SQ-01 Registration & Login [P] — registration method TBD (OQ-AC-01)
+actor Player
+participant "Game Client" as C
+participant "Backend API" as B
+database MySQL as DB
+== Registration (example: e-mail + password, pending OQ-AC-01) ==
+Player -> C : enter credentials
+C -> B : POST /v1/auth/register\n{username, email?, password}\nheader X-Client-Version, X-Platform
+B -> B : validate input, rate-limit per IP (SEC-008)
+B -> B : hash password Argon2id (SEC-004)
+B -> DB : INSERT user_account, player_profile,\ncompetitive_record, starter inventory_item [A-04]
+DB --> B : ok
+B --> C : 201 {userId}
+== Login ==
+Player -> C : log in
+C -> B : POST /v1/auth/login {login, password}\nX-Client-Version
+alt client version < minimum (FR-006)
+  B --> C : 426 CLIENT_UPDATE_REQUIRED {storeUrl}
+else credentials valid
+  B -> DB : SELECT user_account; INSERT auth_session (refresh token hash)
+  B --> C : 200 {accessToken (15 min), refreshToken, user}
+else invalid
+  B --> C : 401 INVALID_CREDENTIALS (generic message)
+end
+== Token refresh (rotation) ==
+C -> B : POST /v1/auth/refresh {refreshToken}
+B -> DB : verify hash, revoke old, store new
+B --> C : 200 {accessToken, refreshToken}
+@enduml

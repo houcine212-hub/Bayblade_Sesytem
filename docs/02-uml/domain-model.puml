@@ -1,0 +1,76 @@
+@startuml domain-model
+title Domain Model (conceptual) — [C] confirmed concept / [P] proposed / [TBD]
+hide methods
+skinparam classAttributeIconSize 0
+
+package "Identity" {
+  class UserAccount <<C>> { id; status; createdAt }
+  class PlayerProfile <<C>> { displayName; avatarRef }
+  class Role <<P>> { code: PLAYER|MODERATOR|ADMIN|ORGANIZER }
+  class OrganizerApplication <<C concept>> { status; reviewedAt }
+}
+package "Items" {
+  class ItemDefinition <<C>> { key; category [TBD]; stats [TBD]; contentVersion }
+  class InventoryItem <<C>> { acquiredAt; source }
+  class Loadout <<C>> { name; isActive }
+  class LoadoutSlot <<P>> { slotType [TBD] }
+}
+package "Play" {
+  class Room <<C>> { code; status; visibility [TBD] }
+  class RoomMember <<C>> { role: COMPETITOR|SPECTATOR; ready }
+  class Match <<C>> { mode: FFA; status; endReason; protocolVersion; contentVersion }
+  class MatchParticipant <<C>> { role; placement; eliminationReason; loadoutSnapshot }
+  class MatchSide <<P/TBD>> { Team Battle only }
+  class MatchEvent <<P>> { seq; type; tMs }
+}
+package "Competitive" {
+  class CompetitiveRecord <<P>> { matches; wins; rating [TBD] }
+}
+package "Social" {
+  class Team <<C>> { name; tag; description }
+  class TeamMembership <<C>> { role: LEADER|MEMBER; joinedAt; leftAt }
+  class TeamInvitation <<P>> { direction; status }
+  class UserBlock <<P>>
+}
+package "Safety" {
+  class Report <<C>> { reason; status }
+  class ModerationAction <<P>> { action; expiresAt }
+  class AuditLogEntry <<P>> { action; target }
+}
+package "Tournaments <<post>>" {
+  class Tournament <<post>>
+}
+
+UserAccount "1" -- "1" PlayerProfile
+UserAccount "*" -- "*" Role
+UserAccount "1" -- "*" InventoryItem
+InventoryItem "*" --> "1" ItemDefinition
+UserAccount "1" -- "*" Loadout
+Loadout "1" *-- "1..*" LoadoutSlot
+LoadoutSlot "*" --> "1" InventoryItem
+Room "1" *-- "0..*" RoomMember
+RoomMember "*" --> "1" UserAccount
+Room "1" --> "1" UserAccount : host
+Room "1" -- "0..*" Match : produces
+Match "1" *-- "2..5" MatchParticipant : competitors\n(+ spectators not stored [P])
+MatchParticipant "*" --> "1" UserAccount
+Match "1" *-- "0..*" MatchEvent
+Match "1" o-- "0..*" MatchSide
+MatchParticipant "*" --> "0..1" MatchSide
+UserAccount "1" -- "1" CompetitiveRecord
+Team "1" *-- "1..*" TeamMembership
+TeamMembership "*" --> "1" UserAccount
+Team "1" -- "*" TeamInvitation
+UserAccount "1" -- "*" UserBlock : blocker
+Report "*" --> "1" UserAccount : reporter
+Report "*" --> "1" UserAccount : reported
+Report "*" --> "0..1" Match
+ModerationAction "*" --> "0..1" Report
+ModerationAction "*" --> "1" UserAccount : target
+UserAccount "1" -- "*" OrganizerApplication
+Tournament "*" --> "1" UserAccount : organizer
+note right of Match
+  BR-001: at most 5 competitors.
+  Min 2 is assumption A-01.
+end note
+@enduml

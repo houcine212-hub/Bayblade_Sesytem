@@ -1,0 +1,30 @@
+@startuml SQ-04
+title SQ-04 Pre-launch & Launch [P — launch semantics TBD: OQ-GP-01/02/19]
+participant "Competitor Clients" as C
+participant "Spectator Clients" as S
+participant "Match Server" as MS
+participant "Backend API" as B
+MS -> MS : all competitors connected\nOR join timeout (P: 15 s, rule TBD OQ-GP-06)
+MS -> B : MatchStateChanged {PRE_LAUNCH, present[], absent[]}
+MS -> C : S2C_PhaseChanged {PRE_LAUNCH, startsAtServerTime, durationMs: 5000}
+MS -> S : S2C_PhaseChanged {PRE_LAUNCH, ...}
+note over C,MS
+  **TBD** whether the 5 s is a countdown, the press window, or both.
+  Mechanism proposed regardless of final rule:
+  - client sends raw input events with client tick + sequence
+  - server accepts only inside its own window (server clock)
+  - server applies rate cap & formula from content data (FR-020)
+end note
+loop during accepted window
+  C -> MS : C2S_LaunchInput {seq, kind: PRESS, clientTimeMs}
+  MS -> MS : validate role=COMPETITOR, phase, rate cap (SEC-013/014)
+end
+MS -> MS : compute initialSpin = f(inputs, topStats)\n[formula TBD; data-driven]
+MS -> C : S2C_PhaseChanged {BATTLE, launchResults[{userId, spinRate}]}
+MS -> S : S2C_PhaseChanged {BATTLE, ...}
+MS -> B : MatchStateChanged {BATTLE}
+loop every snapshot interval (P: 20–30 Hz)
+  MS -> C : S2C_Snapshot {tick, tops[]} (unreliable)
+  MS -> S : S2C_Snapshot
+end
+@enduml
