@@ -44,5 +44,8 @@ Architecture, requirements, data model, interfaces, official-source research, fo
 | R-8 | Measure real touch press distributions (S-5) → final cap value, FC-1 |
 | R-9 | Spin-race launch sensitivity F-11 (OQ-CB-10) |
 
-## 5. Approval statement (to be completed by the user)
-> I approve design package v0.3.1 with the decisions recorded in the G0 decision sheet [with changes: …] and authorise Milestone M1 (technical spikes only). — Name, date
+## 5. Approval statement — superseded
+The v0.3.1 approval quote that stood here is **historical and must not be signed**. The current owner acceptance is in `G0-approval-review.md` §6 (package v0.4, M1 spikes only).
+
+## 6. v0.4 independent audit (2026-11-22)
+Verdict: approve with changes **for M1 technical experiments only**, subject to owner acceptance; not ready for M2, ranked play, deployment or merging. It reproduced all 11 analysis CSV files byte-for-byte (numpy 2.3.5) and confirmed 210/210 traced requirements. Open items: OQ-LN-08, OQ-CB-12, launch fairness/accessibility (S-5), unmet AC-1/2/4/6, unmeasured AC-7/8, unproven stack integration. Its two editorial findings (this section 5; the sequence-diagram count in README) are fixed.

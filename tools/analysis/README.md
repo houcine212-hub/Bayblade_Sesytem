@@ -21,7 +21,7 @@ Requirements: Python ≥ 3.10, numpy ≥ 2.0. Results in `results/` (v0.4) were 
 cd tools/analysis
 python3 run_all.py
 ```
-Runtime ≈ 1–2 minutes. Seeds are fixed in `run_all.py`; outputs are deterministic for a given numpy version.
+Runtime ≈ 1–2 minutes. Seeds are fixed in `run_all.py`. An independent audit (2026-11-22) reproduced all 11 CSV files byte-for-byte with numpy 2.3.5; only the environment fields in `summary.json` differ.
 
 ## Files
 | File | Content |

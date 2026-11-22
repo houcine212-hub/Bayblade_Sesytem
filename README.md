@@ -15,7 +15,7 @@ The initial deployment is planned for **~100 concurrent connected players at pea
 |---|---|
 | `docs/00-overview/` | `gap-analysis.md` (start here), `product-vision.md`, `product-scope.md` |
 | `docs/01-requirements/` | `SRS.md`, `MVP-scope.md`, `assumptions-and-open-questions.md`, `glossary.md` |
-| `docs/02-uml/` | PlantUML: context, use case, domain, 8 sequences, activity, 2 state machines, component, deployment |
+| `docs/02-uml/` | PlantUML: context, use case, domain model, combat class model, 10 sequences (SQ-01…SQ-10), activity, 3 state machines (room, match, per-Bey), component, deployment — 20 diagrams; the ERD is the 21st (`docs/03-data/erd.puml`) |
 | `docs/03-data/` | `erd.puml`, `data-dictionary.md` (entities, integrity, indexes, retention, memory vs DB) |
 | `docs/04-interfaces/` | `backend-api.md`, `multiplayer-protocol.md`, `interaction-boundaries.md` |
 | `docs/05-architecture/` | `architecture.md` + `adr/` (ADR-001…015; ADR-003 superseded by ADR-012; index and sources in `adr/README.md`) |
