@@ -1,6 +1,6 @@
 # Theoretical Balancing & Simulation Report
 
-| Document ID | DOC-BAL-001 | Version | 0.4 (G0 decisions integrated, 2026-11-21) | Status | **Reproducible model outputs — not proof of balance, not M1 validation.** Coefficients are S-1 experimental starting values (D-12). |
+| Document ID | DOC-BAL-001 | Version | 0.4.1 (owner decisions OQ-LN-08, OQ-CB-12; 2026-11-22) | Status | **Reproducible model outputs — not proof of balance, not M1 validation.** Coefficients are S-1 experimental starting values (D-12). |
 |---|---|---|---|---|---|---|---|
 
 Labels: **[RES]** research finding · **[MEAS]** produced by `tools/analysis/` (reproducible) · **[REC]** recommendation · **[PLAY]** needs real gameplay/engine testing.
@@ -15,8 +15,8 @@ Labels: **[RES]** research finding · **[MEAS]** produced by `tools/analysis/` (
 | `w(g)` | `0.15 + 0.45·exp(−(g/0.25)²)` | [0.15, 0.60] |
 | `S_AB` | `(1 − w)·tanh(3g) + w·tanh(2.5r)` | (−1, 1) |
 
-## 2. Model (v0.4 configuration)
-- **Launch (D-01/D-03/D-04):** `RPS = 10 × n` for n ≥ 1, `20` for n = 0, n ≤ 35 → 10–350 RPS. Presses ~ Normal(35, 8), rounded, clipped [0, 35] — **assumption**: the real median and spread come from spike S-5.
+## 2. Model (v0.4.1 configuration)
+- **Launch (D-01/D-03 amended by OQ-LN-08, D-04):** `RPS = max(20, 10 × n)`, n ≤ 35 → 20–350 RPS. Presses ~ Normal(35, 8), rounded, clipped [0, 35] — **assumption**: the real median and spread come from spike S-5.
 - **Spin scale:** Absolute spin-rate coefficients re-expressed for the 350-RPS launch scale: c_d, c_s and wobble multiplied by kappa = 350/150 from v0.3.1; burst-threshold reference omega_ref = 350 RPS. Stop threshold kept at 8 RPS (< 10 RPS one-press launch). Displayed RPS is NOT converted.
 - **Time limit (D-16):** 120 s; survivors ranked by current spin; exact ties = draw (finish `TIME_LIMIT`).
 - **Same tick (D-11):** simultaneous last eliminations = draw.
@@ -27,9 +27,9 @@ Labels: **[RES]** research finding · **[MEAS]** produced by `tools/analysis/` (
 | ID | Issue | Status in v0.4 |
 |---|---|---|
 | C1–C5, C8–C10 | resolved in v0.3/v0.3.1 (see v0.3.1 correction log) | resolved |
-| C6 / **C11** | D-17 (b) outcome requirement with a **30-RPS** difference | **fails under the linear launch** for g ≳ 0.13–0.17 (§6); passes with a relative 70-RPS (r = 0.22) difference → owner decision OQ-CB-12 |
+| C6 / C11 | D-17 outcome requirement | 30-RPS wording failed under linear launch; **owner amended the threshold to 7 presses (70 RPS)** (OQ-CB-12) — amended criterion: Attack/Balance pass, **Stamina 9.9 points at g = 0.20 (borderline fail)** (§6.2) |
 | C7 | favoured matchups vs 55–80% band | A>S 86.3%, S>D 80.8%, D>A 79.5% — open (AC-2) |
-| **C12 (new)** | zero-tap / one-tap paradox (D-01 + D-03): 0 presses → 20 RPS beats 1 press → 10 RPS | measured 98.6% / 99.6% (§8) → owner decision OQ-LN-08; rules unchanged |
+| C12 | zero-tap / one-tap inversion | **resolved by owner decision OQ-LN-08**: RPS = max(20, 10 × n); 0, 1, 2 presses → 20 RPS (§8) |
 | **C13 (new)** | linear launch amplifies launch sensitivity (F-11) | 32 vs 35 presses → 91.0% in the Stamina mirror (§8) |
 
 ## 4. Advantage function on the 350-RPS scale (`e1_advantage_table.csv`)
@@ -47,8 +47,8 @@ S depends only on g and r, so it is scale-free; scenarios re-expressed with v0.4
 | S8 | 66 | 60 | 1.100 | +0.0952 | 220 | 350 | -0.4561 | 0.5392 | +0.1282 | -0.4392 | **-0.3110** |
 | S9 | 80 | 50 | 1.600 | +0.4615 | 100 | 350 | -1.1111 | 0.1649 | +0.7365 | -0.1636 | **+0.5729** |
 
-## 5. Type matrix — measured (v0.4)
-### 5.1 Seat-averaged pairs (`e2_type_pairs_v0.4.csv`)
+## 5. Type matrix — measured (v0.4.1; identical to v0.4 because simulated players almost never press fewer than 3 times)
+### 5.1 Seat-averaged pairs (`e2_type_pairs_v0.4.1.csv`)
 | Pair X–Y | P(X wins) | P(Y wins) | Draw | Median duration | BURST | OVER | SPIN | TIME_LIMIT |
 |---|---|---|---|---|---|---|---|---|
 | Attack–Attack | 48.5% | 48.5% | 3.1% | 8.5 s | 56.0% | 40.7% | 0.2% | 0.0% |
@@ -76,13 +76,13 @@ Overall vs the other three types: **Attack 55.9%, Defense 53.4%, Stamina 48.8%, 
 | AC-3 Burst (D-10) | M-1 ≥ 30%; M-2 most frequent in A→A, A→S, A→B | M-1 33.8%; M-2 56.0% / 66.6% / 58.7% | pass (model only) |
 | AC-4 durations | cells 15–100 s; overall 30–90 s | 8.5–109.8 s; overall 53.3 s | **fail** (Attack cells short; Defense–Defense 109.8 s, Defense–Stamina 106.7 s) |
 | AC-5 draws | ≤ 5% per cell | max 3.1% | pass |
-| AC-6 D-17 (b) | w ≥ 0.15 and ≥ 10-point outcome effect of a 30-RPS difference for \|g\| ≤ 0.20 | per-contact holds; outcome 6.3 / 2.8 / 3.9 points at g = 0.174 / 0.182 / 0.135 | **fail as written** (passes with relative variant, §6) |
+| AC-6 D-17 (b), amended | w ≥ 0.15 and ≥ 10-point outcome effect of a **7-press (70-RPS)** difference for \|g\| ≤ 0.20 | per-contact holds; Attack 12.6, Balance 17.3, **Stamina 9.9** points at g = 0.20 | **borderline fail** (Stamina at the boundary) |
 | AC-7 Magic with real skills | 45–55% | 72.7% without skills | **not measured** |
 | AC-8 FFA type shares | ±5 points | — | **not measured** (needs S-1 FFA bots) |
 | AC-9 FC-1 launch fairness | ≤ 60% | capped (35) vs 35: 47.1% / 51.0%; vs 32: 65.8% / 91.0% | passes **only if the real median is 35** (S-5 not run) |
 
 ## 6. D-17 — outcome effect of launch differences vs Energy gap
-### 6.1 As written: 30-RPS difference, 320 vs 350 (`e3_rps_vs_energy.csv`)
+### 6.1 Superseded wording: 30-RPS difference, 320 vs 350 (`e3_rps_vs_energy.csv`) — kept for the record, not evidence
 | Mirror | f | E_A | E_B | g | P(A) at 350/350 | P(A) 320 vs 350 | P(A) 350 vs 320 | **Swing (points)** |
 |---|---|---|---|---|---|---|---|---|
 | Attack | 1.00 | 56.25 | 56.25 | 0.000 | 48.5% | 30.0% | 67.2% | **37.1** |
@@ -104,24 +104,29 @@ Overall vs the other three types: **Attack 55.9%, Defense 53.4%, Stamina 48.8%, 
 | Stamina | 1.20 | 65.5 | 55.75 | 0.161 | 99.5% | 97.7% | 99.7% | **1.9** |
 | Stamina | 1.30 | 68.88 | 55.75 | 0.211 | 99.8% | 99.7% | 99.8% | **0.1** |
 
-### 6.2 Relative variant: 70-RPS difference, 280 vs 350, r = 0.222 (`e3b_rps_vs_energy_relative.csv`)
-| Mirror | f | g | P(A) 280 vs 350 | P(A) 350 vs 280 | **Swing (points)** |
-|---|---|---|---|---|---|
-| Attack | 1.00 | 0.000 | 18.4% | 79.7% | **61.3** |
-| Attack | 1.10 | 0.095 | 35.7% | 84.2% | **48.5** |
-| Attack | 1.15 | 0.140 | 55.1% | 85.9% | **30.7** |
-| Attack | 1.20 | 0.174 | 69.0% | 87.2% | **18.3** |
-| Attack | 1.30 | 0.225 | 81.2% | 89.7% | **8.5** |
-| Balance | 1.00 | 0.000 | 2.3% | 98.0% | **95.7** |
-| Balance | 1.10 | 0.095 | 11.4% | 99.3% | **87.9** |
-| Balance | 1.15 | 0.140 | 35.4% | 99.6% | **64.2** |
-| Balance | 1.20 | 0.182 | 70.2% | 99.8% | **29.5** |
-| Balance | 1.30 | 0.261 | 98.9% | 99.9% | **1.0** |
-| Stamina | 1.00 | 0.000 | 0.9% | 99.0% | **98.1** |
-| Stamina | 1.10 | 0.095 | 16.2% | 99.7% | **83.4** |
-| Stamina | 1.15 | 0.135 | 51.7% | 99.9% | **48.2** |
-| Stamina | 1.20 | 0.161 | 70.8% | 99.9% | **29.0** |
-| Stamina | 1.30 | 0.211 | 92.6% | 100.0% | **7.4** |
+### 6.2 D-17 as amended by the owner (OQ-CB-12): 7-press = 70-RPS difference, 280 vs 350, r = 0.222, incl. the exact g = 0.20 boundary (`e3b_rps_vs_energy_relative.csv`)
+| Mirror | f | g | P(A) 280 vs 350 | P(A) 350 vs 280 | **Swing (points)** | ≥ 10 required? |
+|---|---|---|---|---|---|---|
+| Attack | 1.0000 | 0.000 | 18.4% | 79.7% | **61.3** | yes |
+| Attack | 1.1000 | 0.095 | 35.7% | 84.2% | **48.5** | yes |
+| Attack | 1.1500 | 0.140 | 55.1% | 85.9% | **30.7** | yes |
+| Attack | 1.2000 | 0.174 | 69.0% | 87.2% | **18.3** | yes |
+| Attack | 1.2500 | 0.200 | 76.0% | 88.6% | **12.6** | yes |
+| Attack | 1.3000 | 0.225 | 81.2% | 89.7% | **8.5** | no (g > 0.20) |
+| Balance | 1.0000 | 0.000 | 2.3% | 98.0% | **95.7** | yes |
+| Balance | 1.1000 | 0.095 | 11.4% | 99.3% | **87.9** | yes |
+| Balance | 1.1500 | 0.140 | 35.4% | 99.6% | **64.2** | yes |
+| Balance | 1.2000 | 0.182 | 70.2% | 99.8% | **29.5** | yes |
+| Balance | 1.2222 | 0.200 | 82.5% | 99.8% | **17.3** | yes |
+| Balance | 1.3000 | 0.261 | 98.9% | 99.9% | **1.0** | no (g > 0.20) |
+| Stamina | 1.0000 | 0.000 | 0.9% | 99.0% | **98.1** | yes |
+| Stamina | 1.1000 | 0.095 | 16.2% | 99.7% | **83.4** | yes |
+| Stamina | 1.1500 | 0.135 | 51.7% | 99.9% | **48.2** | yes |
+| Stamina | 1.2000 | 0.161 | 70.8% | 99.9% | **29.0** | yes |
+| Stamina | 1.2782 | 0.200 | 90.1% | 100.0% | **9.9** | yes |
+| Stamina | 1.3000 | 0.211 | 92.6% | 100.0% | **7.4** | no (g > 0.20) |
+
+Result: passes in every case where it is required **except Stamina at g = 0.200 (9.9 points)**. With N = 4,000 per estimate the standard error of the swing is ≈ 0.5 points, so this is a borderline result — reported as a fail (D-13).
 
 ## 7. Magic weight — equal budget, skills NOT modelled (`e4_magic_weight.csv`)
 | Magic weight | P(physical-shift 66/66/66/28 beats Balance 57/57/57/55) | P(High-Magic 75/40/35/75 beats Attack 85/45/40/55) |
@@ -133,14 +138,15 @@ Overall vs the other three types: **Attack 55.9%, Defense 53.4%, Stamina 48.8%, 
 
 These tests cannot show Magic parity (D-07 provisional, AC-7).
 
-## 8. Launch (`e5_launch.csv`)
+## 8. Launch (`e5_launch.csv`, RPS = max(20, 10 × n))
 | Case | n_max | A presses (RPS) | B presses (RPS) | P(A wins) Attack mirror | P(A wins) Stamina mirror |
 |---|---|---|---|---|---|
-| zero_vs_one_press | 35 | 0 (20) | 1 (10) | 98.6% | 99.6% |
+| zero_vs_one_press | 35 | 0 (20) | 1 (20) | 18.7% | 37.5% |
 | low_press_vs_median | 35 | 0 (20) | 35 (350) | 1.1% | 0.0% |
-| low_press_vs_median | 35 | 1 (10) | 35 (350) | 0.0% | 0.0% |
+| low_press_vs_median | 35 | 1 (20) | 35 (350) | 1.1% | 0.0% |
 | low_press_vs_median | 35 | 2 (20) | 35 (350) | 1.1% | 0.0% |
 | low_press_vs_median | 35 | 3 (30) | 35 (350) | 2.3% | 0.0% |
+| low_press_vs_median | 35 | 4 (40) | 35 (350) | 3.9% | 0.1% |
 | low_press_vs_median | 35 | 5 (50) | 35 (350) | 5.4% | 0.1% |
 | capped_presser_vs_human | 35 | 35 (350) | 20 (200) | 83.3% | 99.3% |
 | capped_presser_vs_human | 35 | 35 (350) | 25 (250) | 81.2% | 99.1% |
@@ -152,6 +158,8 @@ These tests cannot show Magic parity (D-07 provisional, AC-7).
 | higher_cap_vs_median35 | 50 | 50 (500) | 35 (350) | 80.5% | 98.9% |
 | higher_cap_vs_median35 | 60 | 60 (600) | 35 (350) | 81.9% | 99.2% |
 
+Zero vs one press: both launch at 20 RPS, so neither has a launch advantage (the remaining share are draws/symmetric outcomes) — the v0.4 inversion (98.6% / 99.6%) is gone.
+
 ## 9. Findings
 | ID | Finding [MEAS] | Recommendation / owner question |
 |---|---|---|
@@ -159,11 +167,11 @@ These tests cannot show Magic parity (D-07 provisional, AC-7).
 | F-2 | Balance weakest (42.0%) | Balance identity via lock/mass + Adapt (AC-1) |
 | F-3 | Attack cells end in 8.5–14.6 s median | lower early contact damage / raise early threshold in S-1 (AC-4) |
 | F-4 | BURST 33.8% overall (signature finish, not globally most frequent — SPIN 39.9%) | D-10 adopted as initial target |
-| F-5 | D-17 as written fails under linear launch | OQ-CB-12: absolute vs relative threshold |
+| F-5 | D-17: superseded 30-RPS wording failed; amended 7-press criterion passes except Stamina at g = 0.20 (9.9 points) | S-1 re-test; tuning of k_R / Energy steepness if confirmed |
 | F-6 | Magic not evaluable without skills | D-07 provisional |
 | F-7 | FC-1 passes only if the measured median equals the cap | S-5 measurement; re-run |
 | F-8 | Full-lock guarantee holds (damage 49 for N up to 10⁶) | verify in S-1 (D-14) |
-| F-9 | **Zero/one-tap paradox**: 0 presses beats 1 press 98.6% / 99.6% | OQ-LN-08 (recommended R1: RPS = max(20, 10·n)) |
+| F-9 | Zero/one-tap inversion resolved by owner (max(20, 10·n)) | TC-038 updated |
 | F-10 | Time limit decides 33.5% of Defense–Defense, 26.1% of Stamina–Stamina, 15.8% of Defense–Stamina cells | review spin ranking in five-player tests (D-16) |
 | F-11 | **Launch sensitivity amplified by linear launch:** Stamina mirror 32 vs 35 presses → 91.0%; Balance/Stamina mirrors at equal Energy: 3-press swing 77.5 / 81.5 points | OQ-CB-10 (S-1); accessibility OQ-LN-09 |
 

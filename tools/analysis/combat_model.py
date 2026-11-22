@@ -1,4 +1,4 @@
-"""Design-analysis model for the Bayblade combat specifications (v0.4).
+"""Design-analysis model for the Bayblade combat specifications (v0.4.1).
 
 NOT game code. This script is a simplified 1-v-1 Monte Carlo model used only to
 screen balance hypotheses during the design phase. It implements the canonical
@@ -37,10 +37,14 @@ class Model:
 
     # ---------- launch / energy / advantage ----------
     def launch_rps(self, presses):
-        """D-01/D-03 (v0.4): linear 10 RPS per counted press for n >= 1, zero presses = 20 RPS (exception).
+        """v0.4.1: RPS = max(20, 10 * n) (owner decision OQ-LN-08 amending D-01/D-03).
+        "linear" reproduces the v0.4 rule (0 -> 20, n >= 1 -> 10 n).
         The v0.3.1 saturating curve is kept only to reproduce superseded comparison runs."""
         c = self.c
         n = np.minimum(np.asarray(presses, float), c["n_max"])
+        if c["launch_model"] == "linear_min":
+            # v0.4.1 owner decision (OQ-LN-08): RPS = max(20, 10 * n)
+            return np.maximum(c["min_launch_rps"], c["rps_per_press"] * n)
         if c["launch_model"] == "linear":
             return np.where(n <= 0, c["zero_press_rps"], c["rps_per_press"] * n)
         return c["rps_min"] + (c["rps_max"] - c["rps_min"]) * (1 - np.exp(-n / c["k"]))

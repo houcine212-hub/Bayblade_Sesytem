@@ -1,8 +1,8 @@
 @startuml state-bey-combat
-title State Machine: one Bey during a match (Match Server) [P, v0.4]
+title State Machine: one Bey during a match (Match Server) [P, v0.4.1]
 [*] --> AWAITING_LAUNCH
 AWAITING_LAUNCH --> LAUNCHING : LAUNCH_WINDOW opens (5 s)
-LAUNCHING --> ACTIVE : RELEASE (launchRps = 10 x presses, 20 if none; max 350)
+LAUNCHING --> ACTIVE : RELEASE (launchRps = max(20, 10 x presses); max 350)
 state ACTIVE {
   [*] --> STABLE
   STABLE --> STAGGERED : hit (N > 0)\ncontrol authority reduced 0.3 s

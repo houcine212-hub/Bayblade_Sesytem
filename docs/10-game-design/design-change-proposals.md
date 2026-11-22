@@ -1,12 +1,12 @@
 # Design Change Proposals (changes to confirmed decisions)
 
-| Document ID | DOC-CHG-001 | Version 0.4 | G0 outcomes recorded below (owner-confirmed D-01…D-03; delegated D-04…D-18) — technical verification pending M1 |
+| Document ID | DOC-CHG-001 | Version 0.4.1 | G0 outcomes recorded below (G0 accepted with changes by the owner, M1 only, 2026-11-22) (owner-confirmed D-01…D-03; delegated D-04…D-18) — technical verification pending M1 |
 |---|---|---|---|
 
 ## G0 outcome (2026-11-22)
 | CHG | Topic | G0 decision | Outcome |
 |---|---|---|---|
-| CHG-01 | Saturating launch curve | D-01 (owner) | **Rejected** — replaced by linear RPS = 10 × n (n ≥ 1); D-03 keeps 0 presses = 20 RPS |
+| CHG-01 | Saturating launch curve | D-01 (owner) | **Rejected** — replaced by linear 10 RPS per press; amended by owner decision OQ-LN-08 to **RPS = max(20, 10 × n)** |
 | CHG-02 | Component properties | D-05 (delegated) | Adopted |
 | CHG-03 | Magic → skills only | D-06 (delegated) | Adopted (indirect Energy contribution intentional) |
 | CHG-04 | Elimination set | D-09 (delegated) | Adopted (XTREME only where the arena defines the zone) |
@@ -20,7 +20,7 @@
 | CHG-13 | Median cap + ranked gate | D-04 (delegated) | Adopted with change: cap 35 → **max 350 RPS** (linear) |
 | CHG-14 | Units, burst guarantees | D-18 / D-14 (delegated) | Adopted |
 | CHG-15 | Data-model alignment | D-18 (delegated) | Adopted |
-Open owner questions created by these decisions: OQ-LN-08 (zero/one-tap inversion), OQ-LN-09 (accessibility), OQ-CB-12 (D-17 threshold under linear launch).
+Owner questions created by these decisions: OQ-LN-08 (zero/one-tap inversion) — **decided 2026-11-22: `max(20, 10 × n)`**; OQ-CB-12 (D-17 threshold) — **decided: 7-press (70-RPS) difference**; OQ-LN-09 (accessibility) — open. G0 accepted with changes for M1 only (2026-11-22).
 
 Format per Brief rule: existing decision → proposal → evidence → advantages → disadvantages → recommendation.
 

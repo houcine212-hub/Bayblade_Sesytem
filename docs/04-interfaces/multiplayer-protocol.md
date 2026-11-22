@@ -19,7 +19,7 @@
 | C2S_Ping / S2C_Pong | both | 0 | clientTimeMs / serverTimeMs | Clock offset & RTT estimate |
 | S2C_PhaseChanged | S→C | 0 | phase, startsAtServerTimeMs, durationMs, extra | PRE_LAUNCH, BATTLE, ENDED |
 | C2S_LaunchPressBatch | C→S | 2 | seq[], tClientMs[] (presses since last batch) | every 100 ms during LAUNCH_WINDOW; validation in launch spec §6 |
-| S2C_LaunchResult | S→C | 0 | [{userId, presses (0–35), launchRps (u16: 10 × presses, or 20 for 0 presses)}] | at RELEASE (FR-185, D-01/D-03) |
+| S2C_LaunchResult | S→C | 0 | [{userId, presses (0–35), launchRps (u16: max(20, 10 × presses))}] | at RELEASE (FR-185, D-01/D-03 amended by OQ-LN-08) |
 | C2S_ControlInput | C→S | 1 | seq, tick, x:int8, y:int8, prev3[] | **Confirmed joystick**; 30 Hz; clamped & rate-limited |
 | C2S_SkillActivate | C→S | 2 | seq, tick | Validated server-side (SQ-10) |
 | S2C_SkillEvent | S→C | 0 | userId, skillKey, START\|END\|REJECTED, endsAtTick?, reason? | |

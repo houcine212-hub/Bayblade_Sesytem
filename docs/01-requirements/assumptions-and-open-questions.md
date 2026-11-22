@@ -80,9 +80,9 @@ When a question is answered, move it to §3 (Decision log) with date and source;
 | OQ-CB-09 | Adopt v0.3.1 coefficient set + recoil as S-1 starting point? | **DECIDED — D-12 delegated: v0.4 values = S-1 starting values** | Yes (CHG-08) | DOC-CMB-001 §4.9 |
 | OQ-LN-06 | Launch press cap: median touch rate (CHG-13, provisional 7/s) or 12/s / 10/s / 8/s? | **DECIDED — D-04 delegated: cap 35 (provisional), re-select after S-5** | Median cap; final value after S-5 (D-04) | FR-181, NFR-074 |
 | OQ-CB-10 | How to reduce spin-race launch sensitivity (F-11): steering-dependent decay variance, lower k_R, spin floor? | H | Investigate in S-1 | DOC-BAL-001 §9 |
-| OQ-LN-08 | **Zero-tap / one-tap inversion** (D-01 + D-03): 0 presses = 20 RPS beats 1 press = 10 RPS (98.6% / 99.6% in the model). Keep (R0), RPS = max(20, 10·n) (R1, recommended), zero = 10 RPS (R2), or zero = 0 RPS → Spin Finish (R3)? Rules unchanged until the owner decides. | **B (owner)** | R1 | FR-065, FR-182 |
+| OQ-LN-08 | **Zero-tap / one-tap inversion** (D-01 + D-03): 0 presses = 20 RPS beats 1 press = 10 RPS (98.6% / 99.6% in the model). Keep (R0), RPS = max(20, 10·n) (R1, recommended), zero = 10 RPS (R2), or zero = 0 RPS → Spin Finish (R3)? Rules unchanged until the owner decides. | **DECIDED (owner, 2026-11-22) — R1: RPS = max(20, 10 × n)** | R1 | FR-065, FR-182 |
 | OQ-LN-09 | Accessibility of the linear launch + median cap: players unable to sustain ~7 presses/s lose 81–99% of mirrors at 25 presses. Assisted launch in friendly rooms? Other accommodation? | H (owner) | friendly-room assist (OQ-LN-02) | DOC-LAUNCH-001 §5.3 |
-| OQ-CB-12 | D-17 threshold: keep "30 RPS" (fails under linear launch for g ≳ 0.13–0.17) or restate relatively (e.g. 7 presses / r ≥ 0.2, passes in the model)? | **B (owner)** | relative restatement | FR-212, ADR-013 |
+| OQ-CB-12 | D-17 threshold: keep "30 RPS" (fails under linear launch for g ≳ 0.13–0.17) or restate relatively (e.g. 7 presses / r ≥ 0.2, passes in the model)? | **DECIDED (owner, 2026-11-22) — relative threshold: 7-press (70-RPS) difference** | relative restatement | FR-212, ADR-013 |
 | OQ-CB-11 | Meaning of "RPS never completely irrelevant": per-contact only (a), + outcome effect for g ≤ 0.20 (b), or outcome effect for all gaps (c)? | **DECIDED — D-17 delegated: option (b), provisional** | (b) (D-17) | ADR-013 |
 | OQ-LN-07 | Zero presses: 20 RPS auto-launch, or 0 RPS = immediate Spin Finish? | **DECIDED — D-03 owner-confirmed: 0 presses = 20 RPS** | 20 RPS | FR-183 |
 
@@ -143,4 +143,7 @@ When a question is answered, move it to §3 (Decision log) with date and source;
 | 2026-11-22 | D-01 | **Owner-confirmed:** RPS = 10 × accepted presses for n ≥ 1, strictly linear | G0 decision register |
 | 2026-11-22 | D-02 | **Owner-confirmed:** 1.5 s READY cue, then exactly 5.0 s window | G0 decision register |
 | 2026-11-22 | D-03 | **Owner-confirmed:** 0 presses = 20 RPS automatic launch | G0 decision register |
+| 2026-11-22 | OQ-LN-08 | **Owner:** RPS = max(20, 10 × n) — removes the zero/one-tap inversion (amends D-01 for n = 1) | Owner, conversation |
+| 2026-11-22 | OQ-CB-12 | **Owner:** D-17 outcome threshold restated as a 7-press (70-RPS) launch difference (explicit criterion change) | Owner, conversation |
+| 2026-11-22 | G0 | **Owner accepted G0 with changes — M1 technical spikes only** (no M2, no deployment, no merge) | Owner, conversation |
 | 2026-11-22 | D-04…D-18 | **Decided under owner delegation** (cap 35 / 350 RPS, FC-1 + ranked gate; component properties; Magic → skills; Energy provisional; TIP headline type; finish set; Burst metrics; same-tick draw; equation structure; AC-1…AC-9; Lock Integrity; conditional stack; 120 s spin ranking; D-17 (b); formula/data corrections) — pending M1 verification | G0 decision register; DOC-CHG-040 |

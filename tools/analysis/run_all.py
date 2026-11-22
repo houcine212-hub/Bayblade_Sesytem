@@ -1,4 +1,4 @@
-"""Runs every analysis experiment quoted in DOC-BAL-001 (v0.4) and writes results/.
+"""Runs every analysis experiment quoted in DOC-BAL-001 (v0.4.1) and writes results/.
 Usage:  python3 run_all.py            (about 1-3 minutes)
 NOT game code - design-phase analysis only."""
 import csv, itertools, json, math, os, platform, copy
@@ -59,8 +59,8 @@ def main():
     for f in os.listdir(OUT):
         os.remove(os.path.join(OUT, f))
     summary = {"python": platform.python_version(), "numpy": np.__version__, "duels_per_cell": N,
-               "primary_config": "v0.4-candidate (D-01 linear launch, D-04 cap 35, D-16 120 s)"}
-    cand = Model(load("v0.4-candidate.json"))
+               "primary_config": "v0.4.1-candidate (RPS = max(20, 10n), cap 35, 120 s)"}
+    cand = Model(load("v0.4.1-candidate.json"))
     old = Model(load("v0.3.1-candidate.json"))
     ref = Model(load("v0.2-reference.json"))
 
@@ -76,7 +76,7 @@ def main():
     write_csv(os.path.join(OUT, "e1_advantage_table.csv"), e1)
 
     # E2 type matrices
-    for tag, m, seed in (("v0.4", cand, 101), ("v0.3.1-superseded", old, 101), ("v0.2-reference", ref, 11)):
+    for tag, m, seed in (("v0.4.1", cand, 101), ("v0.3.1-superseded", old, 101), ("v0.2-reference", ref, 11)):
         rows, pairs, overall, shares, med = type_matrix(m, seed)
         write_csv(os.path.join(OUT, f"e2_type_matrix_{tag}.csv"), rows)
         write_csv(os.path.join(OUT, f"e2_type_pairs_{tag}.csv"), pairs)
@@ -84,7 +84,7 @@ def main():
                                 "min_pairing_median_s": min(r["t_median_s"] for r in rows), "max_pairing_median_s": max(r["t_median_s"] for r in rows),
                                 "max_draw": max(r["draw"] for r in rows)}
 
-    # E3 D-17: outcome effect of a 30-RPS launch difference (3 presses) vs Energy gap
+    # E3 superseded D-17 wording (30-RPS difference), kept for the record
     e3 = []
     for arche in ("Attack", "Balance", "Stamina"):
         for f in (1.0, 1.05, 1.10, 1.15, 1.20, 1.30):
@@ -96,10 +96,17 @@ def main():
             e3.append(dict(mirror=arche, scale=f, E_A=round(ea, 2), E_B=round(eb, 2), g=round(cand.rel(ea, eb), 4),
                            p_equal_350=p_eq, p_A320_B350=p_lo, p_A350_B320=p_hi, rps_swing_pp=round(100 * (p_hi - p_lo), 1)))
     write_csv(os.path.join(OUT, "e3_rps_vs_energy.csv"), e3)
-    # E3b same, with a 70-RPS (7-press) difference: r = 0.222, the relative gap used by the v0.3.1 test (120 vs 150)
+    # E3b D-17 AS AMENDED (v0.4.1, OQ-CB-12): 7-press = 70-RPS difference (280 vs 350, r = 0.222); includes the exact g = 0.20 boundary
+    def f_for_g(b, target):
+        lo, hi = 1.0, 2.0
+        for _ in range(60):
+            mid = (lo + hi) / 2
+            if cand.rel(cand.energy(scaled(b, mid)), cand.energy(b)) < target: lo = mid
+            else: hi = mid
+        return (lo + hi) / 2
     e3b = []
     for arche in ("Attack", "Balance", "Stamina"):
-        for f in (1.0, 1.10, 1.15, 1.20, 1.30):
+        for f in sorted((1.0, 1.10, 1.15, round(f_for_g(cand.builds[arche], 0.20), 6), 1.20, 1.30)):  # rows ordered by g
             a = scaled(cand.builds[arche], f); b = cand.builds[arche]
             p_lo = cand.duel(a, b, 280, 350, n=N, seed=6)["win_a"]
             p_hi = cand.duel(a, b, 350, 280, n=N, seed=7)["win_a"]
@@ -128,7 +135,7 @@ def main():
         e5.append(dict(case=case, n_max=nmax, presses_a=pa, rps_a=float(cand.launch_rps(pa)), presses_b=pb, rps_b=float(cand.launch_rps(pb)),
                        p_a_attack_mirror=ra["win_a"], p_a_stamina_mirror=rs["win_a"]))
     add("zero_vs_one_press", 35, 0, 1, 31, 32)
-    for p in (0, 1, 2, 3, 5):
+    for p in (0, 1, 2, 3, 4, 5):
         add("low_press_vs_median", 35, p, 35, 31, 32)
     for human in (20, 25, 28, 30, 32, 35):
         add("capped_presser_vs_human", 35, 35, human)

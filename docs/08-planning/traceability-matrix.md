@@ -1,6 +1,6 @@
-# Requirements Traceability Matrix (v0.4)
+# Requirements Traceability Matrix (v0.4.1)
 
-| Document ID | DOC-RTM-001 | Status | [P] — generated from SRS v0.4; keep in sync |
+| Document ID | DOC-RTM-001 | Status | [P] — generated from SRS v0.4.1; keep in sync |
 |---|---|---|---|
 
 Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protocol (`04-interfaces`) · Test (`07-quality-operations`).
@@ -36,7 +36,7 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | FR-050 | P | UC-08 | SQ-03, state-match | game_match | API-36, INT-01 | Allocation tests |
 | FR-051 | P | UC-08 | SQ-03 | (memory: ticket hashes) | INT-01 TicketGrant, C2S_Hello | TC-002 |
 | FR-052 | C (D-02) | UC-09 | SQ-04, state-match, state-bey-combat | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch, S2C_LaunchResult | TC-016, TC-017 |
-| FR-053 | C (D-01) | UC-09 | SQ-04, state-match, state-bey-combat | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch, S2C_LaunchResult | TC-016, TC-017 |
+| FR-053 | C (D-01 as amended by OQ-LN-08) | UC-09 | SQ-04, state-match, state-bey-combat | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch, S2C_LaunchResult | TC-016, TC-017 |
 | FR-054 | C / P | UC-09, UC-10 | combat-model-class | match_participant.stat_* | — | TC-022 |
 | FR-055 | C (O-7) / P (method) | UC-10 | SQ-04, component | (memory) | S2C_Snapshot | Simulation golden tests |
 | FR-056 | C | UC-10 | SQ-05, state-bey-combat | match_participant.finish_type | S2C_Eliminated | TC-003 |
@@ -48,7 +48,7 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | FR-062 | D (D-11) | UC-10 | state-match, SQ-05 | end_reason=ALL_DRAW, outcome_reason=DRAW_SHARED | S2C_Eliminated, INT-02 | TC-040 |
 | FR-063 | TBD (OQ-GP-05) | UC-13 | SQ-08 | match_participant.connection_outcome | API-40, API-41 | TC-007 |
 | FR-064 | TBD rule / P mechanism | UC-13 | SQ-08 | match_participant.connection_outcome | API-40, API-41 | TC-007 |
-| FR-065 | C (D-03) / TBD | UC-09 | SQ-04 | launch_presses = 0 → launch_rps = 20 | S2C_LaunchResult | TC-L01, TC-038 |
+| FR-065 | C (D-03, OQ-LN-08) / TBD | UC-09 | SQ-04 | launch_presses ≤ 2 → launch_rps = 20 (max(20, 10n)) | S2C_LaunchResult | TC-L01, TC-038 |
 | FR-066 | TBD (OQ-GP-17) | UC-10 | SQ-05, state-match | game_match.end_reason | TBD | TBD after decision |
 | FR-067 | D (D-11) | UC-10 | state-match, SQ-05 | end_reason=ALL_DRAW, outcome_reason=DRAW_SHARED | S2C_Eliminated, INT-02 | TC-040 |
 | FR-068 | TBD rule / P default | UC-10 | SQ-08, state-match | game_match.status=ABORTED | INT-01 heartbeat | TC-008 |
@@ -103,7 +103,7 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | FR-175 | P | UC-24 | SQ-09, state-bey-combat | (memory) | C2S_ControlInput, S2C_Snapshot.lastProcessedSeq | TC-025, TC-026 |
 | FR-180 | C | UC-09 | SQ-04 | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch | TC-016, TC-017 |
 | FR-181 | D (D-04) | UC-09 | SQ-04 | match_participant.launch_presses, launch_rps | C2S_LaunchPressBatch | TC-016, TC-017 |
-| FR-182 | C (D-01, D-03) | UC-09 | SQ-04, state-bey-combat | match_participant.launch_presses, launch_rps | S2C_LaunchResult (u16) | TC-016, TC-032, TC-L02 |
+| FR-182 | C (D-01, D-03, OQ-LN-08) | UC-09 | SQ-04, state-bey-combat | match_participant.launch_presses, launch_rps | S2C_LaunchResult (u16) | TC-016, TC-032, TC-L02 |
 | FR-183 | C / D (cap D-04) | UC-09 | SQ-04, state-bey-combat | match_participant.launch_presses, launch_rps | S2C_LaunchResult (u16) | TC-016, TC-032, TC-L02 |
 | FR-184 | C (server authority) / P | UC-09 | SQ-04 | match_participant.launch_flags | S2C_LaunchResult | TC-018 |
 | FR-185 | P | UC-09 | SQ-04 | match_participant.launch_flags | S2C_LaunchResult | TC-018 |
@@ -123,7 +123,7 @@ Columns: Use case (UC) · Diagram (`02-uml`) · Data (`03-data`) · API / protoc
 | FR-205 | P | UC-04 | combat-model-class | match_participant.primary_type, secondary_type | API-23 | TC-021 |
 | FR-210 | C | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
 | FR-211 | C | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
-| FR-212 | C / D (D-17) | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
+| FR-212 | C / D (D-17, OQ-CB-12) | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022, AC-6 (7-press threshold, M1 step 1.7) |
 | FR-213 | C (list) / D (structure D-12; values experimental) | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
 | FR-214 | P | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |
 | FR-215 | C / P (target) | UC-10 | SQ-05, combat-model-class | (memory) | S2C_Snapshot | TC-022 |

@@ -1,5 +1,5 @@
 @startuml activity-room-to-match
-title Activity: Room-to-Match Lifecycle [v0.4]
+title Activity: Room-to-Match Lifecycle [v0.4.1]
 start
 :Host creates room (FR-030);
 :Backend generates room code (FR-031);
@@ -27,7 +27,7 @@ else (no)
 endif
 :READY cue 1.5 s, no presses accepted [D-02];
 :LAUNCH_WINDOW exactly 5 s: rapid presses, server counts\n(interval >= 142.857 ms, max 35) (FR-180..184, D-04);
-:Launch RPS = 10 x presses (0 presses = 20), max 350,\nbroadcast (FR-185, D-01/D-03);
+:Launch RPS = max(20, 10 x presses), max 350,\nbroadcast (FR-185, D-01/D-03, OQ-LN-08);
 :BATTLE: joystick steering, collisions, skills (server-authoritative);
 while (competitors remaining >= 2 and time < 120 s?) is (yes)
   :Tick: resolve contacts with advantage S (FR-210..215);

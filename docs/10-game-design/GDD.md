@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|---|---|
 
 ## 1. Pitch
-Original online spinning-top battles for up to **5 competitors** per arena on Windows, Android and Linux (macOS/iOS later). Build your Bey from parts, **launch it by rapid-pressing** for 5 seconds (10 RPS per accepted press, up to 35 presses = 350 RPS; zero presses = 20 RPS), **steer it with a 360° joystick**, fire its **skill** at the right moment, and be the last one spinning — ideally by **Burst Finish**.
+Original online spinning-top battles for up to **5 competitors** per arena on Windows, Android and Linux (macOS/iOS later). Build your Bey from parts, **launch it by rapid-pressing** for 5 seconds (RPS = max(20, 10 × accepted presses), up to 35 presses = 350 RPS), **steer it with a 360° joystick**, fire its **skill** at the right moment, and be the last one spinning — ideally by **Burst Finish**.
 
 ## 2. Core loop
 Build (parts → attributes, type, Energy) → room by code → ready → **launch window (5 s rapid press)** → battle (steer, collide, skill) → eliminations (Burst / Over / Spin / Xtreme) → spectate if out → result & history → adjust build.

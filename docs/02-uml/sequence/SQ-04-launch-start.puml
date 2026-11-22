@@ -1,5 +1,5 @@
 @startuml SQ-04
-title SQ-04 READY (1.5 s), 5-second rapid-press LAUNCH and battle start [v0.4: D-01..D-04]
+title SQ-04 READY (1.5 s), 5-second rapid-press LAUNCH and battle start [v0.4.1: D-01..D-04, OQ-LN-08]
 participant "Competitor Client" as C
 participant "Spectator Clients" as S
 participant "Match Server" as MS
@@ -15,7 +15,7 @@ loop every 100 ms during window
   C -> MS : C2S_LaunchPressBatch {seq[], tClientMs[]} (reliable)
   MS -> MS : t = tClient + Δ; accept if W0 <= t < W0+5000,\nnot future, not back-dated > RTT/2+250 ms,\ninterval >= 142857 us, count < 35 (D-04)
 end
-MS -> MS : at W0+5000+300 ms grace: n = accepted presses\nlaunchRps = 10 * n (n >= 1), 20 if n = 0 (D-01/D-03), max 350; flags (regularity)
+MS -> MS : at W0+5000+300 ms grace: n = accepted presses\nlaunchRps = max(20, 10 * n) (OQ-LN-08), max 350; flags (regularity)
 MS -> C : S2C_LaunchResult {all: userId, presses, launchRps}
 MS -> S : S2C_LaunchResult
 MS -> C : S2C_PhaseChanged {RELEASE} then {BATTLE, opening 3 s}

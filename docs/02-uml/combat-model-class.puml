@@ -32,7 +32,7 @@ package "Content data (versioned, content_version)" {
     effectParams : map
   }
   class BalanceConfig <<P>> {
-    launch (rpsPerPress=10, zeroPressRps=20, nMax=35, minIntervalUs=142857)
+    launch (rpsPerPress=10, minLaunchRps=20 [max(20,10n)], nMax=35, minIntervalUs=142857)
     spinScale (omegaRef=350, omegaWob=58.33, stop=8)
     energyWeights
     advantage (wMax,wMin,sigma,kE,kR,alpha)

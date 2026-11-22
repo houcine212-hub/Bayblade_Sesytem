@@ -1,5 +1,5 @@
 # ADR-013: Combat statistics, Energy formula and RPS–Energy advantage model
-- **Status:** **Structure accepted at G0 under owner delegation (D-12, D-17 option b provisional, D-13 criteria, D-07 Energy provisional)**; coefficients are **S-1 experimental starting values, not approved as balance**; pending M1 verification (revised v0.4)
+- **Status:** **Structure accepted at G0 under owner delegation (D-12, D-17 option b provisional, D-13 criteria, D-07 Energy provisional)**; coefficients are **S-1 experimental starting values, not approved as balance**; pending M1 verification; owner accepted G0 for M1 on 2026-11-22; D-17 threshold amended by owner (OQ-CB-12) (revised v0.4.1)
 
 ## Context
 Confirmed: four primary attributes; Energy derived; RPS separate; RPS influence decreases smoothly with the Energy gap and is never completely irrelevant (Master Update §7).
@@ -10,14 +10,14 @@ Confirmed: four primary attributes; Energy derived; RPS separate; RPS influence 
 ## Decision (proposed)
 1. Energy = (ATK + DEF + STA + MAG)/4 — **provisional** (D-07) until skill-inclusive AC-7; not balance-certified.
 2. Advantage function S; RPS enters *impact* only through S; it also acts physically via spin reservoir, stability and burst threshold.
-3. v0.4 candidate coefficients (DOC-CMB-001 §4.9, `tools/analysis/configs/v0.4-candidate.json`; spin coefficients re-expressed for the 350-RPS launch scale) as **S-1 experimental starting values only** (D-12).
+3. v0.4.1 candidate coefficients (DOC-CMB-001 §4.9, `tools/analysis/configs/v0.4.1-candidate.json`; spin coefficients re-expressed for the 350-RPS launch scale) as **S-1 experimental starting values only** (D-12).
 4. Magic acts directly only through skills.
 
 ## Meaning of "RPS is never completely irrelevant" — decision D-17 (audit H-03)
 | Option | Requirement | Status in the model |
 |---|---|---|
 | (a) Per-contact only | `w(g) ≥ 0.15` for every contact | holds by construction |
-| **(b) Decided (D-17, delegated, provisional)** | (a) and, for `|g| ≤ 0.20`, a 30-RPS launch advantage changes win probability by ≥ 10 points | **v0.4 linear launch: fails** — 6.3 (Attack, g 0.174), 2.8 (Balance, g 0.182), 3.9 (Stamina, g 0.135) points; with a 70-RPS (r = 0.22) difference it passes (≥ 18.3 points). Owner question OQ-CB-12: absolute vs relative threshold |
+| **(b) Decided (D-17), threshold amended by owner (OQ-CB-12, 2026-11-22)** | (a) and, for `|g| ≤ 0.20`, a **7-press (70-RPS) launch difference** changes win probability by ≥ 10 points | v0.4.1 model: Attack ≥ 12.6, Balance ≥ 17.3 points up to g = 0.20; **Stamina 9.9 points at g = 0.20 — borderline fail** (≥ 29.0 up to g = 0.161). The superseded 30-RPS wording failed (6.3 / 2.8 / 3.9) and is **not** used as evidence. |
 | (c) Outcome for all gaps | a minimum outcome effect at any g | fails (1.7 points at g = 0.261); would need structural change (cap attribute advantage or Energy-band matchmaking for all play) |
 
 ## Contradictions and status
@@ -43,7 +43,7 @@ Definitions: 1-v-1 results are **seat-averaged**; equal Energy means |g| ≤ 0.0
 | AC-3 | Burst metrics per D-10 (proposal: M-1 ≥ 30%; M-2 most frequent in A→A, A→S, A→B) | v0.4: 33.8%; 56.0 / 66.6 / 58.7% — pass (model only; D-10 adopted) |
 | AC-4 | Cell medians 15–100 s; overall 30–90 s | v0.4: 8.5–109.8 s — **fail**; overall 53.3 s — pass |
 | AC-5 | Draws ≤ 5% per cell | v0.4: ≤ 3.1% — pass |
-| AC-6 | Per D-17 option (b) | v0.4: **fail as written** (see above) |
+| AC-6 | Per D-17 option (b), amended threshold (7 presses / 70 RPS) | v0.4.1: **borderline fail** (Stamina 9.9 points at g = 0.20; others pass) |
 | AC-7 | Equal-budget Magic/physical shift 45–55% with real skills | **not measured** (72.7% without skills) |
 | AC-8 | **FFA:** in five-competitor bot matches with random type composition, each primary type's win share within ±5 points of its expected share | not measurable in the 1-v-1 model |
 | AC-9 | Launch fairness FC-1 (NFR-074) | v0.4: 47.1% / 51.0% only if the real median is 35 — **not measured** (S-5) |

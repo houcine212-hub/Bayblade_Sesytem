@@ -2,8 +2,8 @@
   "python": "3.13.18",
   "numpy": "2.5.3",
   "duels_per_cell": 4000,
-  "primary_config": "v0.4-candidate (D-01 linear launch, D-04 cap 35, D-16 120 s)",
-  "e2_v0.4": {
+  "primary_config": "v0.4.1-candidate (RPS = max(20, 10n), cap 35, 120 s)",
+  "e2_v0.4.1": {
     "overall_vs_other_types": {
       "Attack": 0.5589583333333333,
       "Defense": 0.5337291666666667,

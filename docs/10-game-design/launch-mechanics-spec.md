@@ -1,9 +1,9 @@
 # Launch Mechanics Specification — 5-Second Rapid Press
 
-| Document ID | DOC-LAUNCH-001 | Version | 0.4 (G0 decisions integrated) | Status | D-01…D-03 **owner-confirmed**; D-04 **decided under owner delegation** — all pending M1 verification (S-5, S-1) |
+| Document ID | DOC-LAUNCH-001 | Version | 0.4.1 | Status | D-01…D-03 **owner-confirmed**, amended by owner decision **OQ-LN-08** (2026-11-22); D-04 decided under owner delegation — pending M1 verification (S-5, S-1) |
 |---|---|---|---|---|---|---|---|
 
-v0.4 changes: the saturating curve (CHG-01) is **replaced** by the owner's linear rule (D-01); READY cue confirmed (D-02); zero presses = 20 RPS confirmed (D-03); counted-press cap 35 → max **350 RPS** (D-04). All numbers from `tools/analysis/results/e5_launch.csv` (v0.4 config). The previous 129.3 / 144.42 RPS maxima no longer apply.
+v0.4.1: owner resolved the zero/one-tap inversion — **RPS = max(20, 10 × n)**. v0.4 changes: the saturating curve (CHG-01) is **replaced** by the owner's linear rule (D-01); READY cue confirmed (D-02); zero presses = 20 RPS confirmed (D-03); counted-press cap 35 → max **350 RPS** (D-04). All numbers from `tools/analysis/results/e5_launch.csv` (v0.4.1 config). The previous 129.3 / 144.42 RPS maxima no longer apply.
 
 ## 1. Confirmed mechanic
 Before each battle: a 5-second launch window; a dedicated launch zone; players press repeatedly as fast as possible; the number of successful presses determines the initial rotation; 5 presses = 50 RPS; no hold-to-charge [C].
@@ -24,25 +24,20 @@ Before each battle: a 5-second launch window; a dedicated launch zone; players p
 6. **Hard cap:** at most **`n_max = 35`** accepted presses. With the half-open window a 36th press could only fall at exactly 5000 ms, which is excluded; the explicit cap covers any timing edge.
 7. Strictly increasing sequence numbers.
 
-## 4. RPS rule — D-01 and D-03 (owner-confirmed)
+## 4. RPS rule — D-01/D-03 as amended by owner decision OQ-LN-08 (2026-11-22)
 ```
 n = min(accepted_press_count, 35)
-RPS(n) = 20            if n = 0       (D-03: automatic launch, deliberate exception, no automatic elimination)
-RPS(n) = 10 × n        if n ≥ 1       (D-01: strictly linear; no exponential, saturating or rescaled formula)
+RPS(n) = max(20, 10 × n)
 ```
 | n | 0 | 1 | 2 | 3 | 5 | 10 | 15 | 20 | 25 | 28 | 30 | 32 | **35 (cap)** |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| RPS | **20** | **10** | 20 | 30 | **50** | 100 | 150 | 200 | 250 | 280 | 300 | 320 | **350** |
-Minimum RPS of a pressing player: 10 (n = 1). Maximum: **350** (n = 35). The value shown to players is the value used by the server — **no hidden conversion** to another scale.
+| RPS | **20** | **20** | **20** | 30 | **50** | 100 | 150 | 200 | 250 | 280 | 300 | 320 | **350** |
+- 5 presses = 50 RPS (original reference) holds; the rule is strictly linear (10 RPS per press) from n = 2 upward, with a floor of 20 RPS.
+- Zero presses still launch automatically at 20 RPS, with no automatic elimination (D-03 intent preserved).
+- Minimum launch: **20 RPS**; maximum: **350 RPS** (n = 35). Displayed RPS = authoritative value (no hidden conversion).
 
-### 4.1 ⚠ Zero-tap / one-tap paradox — flagged for owner decision (OQ-LN-08)
-Under D-01 + D-03, **0 presses gives 20 RPS but 1 press gives 10 RPS**, and 2 presses equals 0 presses. Measured (v0.4 model): a 0-press Bey beats a 1-press Bey **98.6%** (Attack mirror) / **99.6%** (Stamina mirror). A player who can press only once is better off not pressing. The rules are kept **exactly as confirmed**; resolution options for the owner:
-| Option | Rule | Effect | Changes a confirmed decision? |
-|---|---|---|---|
-| R0 | keep as is | paradox remains; tiny practical impact (both lose ≥ 98.9% vs a median player) | no |
-| **R1 (recommended)** | `RPS = max(20, 10 × n)` | no inversion; identical for n = 0 and n ≥ 2; n = 1 becomes 20 | yes — D-01 for n = 1 |
-| R2 | zero presses = 10 RPS | no inversion; linear everywhere | yes — D-03 |
-| R3 | zero presses = 0 RPS → immediate SPIN finish | no inversion; harsh for AFK | yes — D-03 |
+### 4.1 Zero/one-tap inversion — resolved (owner decision OQ-LN-08)
+v0.4 rules (0 → 20 RPS, 1 → 10 RPS) let a non-pressing player beat a one-press player 98.6% / 99.6% in the model. The owner chose option **R1** (`max(20, 10 × n)`). Now 0, 1 and 2 presses all give 20 RPS (model: 0 vs 1 press → equal launch; no inversion). This changes D-01 only for n = 1 (10 → 20 RPS), by owner decision.
 
 ### 4.2 Spin as an authoritative gameplay quantity
 350 RPS at the 60 Hz server tick is 5.83 revolutions per tick. Spin is therefore simulated as an **authoritative scalar state** (`spin_rps`) that drives decay, stability, burst threshold and outcomes; the 3D body is **not** rotated physically at that rate, and clients render a visually capped/blurred spin decoupled from the value. This is a **design approach to prototype in S-1**, not a proven result (DOC-CMB-001 §2.4).
@@ -51,7 +46,7 @@ Under D-01 + D-03, **0 presses gives 20 RPS but 1 press gives 10 RPS**, and 2 pr
 ### 5.1 Criterion FC-1 (NFR-074, kept)
 A player who always reaches the cap must not win more than 60% of equal-build 1-v-1 mirrors (Attack, Stamina) against a player at the **measured median** touch press count.
 
-### 5.2 Measured (v0.4 model, linear launch, N = 4,000; P(capped presser wins) Attack / Stamina mirror)
+### 5.2 Measured (v0.4.1 model, linear launch, N = 4,000; P(capped presser wins) Attack / Stamina mirror)
 | Opponent presses (RPS) | 20 (200) | 25 (250) | 28 (280) | 30 (300) | 32 (320) | **35 (350)** |
 |---|---|---|---|---|---|---|
 | Capped presser (35 → 350) | 83.3% / 99.3% | 81.2% / 99.1% | 78.0% / 98.8% | 73.8% / 97.8% | 65.8% / 91.0% | **47.1% / 51.0%** |
@@ -86,4 +81,4 @@ Ranked/rating-changing modes stay **disabled** until FC-1 passes with S-5 data a
 | Ranked gate | competitive damage | — |
 
 ## 9. Tests
-TC-L01 0 presses → 20 RPS · TC-L02 1 → 10, 5 → 50, 15 → 150, 25 → 250, 35 → 350 · TC-L03 36th press rejected; interval 142 856 µs rejected, 142 857 µs accepted · TC-L04 press at exactly W0 + 5000 rejected · TC-L05 back-dated 1 s rejected · TC-L06 key repeat → 1 press · TC-L07 300 ms RTT → no valid press lost · TC-L08 READY-phase presses not counted · TC-L09 displayed RPS equals server RPS (no rescaling) · TC-034 FC-1 from S-5 data.
+TC-L01 0, 1, 2 presses → 20 RPS · TC-L02 3 → 30, 5 → 50, 15 → 150, 25 → 250, 35 → 350 · TC-L03 36th press rejected; interval 142 856 µs rejected, 142 857 µs accepted · TC-L04 press at exactly W0 + 5000 rejected · TC-L05 back-dated 1 s rejected · TC-L06 key repeat → 1 press · TC-L07 300 ms RTT → no valid press lost · TC-L08 READY-phase presses not counted · TC-L09 displayed RPS equals server RPS (no rescaling) · TC-034 FC-1 from S-5 data.

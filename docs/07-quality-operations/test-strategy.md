@@ -56,8 +56,8 @@ Every test case ID `TC-xxx` references requirement IDs; see `../08-planning/trac
 | TC-013 | FR-130/131 | Block & report flows; rate limit |
 | TC-014 | FR-024 | Edit loadout after match → history unchanged |
 | TC-015 | SEC-008/011 | Room-code brute force throttled |
-| TC-016 | FR-182/183 | Linear launch (D-01/D-03): 0 → 20, 1 → 10, 5 → 50, 15 → 150, 25 → 250, 35 → 350; no rescaling between server and display |
-| TC-017 | FR-181 | Key repeat, held key, presses < 83 ms apart, presses outside zone not counted |
+| TC-016 | FR-182/183 | Launch rule `max(20, 10 × n)` (D-01/D-03 amended by OQ-LN-08): 0 → 20, 1 → 20, 2 → 20, 3 → 30, 5 → 50, 15 → 150, 25 → 250, 35 → 350; no rescaling between server and display |
+| TC-017 | FR-181 | Key repeat, held key, presses < 142 857 µs apart (interval floor, D-04), presses outside zone not counted |
 | TC-018 | FR-184/SEC-013 | Back-dated / future / late batches rejected; 300 ms RTT player loses no valid presses |
 | TC-019 | FR-191/192 | Energy recomputed from attributes; API rejects Energy as input |
 | TC-020 | FR-194 | Schema & UI lint: no ambiguous `stamina` field for current spin |
@@ -77,7 +77,7 @@ Every test case ID `TC-xxx` references requirement IDs; see `../08-planning/trac
 | TC-034 | NFR-074 / FR-186 | FC-1 computed from S-5 press data + S-1 physics; ranked endpoints return 403 RANKED_DISABLED until FC-1 passes |
 | TC-035 | FR-226 | Same pair contact reported on 6 consecutive ticks → one contact event; v_n ≤ v_min → no effects |
 | TC-036 | FR-202 | Classification guard: P = 0 / 29 → UNCLASSIFIED; P = 30 classified; threshold equalities; tie order |
-| TC-038 | FR-065/OQ-LN-08 | Regression test documenting the confirmed rule: 0 presses → 20 RPS and 1 press → 10 RPS (update only if the owner resolves OQ-LN-08) |
+| TC-038 | FR-065/OQ-LN-08 | Regression test for the owner decision: 0, 1 and 2 presses → 20 RPS (no zero/one-tap inversion); 3 presses → 30 RPS |
 | TC-039 | FR-069 (D-16) | At 120 s survivors ranked by current spin; exact equal spin → shared placement |
 | TC-040 | FR-062/067 (D-11) | Last competitors eliminated in the same tick → draw, no unique winner, no rank-affecting result, no restart |
 | TC-041 | DOC-CMB-001 §2.4 | spin_rps up to 350 handled as scalar; snapshot u16 carries 350.0 without overflow; visual spin capped |

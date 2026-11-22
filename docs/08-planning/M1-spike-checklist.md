@@ -1,6 +1,6 @@
 # M1 Technical Spike Checklist (executable)
 
-| Document ID | DOC-M1-001 | Version | 0.4 | Status | **Not started.** M1 may begin only after the owner accepts the G0 approval-with-changes review. Spikes are throw-away prototypes, not game features. |
+| Document ID | DOC-M1-001 | Version | 0.4.1 | Status | **Authorised by the owner's G0 acceptance (2026-11-22) — not started; no step has been run.** Spikes are throw-away prototypes, not game features. |
 |---|---|---|---|---|---|---|---|
 
 Rules: every spike produces a short report in `docs/11-spikes/S-x-report.md` (to be created when run) with environment, steps, raw data location, and a pass/fail line per criterion. **Failed or unmeasured criteria are not passing (D-13).** If a criterion proves unrealistic, raise an explicit change decision — never weaken it silently. Nothing here is implemented yet.
@@ -14,7 +14,8 @@ Rules: every spike produces a short report in `docs/11-spikes/S-x-report.md` (to
 | 5.4 | Re-select the cap = measured median (D-04) | proposed cap value | owner informed before adoption |
 | 5.5 | Re-run `tools/analysis` with measured distributions; compute FC-1 | e5 results | **AC-9 / FC-1 ≤ 60%** |
 | 5.6 | Measure regularity (CV) of humans vs a scripted macro | distributions | document false-positive rate; no auto-punishment |
-| 5.7 | Record the zero/one-tap rule behaviour (TC-038) | note | informs OQ-LN-08 |
+| 5.7 | Verify the launch rule `max(20, 10 × n)` end-to-end (TC-016, TC-038: 0, 1, 2 → 20 RPS) | test log | all cases match (OQ-LN-08 decided) |
+| 5.8 | Accessibility sample: participants with reduced press rate / one-handed play | distribution | informs OQ-LN-09 (assisted launch in friendly rooms) |
 
 ## S-1 — Combat simulation in Godot headless (feeds D-12, D-14, D-16, D-17, AC-1…AC-8)
 | # | Step | Output | Pass criterion |
@@ -25,7 +26,7 @@ Rules: every spike produces a short report in `docs/11-spikes/S-x-report.md` (to
 | 1.4 | 1-v-1 matrices, ≥ 4,000 matches per cell, fixed seeds | CSV | AC-1, AC-2, AC-4, AC-5 |
 | 1.5 | Five-competitor FFA bots with random type composition | CSV | **AC-8** |
 | 1.6 | Implement the 7 MVP skills; equal-budget Magic test | CSV | **AC-7** (D-07 provisional until then) |
-| 1.7 | D-17 test with 30-RPS and relative differences | CSV | **AC-6** per the owner's OQ-CB-12 answer |
+| 1.7 | D-17 test: 7-press (70-RPS) difference at g = 0, 0.10, 0.20 for every type mirror | CSV | **AC-6** (owner-amended, OQ-CB-12): ≥ 10 points for |g| ≤ 0.20; model warns Stamina 9.9 at g = 0.20 |
 | 1.8 | Time-limit ranking share and spin-ranking effects in FFA (D-16) | CSV | report; no criterion yet |
 | 1.9 | Burst metrics M-1 / M-2 (D-10) | CSV | **AC-3** |
 | 1.10 | Compare with `tools/analysis` predictions | diff report | explain divergences |

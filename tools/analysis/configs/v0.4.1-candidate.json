@@ -1,6 +1,6 @@
 {
-  "name": "v0.4-candidate",
-  "status": "G0 delegated decisions D-01..D-04/D-16 applied; coefficients remain S-1 EXPERIMENTAL starting values (D-12) - not balanced",
+  "name": "v0.4.1-candidate",
+  "status": "G0 accepted with changes (M1 only). Launch per owner decision OQ-LN-08: RPS = max(20, 10*n), cap 35. Coefficients remain S-1 EXPERIMENTAL starting values (D-12) - not balanced",
   "scaling_note": "Absolute spin-rate coefficients re-expressed for the 350-RPS launch scale: c_d, c_s and wobble multiplied by kappa = 350/150 from v0.3.1; burst-threshold reference omega_ref = 350 RPS. Stop threshold kept at 8 RPS (< 10 RPS one-press launch). Displayed RPS is NOT converted.",
   "coefficients": {
     "n_max": 35,
@@ -35,11 +35,11 @@
     "d_cap": 49.0,
     "skill_sd": 0.15,
     "press_sd": 8.0,
-    "launch_model": "linear",
+    "launch_model": "linear_min",
     "rps_per_press": 10.0,
-    "zero_press_rps": 20.0,
     "omega_ref": 350.0,
-    "time_limit_rank": true
+    "time_limit_rank": true,
+    "min_launch_rps": 20.0
   },
   "builds": {
     "Attack": {

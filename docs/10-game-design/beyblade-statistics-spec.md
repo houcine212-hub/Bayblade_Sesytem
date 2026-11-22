@@ -1,6 +1,6 @@
 # Beyblade Statistics & Energy Specification
 
-| Document ID | DOC-STAT-001 | Version | 0.4 (G0 decisions integrated) | Status | Attributes [C]; component properties (D-05), Magic scope (D-06), Energy formula (D-07, **provisional**) decided under owner delegation; numeric values = S-1 experimental starting values |
+| Document ID | DOC-STAT-001 | Version | 0.4.1 | Status | Attributes [C]; component properties (D-05), Magic scope (D-06), Energy formula (D-07, **provisional**) decided under owner delegation; numeric values = S-1 experimental starting values |
 |---|---|---|---|---|---|---|---|
 
 ## 1. The six quantities that must never be confused
@@ -11,7 +11,7 @@
 | **Stamina (attribute)** | Primary attribute: **how slowly** spin is lost (decay & collision spin-loss resistance) | No | 0–100 | `stat_sta` | STA bar | C |
 | **Magic** | Primary attribute: skill charge & potency | No | 0–100 | `stat_mag` | MAG bar | C (role P) |
 | **Energy** | **Derived** overall power value from the four attributes. Not an attribute, never stored as an input | No | 0–100 | `energy` (computed; snapshot only) | "Energy" number on build screen | C (derived) / P (formula) |
-| **Launch RPS** | Initial rotation produced by the launch mechanic | Set once | 10–350 RPS (20 for zero presses; D-01/D-03/D-04) | `launch_rps` | "Launch: 280 RPS" | C (separate variable) |
+| **Launch RPS** | Initial rotation produced by the launch mechanic | Set once | 20–350 RPS: max(20, 10 × presses) (D-01/D-03 amended by OQ-LN-08; cap D-04) | `launch_rps` | "Launch: 280 RPS" | C (separate variable) |
 | **Spin (current)** | Remaining rotation at this moment — the "endurance left" | **Yes**, decays to 0 | 0–350 RPS | `spin_rps` (transient) | HUD **Spin** meter with RPS number | C (distinction) |
 | **Lock Integrity** | Remaining burst resistance this match (burst gauge) | Yes, decreases | 0–100 | `lock_integrity` (transient) | HUD **Burst gauge** (4 stages) | P |
 | **Skill Gauge** | Charge toward skill activation | Yes | 0–100 | `skill_gauge` (transient) | Skill button ring | P |
@@ -81,11 +81,11 @@ Because Energy includes Magic, Magic indirectly affects physical clashes through
 **Decision D-07 (owner-delegated), provisional:** Energy = plain mean (weight 1.0), the simplest reading of "the four attributes collectively determine Energy". It is **not balance-certified** until the skill-inclusive AC-7 test in S-1 (equal-budget Magic/physical shift within 45–55%). If AC-7 fails: retune with versioned evidence and re-review the formula (options: stronger or more frequent skills, a non-skill Magic effect, or a different weight). The skill-less tests above do **not** prove Magic parity. Magic's Energy contribution is intentional and indirect (D-06).
 
 ## 5. Spin dynamics (battle variable)
-- Initial: `spin_rps = launch_rps` (launch spec): 10–350 RPS, 20 RPS for zero presses. Spin is an authoritative **scalar gameplay quantity** (DOC-CMB-001 §2.4); displayed RPS = authoritative RPS.
+- Initial: `spin_rps = launch_rps` (launch spec): max(20, 10 × presses), i.e. 20–350 RPS. Spin is an authoritative **scalar gameplay quantity** (DOC-CMB-001 §2.4); displayed RPS = authoritative RPS.
 - Natural decay per second: `c_d · (1.25 − STA/100) · friction · (1 + c_move·mobility·|u|)` with `c_d = 1.983 RPS/s` on the 350-RPS scale (v0.4) where `|u|` = joystick magnitude (moving costs spin — the "stamina consumption" of control). (v0.3.1: 0.85; v0.2: 0.55); `c_move = 1.0`.
 - Collision spin loss: combat spec §4.4.
 - **Wobble:** below ω_wob = 58.33 RPS stability drops linearly (resistance × 0.45–1.0) (v0.4; v0.3.1: 25 RPS).
-- **Spin Finish:** `spin_rps < 8 RPS` → eliminated (reason SPIN). Kept at 8 RPS (not scaled) so that a 1-press launch (10 RPS) is not an immediate elimination. Official Spin Finish is spin "becomes zero" (O-2); 8 RPS is a game threshold (a top below it is visually stopping).
+- **Spin Finish:** `spin_rps < 8 RPS` → eliminated (reason SPIN). Kept at 8 RPS (not scaled), below the 20-RPS launch floor. Official Spin Finish is spin "becomes zero" (O-2); 8 RPS is a game threshold (a top below it is visually stopping).
 
 ## 6. Content data
 All values in this document live in versioned balance data (`content_version`), not in code (FR-240). Example schema in `../03-data/data-dictionary.md` §7.

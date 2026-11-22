@@ -47,7 +47,7 @@ L_j(t)  = L_j(t_start) − D_j
 BURST of j at tick t  ⇔  L_j(t) ≤ 0
                        OR ( L_j(t_start) ≤ 50  AND  max_i B_ij ≥ crit · T_j )     crit = 2.5
 ```
-Coefficients (S-1 experimental starting values, D-12/D-14): `T0 = 0.20, β = 2.0, ω_ref = 350 RPS, c_b = 3, D_cap = 49, crit = 2.5`. `lock_strength` comes mainly from CORE and TIP (OB-4). Values in `tools/analysis/configs/v0.4-candidate.json`.
+Coefficients (S-1 experimental starting values, D-12/D-14): `T0 = 0.20, β = 2.0, ω_ref = 350 RPS, c_b = 3, D_cap = 49, crit = 2.5`. `lock_strength` comes mainly from CORE and TIP (OB-4). Values in `tools/analysis/configs/v0.4.1-candidate.json`.
 
 ### 2.3 Guarantee: a Bey at full Lock Integrity cannot burst from one contact (FR-221, TC-023)
 1. Tick 1, `L_start = 100`: `D_j ≤ 49` ⇒ `L ≥ 51 > 0`; critical gate needs `L_start ≤ 50` ⇒ false. **No burst.**

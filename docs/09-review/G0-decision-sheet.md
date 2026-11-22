@@ -1,6 +1,6 @@
-# Gate G0 — Decision Sheet (v0.4)
+# Gate G0 — Decision Sheet (v0.4.1)
 
-| Document ID | DOC-G0-001 | Version | 0.4 (2026-11-22) | Status | **Decisions recorded. The owner confirmed D-01…D-03 individually and delegated D-04…D-18 to the assistant.** Changes integrated into the documents **pending owner verification**. Initial G0 documentation approval is proposed **with changes**. **Technical proof is M1 and has not been conducted.** |
+| Document ID | DOC-G0-001 | Version | 0.4.1 (2026-11-22) | Status | **Decisions recorded. The owner confirmed D-01…D-03 individually and delegated D-04…D-18 to the assistant.** Changes integrated into the documents **pending owner verification**. **The owner accepted G0 with changes for M1 technical spikes only (2026-11-22, in conversation)** and resolved OQ-LN-08 and OQ-CB-12. **Technical proof is M1 and has not been conducted.** |
 |---|---|---|---|---|---|---|---|
 
 Source: "Beyblade — Gate G0 Decisions (v0.3.1)" decision register supplied by the owner. Authority legend: **Owner** = individually confirmed by the product owner; **Delegated** = selected by the assistant under the owner's express delegation (priorities: fair, playable, maintainable, cross-platform). Delegated choices are decisions to record, **not evidence of technical validation**.
@@ -11,9 +11,9 @@ Godot; Windows/Android/Linux first, macOS/iOS later; one shared account (e-mail 
 ## 2. G0 decisions
 | ID | Decision | Authority | Outcome recorded | Conditions / where applied |
 |---|---|---|---|---|
-| D-01 | Launch RPS rule | **Owner** | **CHANGE:** `RPS = 10 × accepted presses` for n ≥ 1, strictly linear (5 → 50, 10 → 100, 35 → 350); no exponential, saturating or rescaled formula | DOC-LAUNCH-001 §4; ADR-015; SRS FR-053/182/183; SQ-04; tools/analysis v0.4 |
+| D-01 | Launch RPS rule | **Owner** | **CHANGE:** linear 10 RPS per accepted press (5 → 50, 10 → 100, 35 → 350); no exponential, saturating or rescaled formula. **Amended by owner (OQ-LN-08): `RPS = max(20, 10 × n)`** | DOC-LAUNCH-001 §4; ADR-015; SRS FR-053/182/183; SQ-04; tools/analysis v0.4.1 |
 | D-02 | READY cue | **Owner** | **APPROVE:** 1.5 s, no accepted presses, then exactly 5.0 s window | DOC-LAUNCH-001 §2; FR-052; state-match; activity |
-| D-03 | Zero presses | **Owner** | **APPROVE:** 0 accepted presses = 20 RPS automatic launch (deliberate exception); no automatic elimination | DOC-LAUNCH-001 §4; FR-065. ⚠ Creates the zero/one-tap inversion → **OQ-LN-08** (rules unchanged) |
+| D-03 | Zero presses | **Owner** | **APPROVE:** 0 accepted presses = 20 RPS automatic launch; no automatic elimination | DOC-LAUNCH-001 §4; FR-065. Inversion resolved by OQ-LN-08 (0, 1, 2 presses → 20 RPS) |
 | D-04 | Launch fairness and cap | Delegated | **APPROVE WITH CHANGE:** cap 35 accepted presses (provisional, from a provisional 7/s median), interval floor 142 857 µs, **max 350 RPS**; FC-1 and ranked gate FR-186 kept; spin as authoritative scalar; no automated punishment from regularity alone; re-select cap after S-5 | DOC-LAUNCH-001 §3, §5–8; DOC-CMB-001 §2.4; FR-181/186; NFR-074 |
 | D-05 | Component properties | Delegated | APPROVE | DOC-STAT-001 §3; FR-195 |
 | D-06 | Magic scope | Delegated | APPROVE: Magic powers skills directly; indirect Energy contribution intentional | DOC-SKILL-001; FR-232 |
@@ -27,17 +27,15 @@ Godot; Windows/Android/Linux first, macOS/iOS later; one shared account (e-mail 
 | D-14 | Burst model | Delegated | APPROVE hybrid Lock Integrity (cap 49, critical gate, full-lock impossibility); verify boundaries in S-1 | DOC-BURST-001 §2; ADR-014 |
 | D-15 | Stack | Delegated | **APPROVE CONDITIONALLY:** PHP 8.3+ / Laravel 13 / Reverb / MySQL 8.4 + Godot 4.7 headless authoritative UDP; confirm in M1 (S-3, S-6) or revise ADR | ADR-012; CON-07 |
 | D-16 | Time limit | Delegated | APPROVE: 120 s; survivors ranked by current spin; exact ties share placement; provisional | FR-069; state-match; activity; SQ-07 |
-| D-17 | RPS-principle meaning | Delegated | **APPROVE OPTION (b) PROVISIONALLY.** ⚠ Under the linear launch the 30-RPS outcome test **fails** for g ≳ 0.13–0.17 → **OQ-CB-12** | ADR-013; FR-212; DOC-BAL-001 §6 |
+| D-17 | RPS-principle meaning | Delegated; threshold **owner-amended** | **Option (b)** with the outcome threshold restated by the owner (OQ-CB-12) as a **7-press (70-RPS)** difference. Model: passes except Stamina at g = 0.20 (9.9 points, borderline) | ADR-013; FR-212; DOC-BAL-001 §6.2 |
 | D-18 | Formula and data corrections | Delegated | APPROVE: dimensionless impact, canonical burst equation, contact aggregation, slot PK, match-server FK, finish vs outcome reason, TIP-only `tip_type` | DOC-CMB-001; DOC-BURST-001; ERD; data dictionary |
 
-## 3. Open owner questions created by these decisions (not changed unilaterally)
-| ID | Question | Recommendation |
+## 3. Owner questions raised by the decisions
+| ID | Question | Status |
 |---|---|---|
-| OQ-LN-08 | Zero/one-tap inversion: 0 presses (20 RPS) beats 1 press (10 RPS) 98.6% / 99.6% | R1: `RPS = max(20, 10 × n)` — changes D-01 for n = 1 only; needs owner approval |
-| OQ-LN-09 | Accessibility of linear launch + median cap | friendly-room assisted launch; measure accessibility users in S-5 |
-| OQ-CB-12 | D-17 threshold absolute (30 RPS) vs relative | relative (≈ 7 presses / r ≥ 0.2), which passes in the model |
+| OQ-LN-08 | Zero/one-tap inversion | **Decided by owner:** `RPS = max(20, 10 × n)` |
+| OQ-CB-12 | D-17 threshold under linear launch | **Decided by owner:** 7-press (70-RPS) difference — an explicit criterion change |
+| OQ-LN-09 | Accessibility of linear launch + median cap | **Open** — to be studied in S-5 (friendly-room assisted launch proposed) |
 
 ## 4. Gate statement
-> **G0 status:** decisions recorded; documentation updated (v0.4); **G0 documentation approval proposed with changes, pending the owner's verification**. Authorises **M1 technical spikes only** once accepted — not M2 features, deployment or merging PR #1. M1 has **not** been conducted.
->
-> Owner acceptance: ______________________ (to be completed by the owner; not signed by the assistant)
+> **G0 status: ACCEPTED WITH CHANGES by the owner on 2026-11-22 (recorded by the assistant from the owner's answer in conversation; not a signature).** Scope: **M1 technical spikes only** — not M2 features, deployment, ranked play or merging PR #1. M1 has **not** started; no technical proof exists yet.

@@ -1,6 +1,6 @@
 # Combat Interaction Specification (opponent-relative model)
 
-| Document ID | DOC-CMB-001 | Version | 0.4 (G0 decisions integrated) | Status | Principles [C]; equation **structure decided under owner delegation (D-12, D-18)**; all coefficients **S-1 experimental starting values** — not balanced; pending M1 verification |
+| Document ID | DOC-CMB-001 | Version | 0.4.1 | Status | Principles [C]; equation **structure decided under owner delegation (D-12, D-18)**; all coefficients **S-1 experimental starting values** — not balanced; pending M1 verification |
 |---|---|---|---|---|---|---|---|
 
 v0.4 changes (G0 D-01, D-04, D-12, D-17, D-18): spin is an authoritative scalar on the 10–350 RPS scale (§2.4); absolute spin coefficients re-expressed for that scale (§4.9); D-17 results under the linear launch (§3.3); v0.4 matchup numbers (§5). v0.3.1 changes (audit C-02, C-04): units and normalisation; contact events and aggregation; mobility factor only as analysis proxy; linear knockback; canonical burst equation in DOC-BURST-001 §2.2; worked examples. All measured numbers: `tools/analysis/` (DOC-BAL-001).
@@ -24,7 +24,7 @@ v0.4 changes (G0 D-01, D-04, D-12, D-17, D-18): spin is an authoritative scalar 
 | Minimum effective speed | `v_min = 0.05·v_ref` | m/s | `v_n ≤ v_min` (resting, sliding or separating) ⇒ **no impact effects** |
 | Mass property | `mass` | dimensionless (relative to `m_ref`) | physics mass = `mass × m_ref`; only ratios enter formulas |
 | Attributes | ATK, DEF, STA, MAG | 0–100, dimensionless | |
-| Spin | ω | RPS (rotations/s) | current spin; launch range 10–350 RPS (20 for zero presses), D-01/D-03/D-04 |
+| Spin | ω | RPS (rotations/s) | current spin; launch range 20–350 RPS: max(20, 10 × presses), cap 35 (D-01/D-03 as amended, D-04) |
 | Lock Integrity | L | lock points, 0–100 | |
 | Normalised impact | `N_ij` | dimensionless | ≈ `Pk` at parity (§4.6) |
 | Knockback | Δv | m/s | velocity change along the normal |
@@ -68,7 +68,7 @@ S_ij  = (1 − w) · tanh(k_E · g) + w · tanh(k_R · r)      ∈ (−1, +1),  
 S1–S9 with g, r, w and both terms: DOC-BAL-001 §4 (`results/e1_advantage_table.csv`).
 
 ### 3.3 Outcome-level behaviour (measured, `results/e3_rps_vs_energy.csv`)
-Linear launch (v0.4), **D-17 test as written — 30-RPS launch difference (320 vs 350, r = 0.09)**, `results/e3_rps_vs_energy.csv`: Attack mirror 37.1 points at g = 0 → 22.3 at g = 0.095 → 12.1 at g = 0.140 → **6.3 at g = 0.174**; Balance mirror 77.5 → 38.6 → 13.5 → **2.8 at g = 0.182**; Stamina mirror 81.5 → 21.1 (g = 0.095) → **3.9 at g = 0.135**. → **D-17 option (b) fails as written** for g ≳ 0.13–0.17. With a **70-RPS difference (280 vs 350, r = 0.22 — the relative gap of the old v0.3.1 test)**, `results/e3b_rps_vs_energy_relative.csv`: Attack 18.3 points at g = 0.174, Balance 29.5 at g = 0.182, Stamina 29.0 at g = 0.161 → passes up to |g| ≈ 0.2. Cause: under the linear launch, 30 RPS is only ~9% of a typical launch (it was ~22% under the old curve). **Owner decision OQ-CB-12:** keep D-17 in absolute RPS (and accept failure / retune), or restate it relatively (e.g. 7 presses or r ≥ 0.2). Not changed unilaterally.
+**D-17 as amended by the owner (OQ-CB-12, 2026-11-22): 7-press (70-RPS) launch difference**, `results/e3b_rps_vs_energy_relative.csv` (280 vs 350, r = 0.222): Attack mirror 61.3 points at g = 0 → 30.7 at g = 0.140 → 18.3 at g = 0.174 → **12.6 at g = 0.200**; Balance 95.7 → 64.2 → 29.5 (g = 0.182) → **17.3 at g = 0.200**; Stamina 98.1 → 48.2 (g = 0.135) → 29.0 (g = 0.161) → **9.9 at g = 0.200 (borderline fail, Monte Carlo noise ≈ ±0.5 points)**. Superseded wording (30-RPS difference, `e3_rps_vs_energy.csv`) failed — 6.3 / 2.8 / 3.9 points at g ≈ 0.17 / 0.18 / 0.14 — and is kept only for the record. The amendment is a **rule change**, not evidence that the old criterion passed.
 
 ## 4. Per-contact effects (pair i → j) [P]
 ### 4.1 Impact and resistance (game formula)
@@ -130,10 +130,10 @@ At parity `N_ij = Pk` exactly when ATK = DEF, masses are equal, S = 0 and `v_nor
 | c_s (RPS) / ω_wob (RPS) / ω_ref in T (RPS) / stop (RPS) | 1.6 / 25 / 150 / 8 | 1.6 / 25 / 150 / 8 | **3.733 / 58.33 / 350 / 8** |
 | α, w_max, w_min, σ, k_E, k_R, crit factor | 0.5, 0.60, 0.15, 0.25, 3.0, 2.5, 2.5 | same | same |
 | Launch | — | saturating 20→150 | **linear 10/press, 0 → 20, cap 35 (D-01/03/04)** |
-**Scale note (v0.4):** c_s, c_d and ω_wob were multiplied by κ = 350/150 and ω_ref set to 350 so that spin dynamics keep their shape on the new launch scale. This re-tunes *experimental coefficients*; it does **not** convert displayed RPS. The stop threshold stays at 8 RPS so a 1-press launch (10 RPS) is not an immediate Spin Finish.
+**Scale note (v0.4):** c_s, c_d and ω_wob were multiplied by κ = 350/150 and ω_ref set to 350 so that spin dynamics keep their shape on the new launch scale. This re-tunes *experimental coefficients*; it does **not** convert displayed RPS. The stop threshold stays at 8 RPS (below the 20-RPS launch floor).
 Machine-readable: `tools/analysis/configs/*.json`.
 
-## 5. Opponent interaction matrix (measured, seat-averaged, `results/e2_type_pairs_v0.4.csv`)
+## 5. Opponent interaction matrix (measured, seat-averaged, `results/e2_type_pairs_v0.4.1.csv`)
 | Interaction | Mechanism | Measured (v0.4 candidate) | What can overturn it |
 |---|---|---|---|
 | Defense vs Attack | ABSORB (Pk 0.85, Abs 1.15) + recoil; attacker pays movement spin cost | Defense wins **79.5%**; finishes SPIN 56.2%, OVER 28.9%, BURST 14.6% | Attack Energy ratio ≳ 1.15, launch lead, UPPER vs higher defender |

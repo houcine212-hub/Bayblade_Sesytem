@@ -43,4 +43,4 @@ The architecture supports all five from day one (FR-160); only release order is 
 One arena (dash rail; Xtreme zone optional), ~8–12 parts per slot (RING/CORE/TIP/SPIRIT) giving at least one build of each primary type and two hybrids, 7 skills, FFA friendly mode. Starter set: one build per type.
 
 ## 6. Pre-conditions before implementation of M2
-G-01…G-03 answered in v0.2; G0 decisions D-01…D-18 recorded in v0.4 (owner acceptance of the approval-with-changes review pending). Remaining: owner questions OQ-LN-08, OQ-LN-09, OQ-CB-12; successful technical spikes S-1…S-6 (roadmap) with exit criteria AC-1…AC-9. Ranked play stays gated (FR-186).
+G-01…G-03 answered in v0.2; G0 decisions D-01…D-18 recorded in v0.4; owner decisions OQ-LN-08 and OQ-CB-12 and **G0 acceptance with changes (M1 only)** recorded in v0.4.1 (2026-11-22). Remaining: owner question OQ-LN-09; successful technical spikes S-1…S-6 (roadmap) with exit criteria AC-1…AC-9. Ranked play stays gated (FR-186).

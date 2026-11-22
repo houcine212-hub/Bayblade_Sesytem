@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | DOC-SRS-001 |
-| Version | 0.4 (G0 decisions integrated — pending owner verification; no M1 test run) |
+| Version | 0.4.1 (G0 accepted with changes for M1 only, 2026-11-22; owner decisions OQ-LN-08, OQ-CB-12) |
 | Status | Requirements marked [C] are user-confirmed; [P]/[A]/[TBD] are not |
 | Related | `MVP-scope.md`, `assumptions-and-open-questions.md`, `glossary.md`, `../08-planning/traceability-matrix.md`, `../10-game-design/` (GDD and combat specifications) |
-| Change log | v0.4: G0 decision register applied — D-01…D-03 owner-confirmed (linear launch 10 RPS/press, READY cue, zero presses = 20 RPS); D-04…D-18 decided under owner delegation (see DOC-CHG-040). v0.3.1: audit fixes — units/normalisation, burst guarantee, launch fairness + ranked gate, data-model alignment, reproducible analysis (`tools/analysis/`), new FR-186/FR-225/FR-226/NFR-074. v0.3: official sources verified; Energy recommendation, combat coefficients, burst targets, launch boundaries and acceptance criteria corrected (CHG-07…12). v0.2: joystick, skill button, rapid-press launch, Burst Finish, attributes/Energy confirmed; email+password accounts, unique display names, first platforms confirmed; backend stack re-evaluated (ADR-012). |
+| Change log | v0.4.1: owner set RPS = max(20, 10 × n) (OQ-LN-08) and restated D-17 with a 7-press (70-RPS) difference (OQ-CB-12); owner accepted G0 with changes, M1 spikes only. v0.4: G0 decision register applied — D-01…D-03 owner-confirmed (linear launch 10 RPS/press, READY cue, zero presses = 20 RPS); D-04…D-18 decided under owner delegation (see DOC-CHG-040). v0.3.1: audit fixes — units/normalisation, burst guarantee, launch fairness + ranked gate, data-model alignment, reproducible analysis (`tools/analysis/`), new FR-186/FR-225/FR-226/NFR-074. v0.3: official sources verified; Energy recommendation, combat coefficients, burst targets, launch boundaries and acceptance criteria corrected (CHG-07…12). v0.2: joystick, skill button, rapid-press launch, Burst Finish, attributes/Energy confirmed; email+password accounts, unique display names, first platforms confirmed; backend stack re-evaluated (ADR-012). |
 
 **Status column:** C = Confirmed by the owner; **D = decided under owner delegation at Gate G0 (D-04…D-18) — recorded decision, pending M1 technical verification**; P = Proposed; A = Assumption-based; TBD = placeholder for an open rule.
 **Tier column:** Core = MVP-Core, Soc = MVP-Social, Post = Post-MVP, Excl = Excluded.
@@ -96,7 +96,7 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 | FR-050 | On start, the Backend allocates an authoritative Match Server instance and issues each participant a short-lived match ticket. | P | Core |
 | FR-051 | Only ticket holders can connect to a match; tickets bind user, match and role (competitor/spectator). | P | Core |
 | FR-052 | Before each battle a **1.5 s READY cue** (no accepted presses) is followed by **exactly 5.0 s** launch window with a dedicated launch zone (DOC-LAUNCH-001). | C (D-02) | Core |
-| FR-053 | Players **rapid-press** the launch zone; initial rotation = **10 RPS × accepted presses** for n ≥ 1 (5 presses = 50 RPS); details FR-180–FR-186. | C (D-01) | Core |
+| FR-053 | Players **rapid-press** the launch zone; initial rotation = **max(20, 10 × accepted presses)** RPS (5 presses = 50 RPS); details FR-180–FR-186. | C (D-01 as amended by OQ-LN-08) | Core |
 | FR-054 | The top's characteristics and abilities influence performance (through attributes, component properties and skills during battle; launch RPS itself is input-only [P]). | C / P | Core |
 | FR-055 | The Match Server simulates the battle authoritatively; clients send inputs and render state. | C (O-7) / P (method) | Core |
 | FR-056 | **FFA:** a top that exits the arena eliminates its player (finish OVER / XTREME). | C | Core |
@@ -108,7 +108,7 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 | FR-062 | Simultaneous eliminations in the same tick share a placement; no match restart. | D (D-11) | Core |
 | FR-063 | Competitor disconnect / app close during match. | TBD (OQ-GP-05) | Core |
 | FR-064 | Competitor reconnect during active match (proposal: grace period, see sequence SQ-08). | TBD rule / P mechanism | Core |
-| FR-065 | Zero accepted presses → automatic launch at **20 RPS**, no automatic elimination (deliberate exception to FR-182; zero/one-tap inversion flagged OQ-LN-08); idle (no input) during battle: rule TBD (OQ-GP-06). | C (D-03) / TBD | Core |
+| FR-065 | Zero accepted presses → automatic launch at **20 RPS**, no automatic elimination (covered by the 20-RPS floor of FR-182); idle (no input) during battle: rule TBD (OQ-GP-06). | C (D-03, OQ-LN-08) / TBD | Core |
 | FR-066 | Only one competitor left before battle begins (e.g. others left). | TBD (OQ-GP-17) | Core |
 | FR-067 | If the last remaining competitors are all eliminated in the same tick, the match is a draw with no unique winner; deterministic outcome persisted; no rank-affecting result in MVP. | D (D-11) | Core |
 | FR-068 | Match Server interruption → match marked aborted; no competitive effect (proposed). | TBD rule / P default | Core |
@@ -207,8 +207,8 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 |---|---|---|---|
 | FR-180 | A launch zone appears for the 5-second window; presses outside it do not count (touch/mouse). | C | Core |
 | FR-181 | A successful press is edge-triggered, released before the next, inside the half-open window [W0, W0+5000 ms), at least 142 857 µs (1000/7 ms) after the previous accepted press, at most **35** accepted presses (provisional, from a provisional 7 presses/s median), key repeat ignored; enforced by the server. | D (D-04) | Core |
-| FR-182 | Launch RPS = **10 × n** for n ≥ 1 (strictly linear; no exponential, saturating or rescaled formula); n = 0 → 20 RPS (FR-065). | C (D-01, D-03) | Core |
-| FR-183 | Launch RPS range: 10 (n = 1) to **350** (n = 35); 20 for n = 0. Displayed RPS equals the authoritative value. | C / D (cap D-04) | Core |
+| FR-182 | Launch RPS = **max(20, 10 × n)**, n = accepted presses (≤ 35); linear 10 RPS per press above the floor; no exponential, saturating or rescaled formula. | C (D-01, D-03, OQ-LN-08) | Core |
+| FR-183 | Launch RPS range: **20** (n ≤ 2) to **350** (n = 35). Displayed RPS equals the authoritative value. | C / D (cap D-04) | Core |
 | FR-184 | The Match Server counts presses from timestamped batches and determines launch RPS; client counts are cosmetic. | C (server authority) / P | Core |
 | FR-185 | All competitors see every launch result (presses, RPS) before battle starts. | P | Core |
 | FR-186 | Ranked matchmaking, ratings and rank-affecting results stay disabled until launch fairness criterion FC-1 (NFR-074) passes with spike S-5/S-1 data. Friendly code rooms unaffected. | D (D-04) | Core |
@@ -239,10 +239,10 @@ Exact role names and permission policies remain **TBD** (OQ-AC-05). Permission m
 |---|---|---|---|
 | FR-210 | Every collision effect is computed from the characteristics of **both** Beys involved. | C | Core |
 | FR-211 | RPS influence depends on the relative Energy: strong at similar Energy, progressively weaker with larger gaps. | C | Core |
-| FR-212 | The transition is smooth; per contact w ≥ 0.15; outcome-level: a 30-RPS launch difference changes win probability by ≥ 10 points for \|g\| ≤ 0.20 (D-17 option b, provisional). **Model result under linear launch: fails for g ≳ 0.13–0.17** — owner question OQ-CB-12 (absolute vs relative threshold). | C / D (D-17) | Core |
+| FR-212 | The transition is smooth; per contact w ≥ 0.15; outcome-level (D-17 as amended by owner decision OQ-CB-12): a **7-press (70-RPS) launch difference** changes win probability by ≥ 10 points for \|g\| ≤ 0.20. Model: passes in Attack and Balance mirrors; **Stamina mirror 9.9 points at g = 0.20 (borderline fail)**. The superseded 30-RPS wording is not evidence of passing. | C / D (D-17, OQ-CB-12) | Core |
 | FR-213 | Collisions determine impact, knockback, stability (stagger), spin loss, lock damage (burst) and skill effectiveness per DOC-CMB-001. | C (list) / D (structure D-12; values experimental) | Core |
 | FR-214 | Type advantages emerge from attributes/properties; optional bounded type modifiers (±5%) disabled by default. | P | Core |
-| FR-215 | No absolute counter rule exists (any matchup can be overturned by RPS, Energy, steering or skills). Measurable target: favoured matchups 55–80% seat-averaged (ADR-013 AC-2; v0.4 model: 79.5–86.3%, A>S and S>D outside — open). | C / P (target) | Core |
+| FR-215 | No absolute counter rule exists (any matchup can be overturned by RPS, Energy, steering or skills). Measurable target: favoured matchups 55–80% seat-averaged (ADR-013 AC-2; v0.4.1 model: 79.5–86.3%, A>S and S>D outside — open). | C / P (target) | Core |
 
 ### 3.20 Burst Finish & finishes (v0.2)
 | ID | Requirement | Status | Tier |
@@ -411,7 +411,7 @@ MVP-readiness criteria are in `../07-quality-operations/mvp-readiness.md`. Examp
 | FR-033 | Given a room with 5 competitors, when a 6th player joins as competitor, then the Backend returns `409 ROOM_FULL` and the room still lists 5 competitors. |
 | FR-051 | Given an expired, reused, or other-match ticket, the Match Server rejects the connection within 1 s and logs `TICKET_INVALID`. |
 | FR-056/057 | In a simulated 3-top match where tops A and B ring out at distinct ticks, C is recorded as winner, placements are C=1, B=2, A=3. |
-| FR-182 | 0 accepted presses → 20 RPS; 1 → 10; 5 → 50; 15 → 150; 25 → 250; 35 → 350; 36th press rejected. |
+| FR-182 | 0, 1, 2 accepted presses → 20 RPS; 3 → 30; 5 → 50; 15 → 150; 25 → 250; 35 → 350; 36th press rejected. |
 | FR-211 | With E_A = E_B the RPS weight w = 0.60; with g = 0.30, w = 0.257; for any g, w ≥ 0.15. |
 | FR-225 | A Bey at L = 100 never bursts from a single contact, for any N (tested up to 10⁶); L ≤ 0 always bursts. |
 | FR-233 | A 4th skill activation in one match is rejected with `SKILL_LIMIT`. |

@@ -45,7 +45,7 @@ Architecture, requirements, data model, interfaces, official-source research, fo
 | R-9 | Spin-race launch sensitivity F-11 (OQ-CB-10) |
 
 ## 5. Approval statement — superseded
-The v0.3.1 approval quote that stood here is **historical and must not be signed**. The current owner acceptance is in `G0-approval-review.md` §6 (package v0.4, M1 spikes only).
+The v0.3.1 approval quote that stood here is **historical and must not be signed**. The current owner acceptance is in `G0-approval-review.md` §6 (package v0.4.1, M1 spikes only — accepted 2026-11-22).
 
 ## 6. v0.4 independent audit (2026-11-22)
-Verdict: approve with changes **for M1 technical experiments only**, subject to owner acceptance; not ready for M2, ranked play, deployment or merging. It reproduced all 11 analysis CSV files byte-for-byte (numpy 2.3.5) and confirmed 210/210 traced requirements. Open items: OQ-LN-08, OQ-CB-12, launch fairness/accessibility (S-5), unmet AC-1/2/4/6, unmeasured AC-7/8, unproven stack integration. Its two editorial findings (this section 5; the sequence-diagram count in README) are fixed.
+Verdict: approve with changes **for M1 technical experiments only**, subject to owner acceptance (**given on 2026-11-22**, see `G0-approval-review.md` §6); not ready for M2, ranked play, deployment or merging. It reproduced all 11 analysis CSV files byte-for-byte (numpy 2.3.5) and confirmed 210/210 traced requirements. Open items: OQ-LN-08, OQ-CB-12, launch fairness/accessibility (S-5), unmet AC-1/2/4/6, unmeasured AC-7/8, unproven stack integration. Its two editorial findings (this section 5; the sequence-diagram count in README) are fixed. v0.4.1: the owner decided OQ-LN-08 (`max(20, 10 × n)`) and OQ-CB-12 (7-press threshold; AC-6 still fails narrowly for Stamina at g = 0.20 in the model); see `v0.4.1-owner-decisions-changelog.md`.
