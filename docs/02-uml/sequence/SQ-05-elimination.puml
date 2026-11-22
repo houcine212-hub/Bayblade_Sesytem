@@ -20,7 +20,7 @@ MS -> E : S2C_RoleChanged {SPECTATOR} (SQ-06)
 alt remaining == 1
   MS -> MS : winner (BR-003) -> SQ-07
 else remaining == 0 (same tick)
-  MS -> MS : shared placement [P, OQ-GP-04] -> SQ-07
+  MS -> MS : same tick: shared placement; match = draw,\nno unique winner [D-11] -> SQ-07
 else remaining >= 2
   MS -> MS : continue
 end

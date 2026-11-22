@@ -1,6 +1,6 @@
 # Beyblade Statistics & Energy Specification
 
-| Document ID | DOC-STAT-001 | Version | 0.3.1 | Status | Attributes [C]; formulas/values **[P] proposals** — all numbers are starting values for balancing, not final |
+| Document ID | DOC-STAT-001 | Version | 0.4 (G0 decisions integrated) | Status | Attributes [C]; component properties (D-05), Magic scope (D-06), Energy formula (D-07, **provisional**) decided under owner delegation; numeric values = S-1 experimental starting values |
 |---|---|---|---|---|---|---|---|
 
 ## 1. The six quantities that must never be confused
@@ -11,8 +11,8 @@
 | **Stamina (attribute)** | Primary attribute: **how slowly** spin is lost (decay & collision spin-loss resistance) | No | 0–100 | `stat_sta` | STA bar | C |
 | **Magic** | Primary attribute: skill charge & potency | No | 0–100 | `stat_mag` | MAG bar | C (role P) |
 | **Energy** | **Derived** overall power value from the four attributes. Not an attribute, never stored as an input | No | 0–100 | `energy` (computed; snapshot only) | "Energy" number on build screen | C (derived) / P (formula) |
-| **Launch RPS** | Initial rotation produced by the launch mechanic | Set once | 20–150 RPS | `launch_rps` | "Launch: 104 RPS" | C (separate variable) |
-| **Spin (current)** | Remaining rotation at this moment — the "endurance left" | **Yes**, decays to 0 | 0–150 RPS | `spin_rps` (transient) | HUD **Spin** meter with RPS number | C (distinction) |
+| **Launch RPS** | Initial rotation produced by the launch mechanic | Set once | 10–350 RPS (20 for zero presses; D-01/D-03/D-04) | `launch_rps` | "Launch: 280 RPS" | C (separate variable) |
+| **Spin (current)** | Remaining rotation at this moment — the "endurance left" | **Yes**, decays to 0 | 0–350 RPS | `spin_rps` (transient) | HUD **Spin** meter with RPS number | C (distinction) |
 | **Lock Integrity** | Remaining burst resistance this match (burst gauge) | Yes, decreases | 0–100 | `lock_integrity` (transient) | HUD **Burst gauge** (4 stages) | P |
 | **Skill Gauge** | Charge toward skill activation | Yes | 0–100 | `skill_gauge` (transient) | Skill button ring | P |
 
@@ -30,7 +30,7 @@
 
 `stat_x = clamp( Σ_slots part.contrib_x , 0, 100 )`. Parts carry a **tier** (T1–T5, progression rules TBD, OQ-GP-11). A build's total attribute budget is bounded by tier (e.g. Σ attributes ≤ 200 + 20·(avg tier − 1), example only) so no build can max every attribute.
 
-## 3. Component properties (not attributes, not in Energy) [P — CHG-02]
+## 3. Component properties (not attributes, not in Energy) — decided under owner delegation (D-05)
 | Property | Range | Effect | Evidence |
 |---|---|---|---|
 | `mass` | 0.85–1.20 (relative) | Impact (√m), knockback resistance, ring-out resistance | R-14 |
@@ -67,28 +67,25 @@ Because Energy includes Magic, Magic indirectly affects physical clashes through
 ### 4.5 Review of the Magic weight [MEAS — `tools/analysis/results/e4_magic_weight.csv`; skills NOT modelled]
 **Why 0.8 was proposed in v0.2:** Magic acts only through skills, so it was judged "slightly less valuable". This was a judgement, not a derivation.
 
-**Equal attribute budget tests (N = 4,000, seat order fixed, v0.3.1 candidate coefficients):**
+**Equal attribute budget tests (N = 4,000, seat order fixed, v0.4 candidate coefficients, linear launch):**
 
 | Magic weight | P(physical-shift 66/66/66/28 beats Balance 57/57/57/55) | P(High-Magic 75/40/35/75 beats Attack 85/45/40/55) |
 |---|---|---|
-| 0.0 | 91.5% | 24.3% |
-| 0.3 | 87.1% | 29.1% |
-| 0.5 | 84.8% | 31.6% |
-| 0.6 | 83.5% | 32.6% |
-| 0.7 | 82.6% | 33.6% |
-| **0.8** | 81.5% | 34.4% |
-| **1.0** | 79.4% | 36.0% |
+| 0.0 | 83.2% | 28.5% |
+| 0.5 | 76.4% | 34.3% |
+| **0.8** | 74.2% | 36.8% |
+| **1.0** | 72.7% | 38.5% |
 
 **Interpretation (corrected v0.3.1, audit H-04):** in a model *without skills*, Magic points are worth less than physical points at every weight; raising the weight reduces the gap only slightly. These tests **cannot** show that any weight is fair, because Magic's direct value comes from skills that the model does not contain. The v0.3 wording "most Magic-friendly option" is withdrawn.
 
-**Proposal [P] (CHG-07, D-07), provisional:** plain mean (weight 1.0) as the simplest reading of "the four attributes collectively determine Energy". It stays provisional until skill-inclusive tests (AC-7: equal-budget Magic/physical shift within 45–55%) are run in spike S-1. If AC-7 fails, the options are: stronger or more frequent skills, Magic also adding a non-skill effect, or a different weight.
+**Decision D-07 (owner-delegated), provisional:** Energy = plain mean (weight 1.0), the simplest reading of "the four attributes collectively determine Energy". It is **not balance-certified** until the skill-inclusive AC-7 test in S-1 (equal-budget Magic/physical shift within 45–55%). If AC-7 fails: retune with versioned evidence and re-review the formula (options: stronger or more frequent skills, a non-skill Magic effect, or a different weight). The skill-less tests above do **not** prove Magic parity. Magic's Energy contribution is intentional and indirect (D-06).
 
 ## 5. Spin dynamics (battle variable)
-- Initial: `spin_rps = launch_rps` (launch spec).
-- Natural decay per second: `c_d · (1.25 − STA/100) · friction · (1 + c_move·mobility·|u|)` where `|u|` = joystick magnitude (moving costs spin — the "stamina consumption" of control). v0.3.1 candidate: `c_d = 0.85`, `c_move = 1.0` (v0.2: 0.55, 0.5).
+- Initial: `spin_rps = launch_rps` (launch spec): 10–350 RPS, 20 RPS for zero presses. Spin is an authoritative **scalar gameplay quantity** (DOC-CMB-001 §2.4); displayed RPS = authoritative RPS.
+- Natural decay per second: `c_d · (1.25 − STA/100) · friction · (1 + c_move·mobility·|u|)` with `c_d = 1.983 RPS/s` on the 350-RPS scale (v0.4) where `|u|` = joystick magnitude (moving costs spin — the "stamina consumption" of control). (v0.3.1: 0.85; v0.2: 0.55); `c_move = 1.0`.
 - Collision spin loss: combat spec §4.4.
-- **Wobble:** below 25 RPS stability drops linearly (resistance × 0.45–1.0).
-- **Spin Finish:** `spin_rps < 8 RPS` → eliminated (reason SPIN). Official Spin Finish is spin "becomes zero" (O-2); 8 RPS is a game threshold (a top below it is visually stopping).
+- **Wobble:** below ω_wob = 58.33 RPS stability drops linearly (resistance × 0.45–1.0) (v0.4; v0.3.1: 25 RPS).
+- **Spin Finish:** `spin_rps < 8 RPS` → eliminated (reason SPIN). Kept at 8 RPS (not scaled) so that a 1-press launch (10 RPS) is not an immediate elimination. Official Spin Finish is spin "becomes zero" (O-2); 8 RPS is a game threshold (a top below it is visually stopping).
 
 ## 6. Content data
 All values in this document live in versioned balance data (`content_version`), not in code (FR-240). Example schema in `../03-data/data-dictionary.md` §7.

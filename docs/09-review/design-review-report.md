@@ -1,9 +1,9 @@
-# Design Review Report — Gate G0 (package v0.3.1)
+# Design Review Report — Gate G0 (package v0.4; sections 1–5 record the v0.3.1 audit pass)
 
-| Document ID | DOC-REV-001 | Version | 0.3.1 (audit correction pass, 2026-11-21) | Status | **Gate G0 NOT approved** — everything not marked [C] is a proposal awaiting the user's decision |
+| Document ID | DOC-REV-001 | Version | 0.4 (G0 decisions integrated, 2026-11-22) | Status | G0 decisions recorded (owner D-01…D-03, delegated D-04…D-18); **approval with changes proposed — see `G0-approval-review.md`**; no M1 test run |
 |---|---|---|---|---|---|---|---|
 
-Related: `G0-decision-sheet.md` (D-01…D-18), `v0.3.1-audit-correction-log.md` (before/after for every audit finding).
+Related: `G0-approval-review.md` (current owner review), `G0-decision-sheet.md` (D-01…D-18 outcomes), `v0.4-G0-decision-changelog.md` (decision → artefact traceability), `v0.3.1-audit-correction-log.md`. Sections 1–5 below describe the v0.3.1 audit pass (historical); v0.4 numbers are in DOC-BAL-001.
 
 ## 1. What changed in v0.3.1
 | Area | Change |

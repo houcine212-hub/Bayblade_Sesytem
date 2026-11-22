@@ -1,6 +1,6 @@
 # MVP Scope (recommendation for approval)
 
-| Document ID | DOC-MVP-001 | Status | v0.3.1 — battle-first focus, platforms & exploration deferral **confirmed**; remaining boundaries [P] |
+| Document ID | DOC-MVP-001 | Status | v0.4 — G0 decisions D-01…D-18 recorded (see G0 decision sheet);  — battle-first focus, platforms & exploration deferral **confirmed**; remaining boundaries [P] |
 |---|---|---|---|
 
 ## 1. MVP definition
@@ -43,4 +43,4 @@ The architecture supports all five from day one (FR-160); only release order is 
 One arena (dash rail; Xtreme zone optional), ~8–12 parts per slot (RING/CORE/TIP/SPIRIT) giving at least one build of each primary type and two hybrids, 7 skills, FFA friendly mode. Starter set: one build per type.
 
 ## 6. Pre-conditions before implementation of M2
-G-01…G-03 answered in v0.2. Remaining: Gate G0 decisions D-01…D-18 (CHG-01…15) and the blocking OQs in the register; successful technical spikes S-1…S-6 (roadmap) with exit criteria AC-1…AC-9. Ranked play stays gated (FR-186).
+G-01…G-03 answered in v0.2; G0 decisions D-01…D-18 recorded in v0.4 (owner acceptance of the approval-with-changes review pending). Remaining: owner questions OQ-LN-08, OQ-LN-09, OQ-CB-12; successful technical spikes S-1…S-6 (roadmap) with exit criteria AC-1…AC-9. Ranked play stays gated (FR-186).

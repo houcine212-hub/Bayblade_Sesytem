@@ -2,7 +2,28 @@
   "python": "3.13.18",
   "numpy": "2.5.3",
   "duels_per_cell": 4000,
-  "e2_v0.3.1": {
+  "primary_config": "v0.4-candidate (D-01 linear launch, D-04 cap 35, D-16 120 s)",
+  "e2_v0.4": {
+    "overall_vs_other_types": {
+      "Attack": 0.5589583333333333,
+      "Defense": 0.5337291666666667,
+      "Stamina": 0.4875,
+      "Balance": 0.4198125
+    },
+    "finish_shares": {
+      "BURST": 0.33828125,
+      "OVER": 0.199796875,
+      "SPIN": 0.3994375,
+      "TIME_LIMIT": 0.056921875,
+      "DRAW": 0.0055625,
+      "TIMEOUT": 0.0
+    },
+    "median_of_pairing_medians_s": 53.30000000000049,
+    "min_pairing_median_s": 8.499999999999986,
+    "max_pairing_median_s": 109.79999999999804,
+    "max_draw": 0.03075
+  },
+  "e2_v0.3.1-superseded": {
     "overall_vs_other_types": {
       "Attack": 0.5634374999999999,
       "Defense": 0.5252083333333333,
@@ -13,6 +34,7 @@
       "BURST": 0.32475,
       "OVER": 0.18687499999999999,
       "SPIN": 0.481046875,
+      "TIME_LIMIT": 0.0,
       "DRAW": 0.0073281250000000004,
       "TIMEOUT": 0.0
     },
@@ -32,6 +54,7 @@
       "BURST": 0.149234375,
       "OVER": 0.222484375,
       "SPIN": 0.6163125,
+      "TIME_LIMIT": 0.0,
       "DRAW": 0.011921875,
       "TIMEOUT": 4.6875e-05
     },

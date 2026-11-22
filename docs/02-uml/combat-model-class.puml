@@ -32,7 +32,8 @@ package "Content data (versioned, content_version)" {
     effectParams : map
   }
   class BalanceConfig <<P>> {
-    launchCurve (min,max,k,capHz)
+    launch (rpsPerPress=10, zeroPressRps=20, nMax=35, minIntervalUs=142857)
+    spinScale (omegaRef=350, omegaWob=58.33, stop=8)
     energyWeights
     advantage (wMax,wMin,sigma,kE,kR,alpha)
     burst (T0,beta,cb,critFactor,variance)

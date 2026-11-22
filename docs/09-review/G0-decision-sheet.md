@@ -1,37 +1,43 @@
-# Gate G0 — Decision Sheet (v0.3.1)
+# Gate G0 — Decision Sheet (v0.4)
 
-| Document ID | DOC-G0-001 | Status | **All rows are PROPOSALS until the user marks a choice.** Confirmed decisions are listed in §1 for reference only. |
-|---|---|---|---|
+| Document ID | DOC-G0-001 | Version | 0.4 (2026-11-22) | Status | **Decisions recorded. The owner confirmed D-01…D-03 individually and delegated D-04…D-18 to the assistant.** Changes integrated into the documents **pending owner verification**. Initial G0 documentation approval is proposed **with changes**. **Technical proof is M1 and has not been conducted.** |
+|---|---|---|---|---|---|---|---|
 
-How to use: for each row mark **Approve**, **Reject** or **Change (write the change)**. Approval of the gate authorises **Milestone M1 (technical spikes) only** — no game implementation.
+Source: "Beyblade — Gate G0 Decisions (v0.3.1)" decision register supplied by the owner. Authority legend: **Owner** = individually confirmed by the product owner; **Delegated** = selected by the assistant under the owner's express delegation (priorities: fair, playable, maintainable, cross-platform). Delegated choices are decisions to record, **not evidence of technical validation**.
 
-## 1. Already confirmed by the user (reference, not re-decided)
-Godot; Windows/Android/Linux first, macOS/iOS later; one shared account (e-mail + password, unique display names); ≤ 5 competitors per match; ~100 peak CCU target; rooms by code; FFA, last top wins; **ring-out eliminates** (Brief §E1); **Burst Finish is the primary elimination**; 360° joystick + Skill button; 5-second rapid-press launch with 5 presses = 50 RPS; attributes ATK/DEF/STA/MAG with Energy derived; RPS separate; RPS influence decreases smoothly with the Energy gap and is never irrelevant; MySQL private; server-authoritative combat; exploration and real-money wagering out of the MVP.
+## 1. Previously confirmed by the owner (reference)
+Godot; Windows/Android/Linux first, macOS/iOS later; one shared account (e-mail + password, unique display names); ≤ 5 competitors; ~100 peak CCU target; rooms by code; FFA, last top wins; ring-out eliminates; Burst Finish is the primary elimination; 360° joystick + Skill button; 5-second rapid-press launch; ATK/DEF/STA/MAG with Energy derived; RPS separate; RPS influence decreases smoothly with the Energy gap; MySQL private; server-authoritative combat; exploration and real-money wagering out of the MVP.
 
-## 2. Blocking decisions
-| ID | Decision | Recommendation (proposal) | Main alternative | Evidence | Your choice |
-|---|---|---|---|---|---|
-| D-01 | Launch curve (CHG-01) | `RPS = 20 + 130·(1 − e^(−n/19.0575))`; 5 → 50.000 | Literal linear 10·n | DOC-LAUNCH-001 §4 | ☐ Approve ☐ Reject ☐ Change |
-| D-02 | 1.5 s non-counted READY cue before the 5 s window (OQ-LN-01) | Yes | No cue | DOC-LAUNCH-001 §2 | ☐ ☐ ☐ |
-| D-03 | Zero presses result (OQ-LN-07) | 20.00 RPS auto-launch | 0 RPS = immediate Spin Finish | measured: wins 3.7% (Attack mirror) / 0.1% (Stamina mirror) | ☐ ☐ ☐ |
-| D-04 | Launch fairness (ADR-015, CHG-13) | Counted-press cap = **measured median touch rate** (provisional 7/s → n_max 35 → max 129.3 RPS); FC-1 ≤ 60%; **ranked play gated (FR-186)** until FC-1 passes with S-5/S-1 data; accept documented residual limits for friendly play | 12/s cap (n_max 60, 144.42 RPS): capped presser beats a median player 68.9% / 93.6% | DOC-LAUNCH-001 §5, §7 | ☐ ☐ ☐ |
-| D-05 | Component properties beside the four attributes (CHG-02) | Yes (mass, lock strength, mobility, friction, height, contact profile, spin direction) | Attributes only | official: bit determines burst resistance (O-1) | ☐ ☐ ☐ |
-| D-06 | Magic acts directly only on skills (CHG-03) | Yes | Magic as a physical stat | DOC-SKILL-001 | ☐ ☐ ☐ |
-| D-07 | Energy formula (CHG-07) | **(ATK + DEF + STA + MAG) / 4 — provisional** until skill-inclusive test AC-7 | (ATK + DEF + STA + 0.8·MAG) / 3.8 | DOC-STAT-001 §4.5 (skills not modelled) | ☐ ☐ ☐ |
-| D-08 | Headline type rule (CHG-10) | Option C: TIP part's designed type (official: "type is determined by the Bit") + computed profile | Option A: computed only | DOC-CLS-001 §2 | ☐ ☐ ☐ |
-| D-09 | Elimination set (CHG-04) | BURST primary [C]; OVER [C]; SPIN required; XTREME optional per arena | — | DOC-BURST-001 §3 | ☐ ☐ ☐ |
-| D-10 | Numeric meaning of "Burst is primary" (CHG-09) | **M-1:** BURST ≥ 30% of all eliminations in all completed matches; **M-2:** BURST most frequent finish in the attributed pairs Attack→Attack, Attack→Stamina, Attack→Balance (populations in DOC-BURST-001 §3.1) | Keep NFR-070 ≥ 40% over a uniform mix | model: M-1 32.5%; M-2 54.2 / 69.5 / 59.1% | ☐ ☐ ☐ |
-| D-11 | Same-tick eliminations (CHG-11) | Shared placement (deviation from official draw + restart) | Restart the match | DOC-BURST-001 §3.3 | ☐ ☐ ☐ |
-| D-12 | Combat model structure (ADR-013) | Approve the **equations** (advantage S with defined g and r, impact/resistance, recoil) and the **v0.3.1 coefficient set as S-1 starting values only** (CHG-08) | Request a different structure | DOC-CMB-001, DOC-BAL-001 | ☐ ☐ ☐ |
-| D-13 | Combat acceptance criteria (CHG-12) | AC-1…AC-9 (incl. AC-8 FFA, AC-9 launch fairness) as exit gate of spike S-1 | Other bands | ADR-013 | ☐ ☐ ☐ |
-| D-14 | Burst model (ADR-014) | Hybrid Lock Integrity (original design anchored on official facts) | Pure threshold / durability | DOC-BURST-001 §2 | ☐ ☐ ☐ |
-| D-15 | Backend stack (ADR-012, CHG-05/06) | PHP 8.3+ + Laravel 13 + Reverb + MySQL 8.4; Godot 4.7 headless Match Server; heartbeat-pull internal channel; accept risks TR-01…TR-10 | TypeScript/Node + Fastify | ADR-012 §3, §7 | ☐ ☐ ☐ |
-| D-16 | Time limit (OQ-GP-18) | 120 s; then remaining Beys ranked by current spin (higher = better), ties shared | No limit; sudden death | DOC-BAL-001 §5.1 (longest cell median 100.3 s) | ☐ ☐ ☐ |
-| D-17 | Meaning of "RPS is never completely irrelevant" (OQ-CB-11) | (b) per-contact w ≥ 0.15 **and** ≥ 10-point outcome effect of a 30-RPS launch advantage for \|g\| ≤ 0.20 | (a) per-contact only; (c) outcome effect at all gaps (needs structural change) | ADR-013; DOC-BAL-001 §6 | ☐ ☐ ☐ |
-| D-18 | Formula structure and data-model corrections (CHG-14, CHG-15) | Adopt units/normalisation, contact events, canonical burst equation with full-lock guarantee; adopt ERD fixes (slot PK, server FK, finish vs outcome, `tip_type`) | — | v0.3.1 correction log | ☐ ☐ ☐ |
+## 2. G0 decisions
+| ID | Decision | Authority | Outcome recorded | Conditions / where applied |
+|---|---|---|---|---|
+| D-01 | Launch RPS rule | **Owner** | **CHANGE:** `RPS = 10 × accepted presses` for n ≥ 1, strictly linear (5 → 50, 10 → 100, 35 → 350); no exponential, saturating or rescaled formula | DOC-LAUNCH-001 §4; ADR-015; SRS FR-053/182/183; SQ-04; tools/analysis v0.4 |
+| D-02 | READY cue | **Owner** | **APPROVE:** 1.5 s, no accepted presses, then exactly 5.0 s window | DOC-LAUNCH-001 §2; FR-052; state-match; activity |
+| D-03 | Zero presses | **Owner** | **APPROVE:** 0 accepted presses = 20 RPS automatic launch (deliberate exception); no automatic elimination | DOC-LAUNCH-001 §4; FR-065. ⚠ Creates the zero/one-tap inversion → **OQ-LN-08** (rules unchanged) |
+| D-04 | Launch fairness and cap | Delegated | **APPROVE WITH CHANGE:** cap 35 accepted presses (provisional, from a provisional 7/s median), interval floor 142 857 µs, **max 350 RPS**; FC-1 and ranked gate FR-186 kept; spin as authoritative scalar; no automated punishment from regularity alone; re-select cap after S-5 | DOC-LAUNCH-001 §3, §5–8; DOC-CMB-001 §2.4; FR-181/186; NFR-074 |
+| D-05 | Component properties | Delegated | APPROVE | DOC-STAT-001 §3; FR-195 |
+| D-06 | Magic scope | Delegated | APPROVE: Magic powers skills directly; indirect Energy contribution intentional | DOC-SKILL-001; FR-232 |
+| D-07 | Energy formula | Delegated | **APPROVE PROVISIONALLY:** (ATK + DEF + STA + MAG)/4; not balance-certified until skill-inclusive AC-7 | DOC-STAT-001 §4.5; FR-192 |
+| D-08 | Headline type | Delegated | APPROVE: TIP `tip_type`; computed profile separate; UNCLASSIFIED and deterministic tie/zero handling | DOC-CLS-001 §2; FR-202; ERD |
+| D-09 | Elimination set | Delegated | APPROVE: BURST signature/primary; OVER and SPIN supported; XTREME only where the arena defines the zone; disconnect = outcome reason | DOC-BURST-001 §3; FR-223 |
+| D-10 | Burst metrics | Delegated | **APPROVE AS INITIAL TARGET:** M-1 ≥ 30%; M-2 most frequent in A→A, A→S, A→B; "primary" = signature finish, not globally most frequent | DOC-BURST-001 §3.1; NFR-070 |
+| D-11 | Same-tick eliminations | Delegated | **APPROVE WITH CLARIFICATION:** shared placement; all last competitors out in the same tick = draw, no unique winner, no rank-affecting result in MVP; no restart | DOC-BURST-001 §3.4; FR-062/067; state-match; SQ-05 |
+| D-12 | Combat model | Delegated | **APPROVE STRUCTURE ONLY:** canonical equations adopted; coefficients = S-1 experimental starting values (re-expressed for the 350-RPS scale) | DOC-CMB-001 §4.9; ADR-013 |
+| D-13 | Acceptance criteria | Delegated | APPROVE AC-1…AC-9 as M1 exit criteria; failed or unmeasured = not passing; no silent weakening | ADR-013; DOC-BAL-001 §5.3 |
+| D-14 | Burst model | Delegated | APPROVE hybrid Lock Integrity (cap 49, critical gate, full-lock impossibility); verify boundaries in S-1 | DOC-BURST-001 §2; ADR-014 |
+| D-15 | Stack | Delegated | **APPROVE CONDITIONALLY:** PHP 8.3+ / Laravel 13 / Reverb / MySQL 8.4 + Godot 4.7 headless authoritative UDP; confirm in M1 (S-3, S-6) or revise ADR | ADR-012; CON-07 |
+| D-16 | Time limit | Delegated | APPROVE: 120 s; survivors ranked by current spin; exact ties share placement; provisional | FR-069; state-match; activity; SQ-07 |
+| D-17 | RPS-principle meaning | Delegated | **APPROVE OPTION (b) PROVISIONALLY.** ⚠ Under the linear launch the 30-RPS outcome test **fails** for g ≳ 0.13–0.17 → **OQ-CB-12** | ADR-013; FR-212; DOC-BAL-001 §6 |
+| D-18 | Formula and data corrections | Delegated | APPROVE: dimensionless impact, canonical burst equation, contact aggregation, slot PK, match-server FK, finish vs outcome reason, TIP-only `tip_type` | DOC-CMB-001; DOC-BURST-001; ERD; data dictionary |
 
-## 3. Needed before the feature is built (not blocking G0)
-OQ-BU-03 opponent burst-stage visibility (proposal: visible) · OQ-CB-03 arena Xtreme zone / dash rail · OQ-CB-08 outcome-level RPS requirement for g ≤ 0.20 + Energy-band matchmaking for ranked · OQ-SK-01/02 skill limits and catalogue · OQ-LN-02 assisted launch in friendly rooms · OQ-LN-06 final press cap (after S-5) · OQ-GP-05/06/07/13/14/17 room and disconnect rules · OQ-AC-03/04/07 social rules · OQ-TO-06/07/08 hosting, domain, operations owner.
+## 3. Open owner questions created by these decisions (not changed unilaterally)
+| ID | Question | Recommendation |
+|---|---|---|
+| OQ-LN-08 | Zero/one-tap inversion: 0 presses (20 RPS) beats 1 press (10 RPS) 98.6% / 99.6% | R1: `RPS = max(20, 10 × n)` — changes D-01 for n = 1 only; needs owner approval |
+| OQ-LN-09 | Accessibility of linear launch + median cap | friendly-room assisted launch; measure accessibility users in S-5 |
+| OQ-CB-12 | D-17 threshold absolute (30 RPS) vs relative | relative (≈ 7 presses / r ≥ 0.2), which passes in the model |
 
 ## 4. Gate statement
-> Gate G0 decision: ☐ Approved as marked above ☐ Approved with changes ☐ Not approved — Name: ____ Date: ____
+> **G0 status:** decisions recorded; documentation updated (v0.4); **G0 documentation approval proposed with changes, pending the owner's verification**. Authorises **M1 technical spikes only** once accepted — not M2 features, deployment or merging PR #1. M1 has **not** been conducted.
+>
+> Owner acceptance: ______________________ (to be completed by the owner; not signed by the assistant)

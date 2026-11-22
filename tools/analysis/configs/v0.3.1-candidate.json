@@ -1,6 +1,6 @@
 {
   "name": "v0.3.1-candidate",
-  "status": "PROPOSAL - spike S-1 starting values, not balanced",
+  "status": "SUPERSEDED by v0.4 (exponential launch curve replaced by D-01 linear model); kept for comparison",
   "coefficients": {
     "rps_min": 20.0,
     "rps_max": 150.0,

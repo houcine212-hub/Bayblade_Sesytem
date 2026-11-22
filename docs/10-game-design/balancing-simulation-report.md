@@ -1,158 +1,171 @@
 # Theoretical Balancing & Simulation Report
 
-| Document ID | DOC-BAL-001 | Version | 0.3.1 (audit correction, 2026-11-21) | Status | **Reproducible model outputs — not proof of balance.** All coefficient sets are proposals. |
+| Document ID | DOC-BAL-001 | Version | 0.4 (G0 decisions integrated, 2026-11-21) | Status | **Reproducible model outputs — not proof of balance, not M1 validation.** Coefficients are S-1 experimental starting values (D-12). |
 |---|---|---|---|---|---|---|---|
 
-Labels: **[RES]** research finding · **[MEAS]** number produced by `tools/analysis/` (reproducible) · **[REC]** recommendation (proposal) · **[PLAY]** needs real gameplay testing.
+Labels: **[RES]** research finding · **[MEAS]** produced by `tools/analysis/` (reproducible) · **[REC]** recommendation · **[PLAY]** needs real gameplay/engine testing.
 
-> **Scope (audit C-05):** every number below comes from a **1-v-1 analytic Monte Carlo model** (`tools/analysis/`, run `python3 run_all.py`). It is not gameplay validation. It does **not** model real 3D steering, five-competitor FFA, the actual skills, or Magic's real value. Do not use it as proof that Magic, skills or FFA are balanced. The v0.3 numbers published earlier came from the same model *before* the v0.3.1 burst-rule corrections and are superseded by this report.
+> **Scope:** 1-v-1 analytic Monte Carlo model only (`tools/analysis/`, `python3 run_all.py`). It does **not** model real 3D steering, five-competitor FFA, actual skills, Magic's real value, or real device input. **No M1 test has been run.** The v0.3.1 results (exponential 20→150-RPS launch curve) are **not applicable** to the owner-selected linear launch and are kept only as a superseded comparison.
 
 ## 1. Definitions (normative)
 | Symbol | Definition | Range |
 |---|---|---|
 | `g` | `(E_A − E_B) / ((E_A + E_B)/2)`; ratio `E_A/E_B = (2+g)/(2−g)` | (−2, 2) |
-| `r` | `(ω_A − ω_B) / ((ω_A + ω_B)/2)`, ω = **current** spin | (−2, 2) |
+| `r` | `(ω_A − ω_B) / ((ω_A + ω_B)/2)`, ω = current spin | (−2, 2) |
 | `w(g)` | `0.15 + 0.45·exp(−(g/0.25)²)` | [0.15, 0.60] |
-| `S_AB` | `(1 − w)·tanh(3g) + w·tanh(2.5r)`, `S_BA = −S_AB` | (−1, 1) |
-Per-contact level: RPS share of the advantage is `w(g) ≥ 0.15`. Outcome level: change in win probability caused by a launch difference (measured, §6).
+| `S_AB` | `(1 − w)·tanh(3g) + w·tanh(2.5r)` | (−1, 1) |
 
-## 2. Model and reproducibility
-- Equations: DOC-CMB-001 §4 (impact, resistance, profile matrix, recoil, spin loss), DOC-STAT-001 §5 (decay with movement cost), DOC-BURST-001 §2.2 (canonical burst rule incl. per-tick cap 49 and start-of-tick critical gate), Spin Finish < 8 RPS.
-- Analysis proxies (not game formulas): contact events Poisson with 100 ms debounce; `v_norm` proxy from mobility × lognormal speed × skill factor; ring-out hazard with recoil; A(θ) = 1. Listed in `tools/analysis/README.md`.
-- Launch presses ~ Normal(35, 8), rounded, clipped [0, n_max]; skill proxy ~ Normal(1, 0.15) (assumption A-14).
-- Files: configs `tools/analysis/configs/*.json`; results `tools/analysis/results/*.csv|json`; environment: Python 3.13.18, numpy 2.5.3; N = 4000 duels per cell; seeds in the bundle README.
-- Win rates are **seat-averaged** (both orders of each pairing).
+## 2. Model (v0.4 configuration)
+- **Launch (D-01/D-03/D-04):** `RPS = 10 × n` for n ≥ 1, `20` for n = 0, n ≤ 35 → 10–350 RPS. Presses ~ Normal(35, 8), rounded, clipped [0, 35] — **assumption**: the real median and spread come from spike S-5.
+- **Spin scale:** Absolute spin-rate coefficients re-expressed for the 350-RPS launch scale: c_d, c_s and wobble multiplied by kappa = 350/150 from v0.3.1; burst-threshold reference omega_ref = 350 RPS. Stop threshold kept at 8 RPS (< 10 RPS one-press launch). Displayed RPS is NOT converted.
+- **Time limit (D-16):** 120 s; survivors ranked by current spin; exact ties = draw (finish `TIME_LIMIT`).
+- **Same tick (D-11):** simultaneous last eliminations = draw.
+- Equations: DOC-CMB-001 §4 and DOC-BURST-001 §2.2 (cap 49, start-of-tick gate). Proxies listed in `tools/analysis/README.md`.
+- Environment: Python 3.13.18, numpy 2.5.3; N = 4000 duels per cell; seeds in the bundle README; win rates seat-averaged.
 
-## 3. Contradictions found in v0.2/v0.3 and their status
-| ID | Contradiction | Status in v0.3.1 |
+## 3. Contradictions and open issues
+| ID | Issue | Status in v0.4 |
 |---|---|---|
-| C1 | ADR-013 bands are win rates/shares but v0.2 used a deterministic model | resolved: stochastic model, bands measured (§5.3) |
-| C2 | Burst ≥ 40% vs v0.2 coefficients | v0.2 reference: BURST 14.9%; candidate 32.5%; target definition → CHG-09/D-10 |
-| C3 | "Defense beats Attack" claimed in v0.2 | candidate: Defense beats Attack 85.0% |
-| C4 | "+25% Energy" labels | labels show ratio and g |
-| C5 | ABSORB rebound had no equation | recoil term (DOC-CMB-001 §4.3) |
-| C6 | "RPS never irrelevant" vs 1.7-point outcome effect at g = 0.261 | open → decision D-17 |
-| C7 | "No absolute counter" vs favoured matchups 85.0%–91.2% | open (AC-2) |
-| C8 (audit C-02) | `N_ij` carried speed units; knockback ∝ v² | resolved: `v_norm`, linear knockback |
-| C9 (audit C-03) | "no burst from one contact at full lock" not enforced | resolved: D_cap 49 + start-of-tick gate, proof in DOC-BURST-001 §2.3 |
-| C10 (audit C-05) | numbers not reproducible | resolved: `tools/analysis/` bundle |
+| C1–C5, C8–C10 | resolved in v0.3/v0.3.1 (see v0.3.1 correction log) | resolved |
+| C6 / **C11** | D-17 (b) outcome requirement with a **30-RPS** difference | **fails under the linear launch** for g ≳ 0.13–0.17 (§6); passes with a relative 70-RPS (r = 0.22) difference → owner decision OQ-CB-12 |
+| C7 | favoured matchups vs 55–80% band | A>S 86.3%, S>D 80.8%, D>A 79.5% — open (AC-2) |
+| **C12 (new)** | zero-tap / one-tap paradox (D-01 + D-03): 0 presses → 20 RPS beats 1 press → 10 RPS | measured 98.6% / 99.6% (§8) → owner decision OQ-LN-08; rules unchanged |
+| **C13 (new)** | linear launch amplifies launch sensitivity (F-11) | 32 vs 35 presses → 91.0% in the Stamina mirror (§8) |
 
-## 4. Advantage function — exact values (`e1_advantage_table.csv`)
+## 4. Advantage function on the 350-RPS scale (`e1_advantage_table.csv`)
+S depends only on g and r, so it is scale-free; scenarios re-expressed with v0.4 launch values.
+
 | ID | E_A | E_B | E_A/E_B | g | ω_A | ω_B | r | w(g) | (1−w)·tanh(3g) | w·tanh(2.5r) | **S_AB** |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| S1 | 60 | 60 | 1.000 | +0.0000 | 120 | 80 | +0.4000 | 0.6000 | +0.0000 | +0.4570 | **+0.4570** |
-| S2 | 60 | 60 | 1.000 | +0.0000 | 100 | 95 | +0.0513 | 0.6000 | +0.0000 | +0.0765 | **+0.0765** |
-| S3 | 66 | 60 | 1.100 | +0.0952 | 100 | 100 | +0.0000 | 0.5392 | +0.1282 | +0.0000 | **+0.1282** |
-| S4 | 66 | 60 | 1.100 | +0.0952 | 80 | 120 | -0.4000 | 0.5392 | +0.1282 | -0.4107 | **-0.2825** |
-| S5 | 78 | 60 | 1.300 | +0.2609 | 80 | 120 | -0.4000 | 0.3015 | +0.4570 | -0.2296 | **+0.2274** |
-| S6 | 78 | 60 | 1.300 | +0.2609 | 60 | 140 | -0.8000 | 0.3015 | +0.4570 | -0.2906 | **+0.1664** |
-| S7 | 54 | 66 | 0.818 | -0.2000 | 140 | 60 | +0.8000 | 0.3873 | -0.3291 | +0.3734 | **+0.0443** |
-| S8 | 66 | 60 | 1.100 | +0.0952 | 70 | 110 | -0.4444 | 0.5392 | +0.1282 | -0.4338 | **-0.3056** |
-| S9 | 80 | 50 | 1.600 | +0.4615 | 50 | 150 | -1.0000 | 0.1649 | +0.7365 | -0.1627 | **+0.5739** |
+| S1 | 60 | 60 | 1.000 | +0.0000 | 350 | 250 | +0.3333 | 0.6000 | +0.0000 | +0.4094 | **+0.4094** |
+| S2 | 60 | 60 | 1.000 | +0.0000 | 350 | 320 | +0.0896 | 0.6000 | +0.0000 | +0.1321 | **+0.1321** |
+| S3 | 66 | 60 | 1.100 | +0.0952 | 300 | 300 | +0.0000 | 0.5392 | +0.1282 | +0.0000 | **+0.1282** |
+| S4 | 66 | 60 | 1.100 | +0.0952 | 250 | 350 | -0.3333 | 0.5392 | +0.1282 | -0.3679 | **-0.2397** |
+| S5 | 78 | 60 | 1.300 | +0.2609 | 250 | 350 | -0.3333 | 0.3015 | +0.4570 | -0.2057 | **+0.2513** |
+| S6 | 78 | 60 | 1.300 | +0.2609 | 150 | 350 | -0.8000 | 0.3015 | +0.4570 | -0.2906 | **+0.1664** |
+| S7 | 54 | 66 | 0.818 | -0.2000 | 350 | 150 | +0.8000 | 0.3873 | -0.3291 | +0.3734 | **+0.0443** |
+| S8 | 66 | 60 | 1.100 | +0.0952 | 220 | 350 | -0.4561 | 0.5392 | +0.1282 | -0.4392 | **-0.3110** |
+| S9 | 80 | 50 | 1.600 | +0.4615 | 100 | 350 | -1.1111 | 0.1649 | +0.7365 | -0.1636 | **+0.5729** |
 
-## 5. Type matrix — measured
-### 5.1 v0.3.1 candidate, seat-averaged (`e2_type_pairs_v0.3.1.csv`)
-| Pair X–Y | P(X wins) | P(Y wins) | Draw | Median duration | BURST | OVER | SPIN |
-|---|---|---|---|---|---|---|---|
-| Attack–Attack | 48.0% | 48.0% | 4.0% | 8.7 s | 54.2% | 41.8% | 0.0% |
-| Attack–Defense | 14.8% | 85.0% | 0.2% | 48.5 s | 9.6% | 26.7% | 63.4% |
-| Attack–Stamina | 89.1% | 10.2% | 0.8% | 13.7 s | 69.5% | 28.8% | 1.0% |
-| Attack–Balance | 64.0% | 34.5% | 1.5% | 14.7 s | 59.1% | 39.1% | 0.3% |
-| Defense–Defense | 49.9% | 49.9% | 0.2% | 100.2 s | 0.0% | 0.1% | 99.7% |
-| Defense–Stamina | 8.7% | 91.2% | 0.1% | 95.6 s | 2.0% | 2.4% | 95.5% |
-| Defense–Balance | 63.5% | 36.2% | 0.3% | 71.7 s | 0.0% | 3.8% | 95.9% |
-| Stamina–Stamina | 49.8% | 49.8% | 0.4% | 98.5 s | 60.8% | 10.4% | 28.4% |
-| Stamina–Balance | 53.3% | 46.1% | 0.6% | 58.4 s | 35.0% | 14.5% | 49.9% |
-| Balance–Balance | 49.9% | 49.9% | 0.2% | 46.2 s | 54.0% | 16.0% | 29.8% |
-
-Overall vs the other three types: **Attack 56.3%, Defense 52.5%, Stamina 51.8%, Balance 39.3%**. Finish shares (uniform 16-cell mix): **BURST 32.5%, OVER 18.7%, SPIN 48.1%, draw 0.7%**. Median of cell medians 53.3 s; shortest cell 8.7 s; longest 100.2 s; max draw 4.0%.
-
-### 5.2 v0.2 reference (`e2_type_pairs_v0.2-reference.csv`)
-Overall: Attack 76.4%, Defense 38.8%, Stamina 50.4%, Balance 34.4%; BURST 14.9%, OVER 22.2%, SPIN 61.6%; cell medians 13.0–152.0 s.
-
-### 5.3 Acceptance check (ADR-013)
-| Criterion | Target | v0.3.1 candidate | Result |
-|---|---|---|---|
-| AC-1 each type vs other types | 45–55% | 56.3% / 52.5% / 51.8% / 39.3% | **fail** (Attack high, Balance low) |
-| AC-2 favoured matchups (seat-averaged) | 55–80% | A>S 89.1%, S>D 91.2%, D>A 85.0% | **fail** |
-| AC-3 Burst metric | per D-10 (proposal M-1 ≥ 30%, M-2 most frequent in A–A, A–S, A–B) | M-1 32.5%; M-2 54.2% / 69.5% / 59.1% | pass under proposal (b); fail under NFR-070 as written (≥ 40%) |
-| AC-4 cell medians 15–100 s; overall 30–90 s | | 8.7–100.2 s; overall 53.3 s | **fail** (A–A, A–S, A–B too short; D–D 100.3 s) / overall pass |
-| AC-5 draws ≤ 5% | | max 4.0% | pass |
-| AC-6 outcome RPS effect ≥ 10 points for g ≤ 0.20 | per D-17 | §6 | pass in both mirrors up to g = 0.18 |
-| AC-7 Magic equal-budget shift 45–55% | needs real skills | §7 | not measurable (fails without skills) |
-| AC-8 FFA type win share within ±5 points of expectation | five-competitor bot test | — | **not measurable in this model** (S-1) |
-
-## 6. RPS influence vs Energy gap — outcome level (`e3_rps_vs_energy.csv`)
-A's attributes scaled by f (capped at 100); fixed launches; swing = P(A wins | A 150, B 120) − P(A wins | A 120, B 150).
-
-| Mirror | f | E_A | E_B | g | P(A) at 120/120 | P(A) 120 vs 150 | P(A) 150 vs 120 | **Swing (points)** |
+## 5. Type matrix — measured (v0.4)
+### 5.1 Seat-averaged pairs (`e2_type_pairs_v0.4.csv`)
+| Pair X–Y | P(X wins) | P(Y wins) | Draw | Median duration | BURST | OVER | SPIN | TIME_LIMIT |
 |---|---|---|---|---|---|---|---|---|
-| Attack | 1.00 | 56.25 | 56.25 | 0.000 | 48.8% | 18.9% | 79.2% | **60.3** |
-| Attack | 1.05 | 59.06 | 56.25 | 0.049 | 62.6% | 23.8% | 82.7% | **58.9** |
-| Attack | 1.10 | 61.88 | 56.25 | 0.095 | 74.3% | 35.2% | 84.6% | **49.4** |
-| Attack | 1.15 | 64.69 | 56.25 | 0.140 | 82.0% | 53.6% | 86.2% | **32.6** |
-| Attack | 1.20 | 67.0 | 56.25 | 0.174 | 85.5% | 68.2% | 87.4% | **19.2** |
-| Attack | 1.30 | 70.5 | 56.25 | 0.225 | 88.3% | 81.3% | 89.4% | **8.1** |
-| Balance | 1.00 | 56.5 | 56.5 | 0.000 | 50.4% | 2.0% | 97.8% | **95.8** |
-| Balance | 1.05 | 59.33 | 56.5 | 0.049 | 77.2% | 3.8% | 98.7% | **94.9** |
-| Balance | 1.10 | 62.15 | 56.5 | 0.095 | 92.2% | 10.0% | 99.3% | **89.3** |
-| Balance | 1.15 | 64.97 | 56.5 | 0.140 | 98.0% | 32.1% | 99.5% | **67.4** |
-| Balance | 1.20 | 67.8 | 56.5 | 0.182 | 99.4% | 68.0% | 99.8% | **31.8** |
-| Balance | 1.30 | 73.45 | 56.5 | 0.261 | 99.7% | 98.1% | 99.9% | **1.7** |
+| Attack–Attack | 48.5% | 48.5% | 3.1% | 8.5 s | 56.0% | 40.7% | 0.2% | 0.0% |
+| Attack–Defense | 20.2% | 79.5% | 0.3% | 50.0 s | 14.6% | 28.9% | 56.2% | 0.0% |
+| Attack–Stamina | 86.3% | 13.0% | 0.7% | 13.9 s | 66.6% | 30.5% | 2.1% | 0.0% |
+| Attack–Balance | 60.1% | 38.8% | 1.2% | 14.6 s | 58.7% | 39.5% | 0.7% | 0.0% |
+| Defense–Defense | 50.0% | 50.0% | 0.1% | 109.8 s | 0.0% | 0.1% | 66.3% | 33.5% |
+| Defense–Stamina | 19.1% | 80.8% | 0.0% | 106.7 s | 6.1% | 4.2% | 74.0% | 15.8% |
+| Defense–Balance | 61.3% | 38.6% | 0.2% | 77.9 s | 0.0% | 5.7% | 94.1% | 0.0% |
+| Stamina–Stamina | 50.0% | 50.0% | 0.0% | 99.5 s | 57.0% | 10.1% | 6.8% | 26.1% |
+| Stamina–Balance | 51.9% | 47.8% | 0.4% | 57.1 s | 36.1% | 17.2% | 46.3% | 0.0% |
+| Balance–Balance | 49.9% | 49.9% | 0.2% | 46.3 s | 63.9% | 16.8% | 19.0% | 0.0% |
 
-Findings [MEAS]: the swing falls smoothly with g; at g ≈ 0.26 (Balance mirror) the stronger build wins 99.7% regardless of launch because all its physical attributes are 30% higher. At **equal** Energy the Balance mirror is decided almost entirely by launch (95.8 points) — see finding F-11.
+Overall vs the other three types: **Attack 55.9%, Defense 53.4%, Stamina 48.8%, Balance 42.0%**. Finish shares (uniform 16-cell mix): **BURST 33.8%, OVER 20.0%, SPIN 39.9%, TIME_LIMIT 5.7%, draw 0.6%**. Median of cell medians 53.3 s; shortest 8.5 s; longest 109.8 s; max draw 3.1%.
 
-## 7. Magic weight — equal attribute budget, skills NOT modelled (`e4_magic_weight.csv`)
-| Magic weight in Energy | P(physical-shift 66/66/66/28 beats Balance 57/57/57/55) | P(High-Magic 75/40/35/75 beats Attack 85/45/40/55) |
+### 5.2 Superseded comparisons
+- v0.3.1 (exponential curve, not applicable to D-01): Attack 56.3%, Defense 52.5%, Stamina 51.8%, Balance 39.3%; BURST 32.5%.
+- v0.2 reference: Attack 76.4%, Defense 38.8%, Stamina 50.4%, Balance 34.4%; BURST 14.9%.
+
+### 5.3 Acceptance criteria AC-1…AC-9 (D-13: failed or unmeasured = not passing)
+| Criterion | Target | v0.4 analytic result | Result |
+|---|---|---|---|
+| AC-1 type vs other types | 45–55% | 55.9% / 53.4% / 48.8% / 42.0% | **fail** (Attack high, Balance low) |
+| AC-2 favoured matchups | 55–80% | A>S 86.3%, S>D 80.8%, D>A 79.5% | **fail** (D>A now inside) |
+| AC-3 Burst (D-10) | M-1 ≥ 30%; M-2 most frequent in A→A, A→S, A→B | M-1 33.8%; M-2 56.0% / 66.6% / 58.7% | pass (model only) |
+| AC-4 durations | cells 15–100 s; overall 30–90 s | 8.5–109.8 s; overall 53.3 s | **fail** (Attack cells short; Defense–Defense 109.8 s, Defense–Stamina 106.7 s) |
+| AC-5 draws | ≤ 5% per cell | max 3.1% | pass |
+| AC-6 D-17 (b) | w ≥ 0.15 and ≥ 10-point outcome effect of a 30-RPS difference for \|g\| ≤ 0.20 | per-contact holds; outcome 6.3 / 2.8 / 3.9 points at g = 0.174 / 0.182 / 0.135 | **fail as written** (passes with relative variant, §6) |
+| AC-7 Magic with real skills | 45–55% | 72.7% without skills | **not measured** |
+| AC-8 FFA type shares | ±5 points | — | **not measured** (needs S-1 FFA bots) |
+| AC-9 FC-1 launch fairness | ≤ 60% | capped (35) vs 35: 47.1% / 51.0%; vs 32: 65.8% / 91.0% | passes **only if the real median is 35** (S-5 not run) |
+
+## 6. D-17 — outcome effect of launch differences vs Energy gap
+### 6.1 As written: 30-RPS difference, 320 vs 350 (`e3_rps_vs_energy.csv`)
+| Mirror | f | E_A | E_B | g | P(A) at 350/350 | P(A) 320 vs 350 | P(A) 350 vs 320 | **Swing (points)** |
+|---|---|---|---|---|---|---|---|---|
+| Attack | 1.00 | 56.25 | 56.25 | 0.000 | 48.5% | 30.0% | 67.2% | **37.1** |
+| Attack | 1.05 | 59.06 | 56.25 | 0.049 | 62.1% | 41.9% | 75.4% | **33.5** |
+| Attack | 1.10 | 61.88 | 56.25 | 0.095 | 73.3% | 57.8% | 80.2% | **22.3** |
+| Attack | 1.15 | 64.69 | 56.25 | 0.140 | 81.4% | 71.6% | 83.7% | **12.1** |
+| Attack | 1.20 | 67.0 | 56.25 | 0.174 | 84.6% | 79.3% | 85.7% | **6.3** |
+| Attack | 1.30 | 70.5 | 56.25 | 0.225 | 87.8% | 85.0% | 87.8% | **2.8** |
+| Balance | 1.00 | 56.5 | 56.5 | 0.000 | 50.5% | 10.9% | 88.5% | **77.5** |
+| Balance | 1.05 | 59.33 | 56.5 | 0.049 | 76.5% | 29.2% | 95.8% | **66.6** |
+| Balance | 1.10 | 62.15 | 56.5 | 0.095 | 92.0% | 59.6% | 98.2% | **38.6** |
+| Balance | 1.15 | 64.97 | 56.5 | 0.140 | 97.9% | 85.7% | 99.2% | **13.5** |
+| Balance | 1.20 | 67.8 | 56.5 | 0.182 | 99.3% | 96.8% | 99.6% | **2.8** |
+| Balance | 1.30 | 73.45 | 56.5 | 0.261 | 99.7% | 99.7% | 99.8% | **0.1** |
+| Stamina | 1.00 | 55.75 | 55.75 | 0.000 | 51.3% | 8.8% | 90.2% | **81.5** |
+| Stamina | 1.05 | 58.54 | 55.75 | 0.049 | 84.2% | 36.4% | 97.7% | **61.3** |
+| Stamina | 1.10 | 61.33 | 55.75 | 0.095 | 97.4% | 77.9% | 99.0% | **21.1** |
+| Stamina | 1.15 | 63.81 | 55.75 | 0.135 | 99.2% | 95.6% | 99.5% | **3.9** |
+| Stamina | 1.20 | 65.5 | 55.75 | 0.161 | 99.5% | 97.7% | 99.7% | **1.9** |
+| Stamina | 1.30 | 68.88 | 55.75 | 0.211 | 99.8% | 99.7% | 99.8% | **0.1** |
+
+### 6.2 Relative variant: 70-RPS difference, 280 vs 350, r = 0.222 (`e3b_rps_vs_energy_relative.csv`)
+| Mirror | f | g | P(A) 280 vs 350 | P(A) 350 vs 280 | **Swing (points)** |
+|---|---|---|---|---|---|
+| Attack | 1.00 | 0.000 | 18.4% | 79.7% | **61.3** |
+| Attack | 1.10 | 0.095 | 35.7% | 84.2% | **48.5** |
+| Attack | 1.15 | 0.140 | 55.1% | 85.9% | **30.7** |
+| Attack | 1.20 | 0.174 | 69.0% | 87.2% | **18.3** |
+| Attack | 1.30 | 0.225 | 81.2% | 89.7% | **8.5** |
+| Balance | 1.00 | 0.000 | 2.3% | 98.0% | **95.7** |
+| Balance | 1.10 | 0.095 | 11.4% | 99.3% | **87.9** |
+| Balance | 1.15 | 0.140 | 35.4% | 99.6% | **64.2** |
+| Balance | 1.20 | 0.182 | 70.2% | 99.8% | **29.5** |
+| Balance | 1.30 | 0.261 | 98.9% | 99.9% | **1.0** |
+| Stamina | 1.00 | 0.000 | 0.9% | 99.0% | **98.1** |
+| Stamina | 1.10 | 0.095 | 16.2% | 99.7% | **83.4** |
+| Stamina | 1.15 | 0.135 | 51.7% | 99.9% | **48.2** |
+| Stamina | 1.20 | 0.161 | 70.8% | 99.9% | **29.0** |
+| Stamina | 1.30 | 0.211 | 92.6% | 100.0% | **7.4** |
+
+## 7. Magic weight — equal budget, skills NOT modelled (`e4_magic_weight.csv`)
+| Magic weight | P(physical-shift 66/66/66/28 beats Balance 57/57/57/55) | P(High-Magic 75/40/35/75 beats Attack 85/45/40/55) |
 |---|---|---|
-| 0.0 | 91.5% | 24.3% |
-| 0.3 | 87.1% | 29.1% |
-| 0.5 | 84.8% | 31.6% |
-| 0.6 | 83.5% | 32.6% |
-| 0.7 | 82.6% | 33.6% |
-| 0.8 | 81.5% | 34.4% |
-| 1.0 | 79.4% | 36.0% |
+| 0.0 | 83.2% | 28.5% |
+| 0.5 | 76.4% | 34.3% |
+| 0.8 | 74.2% | 36.9% |
+| 1.0 | 72.7% | 38.5% |
 
-Interpretation: in a skill-less model, moving points out of Magic is favourable at every weight; a higher weight reduces that advantage only slightly. **This does not show that any weight is fair for Magic** — that requires the real skills (audit H-04, AC-7).
+These tests cannot show Magic parity (D-07 provisional, AC-7).
 
 ## 8. Launch (`e5_launch.csv`)
-| Case | n_max | Presses A | Presses B | P(A wins) Attack mirror | P(A wins) Stamina mirror |
+| Case | n_max | A presses (RPS) | B presses (RPS) | P(A wins) Attack mirror | P(A wins) Stamina mirror |
 |---|---|---|---|---|---|
-| low presses | 60 | 0 | 35 | 3.7% | 0.1% |
-| low presses | 60 | 1 | 35 | 6.2% | 0.1% |
-| low presses | 60 | 3 | 35 | 10.1% | 0.2% |
-| low presses | 60 | 5 | 35 | 13.1% | 0.2% |
-| capped presser | 60 | 60 | 25 | 78.4% | 98.8% |
-| capped presser | 60 | 60 | 30 | 74.3% | 97.9% |
-| capped presser | 60 | 60 | 35 | 68.8% | 93.6% |
-| capped presser | 60 | 60 | 45 | 57.3% | 77.1% |
-| capped presser | 50 | 50 | 25 | 77.4% | 98.6% |
-| capped presser | 50 | 50 | 30 | 71.7% | 96.3% |
-| capped presser | 50 | 50 | 35 | 65.0% | 88.6% |
-| capped presser | 50 | 50 | 45 | 51.6% | 63.0% |
-| capped presser | 40 | 40 | 25 | 74.0% | 97.6% |
-| capped presser | 40 | 40 | 30 | 65.4% | 89.4% |
-| capped presser | 40 | 40 | 35 | 55.1% | 71.0% |
-| capped presser | 35 | 35 | 25 | 70.1% | 94.6% |
-| capped presser | 35 | 35 | 30 | 57.9% | 77.8% |
-| capped presser | 35 | 35 | 35 | 47.5% | 50.8% |
-
-With the cap at the median human rate (n_max = 35 when the median is 35 presses), a capped presser beats a median player 47.5% / 50.8% — the macro advantage over median-or-better players disappears; below-median players remain disadvantaged as they would be against a fast human (DOC-LAUNCH-001 §5).
+| zero_vs_one_press | 35 | 0 (20) | 1 (10) | 98.6% | 99.6% |
+| low_press_vs_median | 35 | 0 (20) | 35 (350) | 1.1% | 0.0% |
+| low_press_vs_median | 35 | 1 (10) | 35 (350) | 0.0% | 0.0% |
+| low_press_vs_median | 35 | 2 (20) | 35 (350) | 1.1% | 0.0% |
+| low_press_vs_median | 35 | 3 (30) | 35 (350) | 2.3% | 0.0% |
+| low_press_vs_median | 35 | 5 (50) | 35 (350) | 5.4% | 0.1% |
+| capped_presser_vs_human | 35 | 35 (350) | 20 (200) | 83.3% | 99.3% |
+| capped_presser_vs_human | 35 | 35 (350) | 25 (250) | 81.2% | 99.1% |
+| capped_presser_vs_human | 35 | 35 (350) | 28 (280) | 78.0% | 98.8% |
+| capped_presser_vs_human | 35 | 35 (350) | 30 (300) | 73.8% | 97.8% |
+| capped_presser_vs_human | 35 | 35 (350) | 32 (320) | 65.8% | 91.0% |
+| capped_presser_vs_human | 35 | 35 (350) | 35 (350) | 47.1% | 51.0% |
+| higher_cap_vs_median35 | 40 | 40 (400) | 35 (350) | 71.4% | 97.1% |
+| higher_cap_vs_median35 | 50 | 50 (500) | 35 (350) | 80.5% | 98.9% |
+| higher_cap_vs_median35 | 60 | 60 (600) | 35 (350) | 81.9% | 99.2% |
 
 ## 9. Findings
-| ID | Finding [MEAS] | Recommendation |
+| ID | Finding [MEAS] | Recommendation / owner question |
 |---|---|---|
-| F-1 | Official triangle directions hold (A>S, S>D, D>A) but too strongly (85–91%) | revisit in S-1 with real steering variance (AC-2) |
-| F-2 | Balance archetype weakest (39.3%) — threshold-gated damage rewards concentrated attributes | Balance identity via lock/mass + Adapt; AC-1 |
-| F-3 | Attack-involving cells end in 8.7–14.8 s median | lower contact damage or raise early threshold in S-1 (AC-4) |
-| F-4 | Burst 32.5% overall; ≈ 0–10% in all Defense pairings | define metric (D-10); post-MVP opposite-spin burst |
-| F-5 | Per-contact RPS weight ≥ 0.15 holds; outcome effect ≤ 2 points at g ≈ 0.26 | decision D-17 |
-| F-6 | Magic cannot be evaluated without skills | keep Energy weight provisional (D-07) |
-| F-7 | 12/s cap: capped presser beats a 7/s player 68.9% / 93.6% | median cap + ranked gate (CHG-13, D-04) |
-| F-8 | Full-lock one-contact burst impossible after v0.3.1 rule (damage cap 49 verified for N up to 10⁶) | keep (TC-023) |
-| F-9 | Zero presses → wins 3.7% / 0.1% | intended (D-03) |
-| F-10 | v0.2 reference set fails every band (Attack 76.4%, Burst 14.9%) | superseded |
-| F-11 (new) | **Spin-race matchups are extremely launch-sensitive**: Balance mirror 95.8-point swing at equal Energy; Stamina mirror 30 vs 35 presses (123.1 vs 129.3 RPS, −5%) → 77.8% | S-1: add real steering-dependent decay variance; consider lower `k_R` or a launch-independent spin floor; new open question OQ-CB-10 |
+| F-1 | Triangle directions hold; A>S and S>D still too strong | S-1 with real steering variance (AC-2) |
+| F-2 | Balance weakest (42.0%) | Balance identity via lock/mass + Adapt (AC-1) |
+| F-3 | Attack cells end in 8.5–14.6 s median | lower early contact damage / raise early threshold in S-1 (AC-4) |
+| F-4 | BURST 33.8% overall (signature finish, not globally most frequent — SPIN 39.9%) | D-10 adopted as initial target |
+| F-5 | D-17 as written fails under linear launch | OQ-CB-12: absolute vs relative threshold |
+| F-6 | Magic not evaluable without skills | D-07 provisional |
+| F-7 | FC-1 passes only if the measured median equals the cap | S-5 measurement; re-run |
+| F-8 | Full-lock guarantee holds (damage 49 for N up to 10⁶) | verify in S-1 (D-14) |
+| F-9 | **Zero/one-tap paradox**: 0 presses beats 1 press 98.6% / 99.6% | OQ-LN-08 (recommended R1: RPS = max(20, 10·n)) |
+| F-10 | Time limit decides 33.5% of Defense–Defense, 26.1% of Stamina–Stamina, 15.8% of Defense–Stamina cells | review spin ranking in five-player tests (D-16) |
+| F-11 | **Launch sensitivity amplified by linear launch:** Stamina mirror 32 vs 35 presses → 91.0%; Balance/Stamina mirrors at equal Energy: 3-press swing 77.5 / 81.5 points | OQ-CB-10 (S-1); accessibility OQ-LN-09 |
 
-## 10. Needs real gameplay testing
-Steering feel and variance, five-competitor FFA (AC-8), real skills and Magic (AC-7), burst frequency with physics, human press distributions per device (S-5), favoured-matchup strength (AC-2).
+## 10. Needs real testing (M1)
+S-5 real input distributions per device (Android touch, keyboard, gamepad) → cap and FC-1; S-1 physics with spin as a scalar at 60 Hz, FFA bots (AC-8), real skills (AC-7), boundary tests of the burst rule; re-run of every table above with measured inputs.

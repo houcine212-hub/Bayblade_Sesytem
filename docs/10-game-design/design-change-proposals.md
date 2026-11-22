@@ -1,7 +1,26 @@
 # Design Change Proposals (changes to confirmed decisions)
 
-| Document ID | DOC-CHG-001 | Version 0.3 | **Each item awaits user decision** — nothing here is applied silently; every CHG is a PROPOSAL until approved |
+| Document ID | DOC-CHG-001 | Version 0.4 | G0 outcomes recorded below (owner-confirmed D-01…D-03; delegated D-04…D-18) — technical verification pending M1 |
 |---|---|---|---|
+
+## G0 outcome (2026-11-22)
+| CHG | Topic | G0 decision | Outcome |
+|---|---|---|---|
+| CHG-01 | Saturating launch curve | D-01 (owner) | **Rejected** — replaced by linear RPS = 10 × n (n ≥ 1); D-03 keeps 0 presses = 20 RPS |
+| CHG-02 | Component properties | D-05 (delegated) | Adopted |
+| CHG-03 | Magic → skills only | D-06 (delegated) | Adopted (indirect Energy contribution intentional) |
+| CHG-04 | Elimination set | D-09 (delegated) | Adopted (XTREME only where the arena defines the zone) |
+| CHG-05/06 | Laravel stack, heartbeat-pull | D-15 (delegated) | Adopted **conditionally** on M1 spikes |
+| CHG-07 | Energy plain mean | D-07 (delegated) | Adopted **provisionally** until AC-7 |
+| CHG-08 | Coefficient set | D-12 (delegated) | Structure adopted; values = S-1 experimental (re-expressed v0.4 for the 350-RPS scale) |
+| CHG-09 | Burst metrics | D-10 (delegated) | Adopted as initial target (M-1/M-2) |
+| CHG-10 | TIP headline type | D-08 (delegated) | Adopted |
+| CHG-11 | Same-tick eliminations | D-11 (delegated) | Adopted with clarification: all-out = draw, no unique winner, no rank effect |
+| CHG-12 | AC-1…AC-9 | D-13 (delegated) | Adopted; unmeasured = not passing |
+| CHG-13 | Median cap + ranked gate | D-04 (delegated) | Adopted with change: cap 35 → **max 350 RPS** (linear) |
+| CHG-14 | Units, burst guarantees | D-18 / D-14 (delegated) | Adopted |
+| CHG-15 | Data-model alignment | D-18 (delegated) | Adopted |
+Open owner questions created by these decisions: OQ-LN-08 (zero/one-tap inversion), OQ-LN-09 (accessibility), OQ-CB-12 (D-17 threshold under linear launch).
 
 Format per Brief rule: existing decision → proposal → evidence → advantages → disadvantages → recommendation.
 

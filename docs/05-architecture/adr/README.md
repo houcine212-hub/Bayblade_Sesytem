@@ -5,17 +5,17 @@
 | 002 | GDScript, one project for client + server | Proposed |
 | 003 | Backend: TypeScript/Node.js + Fastify | **Superseded by 012** |
 | 004 | MySQL 8.4 LTS | Proposed |
-| 005 | Server-authoritative custom simulation + local prediction (v0.2) | Proposed |
+| 005 | Server-authoritative custom simulation + local prediction; spin as authoritative scalar (v0.4) | Proposed (Godot headless authority accepted within D-15) |
 | 006 | One match per process, warm pool | Proposed |
 | 007 | ENet/UDP transport | Proposed |
 | 008 | Cross-platform build & update policy | Proposed |
 | 009 | Ranking options | Open |
 | 010 | Single-VPS deployment | Proposed |
 | 011 | Rooms in Backend + push events (Reverb in v0.2) | Proposed |
-| 012 | Backend: PHP + Laravel 13 + Reverb (heartbeat-pull internal channel); verified & risk-reviewed v0.3 | Proposed — user decision |
-| 013 | Combat stats, Energy (plain mean, provisional), RPS–Energy model, D-17, acceptance criteria AC-1…9 | Proposed (revised v0.3.1) |
-| 014 | Burst Finish hybrid model, canonical equation, full-lock guarantee | Proposed (revised v0.3.1) |
-| 015 | Launch curve, median cap, FC-1, ranked gate | Proposed (revised v0.3.1) |
+| 012 | Backend: PHP 8.3+ / Laravel 13 / Reverb / MySQL 8.4 + Godot 4.7 headless match server | **Accepted conditionally (D-15)** — M1 spikes |
+| 013 | Combat stats, Energy (provisional), RPS–Energy model, D-17, AC-1…9 | **Structure accepted (D-12/D-13/D-17)**; values experimental |
+| 014 | Burst Finish hybrid model, canonical equation, full-lock guarantee | **Accepted (D-14)** — S-1 boundary verification |
+| 015 | Linear launch (10 RPS/press, 0 → 20), cap 35 (350 RPS), FC-1, ranked gate | **Accepted with changes (D-01…D-04)** — S-5/S-1 verification |
 
 ## Sources cited in ADRs
 | Ref | Source | Verified in this session? |

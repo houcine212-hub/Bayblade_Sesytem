@@ -1,5 +1,5 @@
 @startuml activity-room-to-match
-title Activity: Room-to-Match Lifecycle [v0.3.1]
+title Activity: Room-to-Match Lifecycle [v0.4]
 start
 :Host creates room (FR-030);
 :Backend generates room code (FR-031);
@@ -25,11 +25,11 @@ if (all competitors connected before join timeout?) then (yes)
 else (no)
   :Apply no-show rule [TBD OQ-GP-06/17];
 endif
-:READY cue 1.5 s [P];
-:LAUNCH_WINDOW 5 s: rapid presses, server counts (FR-180..184);
-:Launch RPS = RPS(presses) broadcast (FR-185);
+:READY cue 1.5 s, no presses accepted [D-02];
+:LAUNCH_WINDOW exactly 5 s: rapid presses, server counts\n(interval >= 142.857 ms, max 35) (FR-180..184, D-04);
+:Launch RPS = 10 x presses (0 presses = 20), max 350,\nbroadcast (FR-185, D-01/D-03);
 :BATTLE: joystick steering, collisions, skills (server-authoritative);
-while (competitors remaining >= 2?) is (yes)
+while (competitors remaining >= 2 and time < 120 s?) is (yes)
   :Tick: resolve contacts with advantage S (FR-210..215);
   if (Lock Integrity <= 0 or critical burst?) then (yes)
     :BURST FINISH (primary, BR-015);
@@ -41,7 +41,7 @@ while (competitors remaining >= 2?) is (yes)
   endif
   :Eliminated player -> spectator (BR-004);
 endwhile (no)
-:Winner = last remaining (BR-003); same-tick ties share placement [P];
+:Winner = last remaining (BR-003), or at 120 s rank survivors by current spin (D-16);\nsame-tick ties share placement; all last remaining out together = draw (D-11);
 :Match Server reports result (finish types, launch & build telemetry);
 :Backend persists result, history, records;
 :Clients show result screen;

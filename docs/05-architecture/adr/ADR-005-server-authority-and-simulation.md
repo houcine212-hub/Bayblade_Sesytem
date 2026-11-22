@@ -14,5 +14,8 @@ Official results must come from a trusted server (O-7). Tops collide, lose spin,
 ## v0.2 update (joystick confirmed)
 The revisit trigger fired: players steer during battle. Decision becomes: server-authoritative simulation at 60 Hz **plus client-side prediction of the local top's movement** with reconciliation on each snapshot; collisions, spin, burst and skills are confirmed only by the server; remote tops interpolated (~100 ms). Combat rules: ADR-013/014.
 
+## v0.4 note (G0 D-04)
+With launches up to 350 RPS, spin is an **authoritative scalar state** (`spin_rps`); the 3D body is not rotated physically at that rate (5.83 rev/tick at 60 Hz) and clients render a capped/blurred visual spin. Prototype in S-1 (DOC-CMB-001 §2.4).
+
 ## Revisit when
 S-1 shows B is clearly better, or OQ-GP-16 confirms responsive in-battle control (add local prediction + reconciliation).

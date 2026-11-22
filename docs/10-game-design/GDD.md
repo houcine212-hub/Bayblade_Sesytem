@@ -1,10 +1,10 @@
 # Game Design Document (GDD) — Battle MVP
 
-| Document ID | DOC-GDD-001 | Version | 0.3 | Status | Draft for Gate G0 — combat numbers are spike starting values, not balanced |
+| Document ID | DOC-GDD-001 | Version | 0.4 | Status | G0 decisions integrated (pending M1 verification) — combat numbers are S-1 experimental starting values, not balanced |
 |---|---|---|---|---|---|---|---|
 
 ## 1. Pitch
-Original online spinning-top battles for up to **5 competitors** per arena on Windows, Android and Linux (macOS/iOS later). Build your Bey from parts, **launch it by rapid-pressing** for 5 seconds, **steer it with a 360° joystick**, fire its **skill** at the right moment, and be the last one spinning — ideally by **Burst Finish**.
+Original online spinning-top battles for up to **5 competitors** per arena on Windows, Android and Linux (macOS/iOS later). Build your Bey from parts, **launch it by rapid-pressing** for 5 seconds (10 RPS per accepted press, up to 35 presses = 350 RPS; zero presses = 20 RPS), **steer it with a 360° joystick**, fire its **skill** at the right moment, and be the last one spinning — ideally by **Burst Finish**.
 
 ## 2. Core loop
 Build (parts → attributes, type, Energy) → room by code → ready → **launch window (5 s rapid press)** → battle (steer, collide, skill) → eliminations (Burst / Over / Spin / Xtreme) → spectate if out → result & history → adjust build.
@@ -30,7 +30,7 @@ Build (parts → attributes, type, Energy) → room by code → ready → **laun
 | Changes to confirmed decisions | `design-change-proposals.md` |
 
 ## 5. Match flow (FFA, ≤ 5 competitors)
-WAITING_FOR_PLAYERS → READY (1.5 s, proposal) → LAUNCH_WINDOW (5 s) → RELEASE (0.5 s) → BATTLE (time limit TBD, proposal 120 s + sudden death) → ENDED. State machine: `../02-uml/state-match.puml`; per-Bey states: `../02-uml/state-bey-combat.puml`.
+WAITING_FOR_PLAYERS → READY (1.5 s, D-02) → LAUNCH_WINDOW (exactly 5 s) → RELEASE (0.5 s) → BATTLE (**120 s** limit, D-16: survivors ranked by current spin, exact ties share placement) → ENDED. Same-tick eliminations share a placement; if the last competitors all go out in the same tick the match is a draw with no unique winner (D-11). State machine: `../02-uml/state-match.puml`; per-Bey states: `../02-uml/state-bey-combat.puml`.
 
 ## 6. HUD (battle)
 Own: Spin meter (RPS), Burst gauge stage, Skill ring, joystick (left), skill button (right). Opponents: name, type badge, burst stage (OQ-BU-03), spin bar (coarse). Event feed: "X BURST FINISH by Y".

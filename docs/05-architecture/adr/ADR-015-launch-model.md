@@ -1,24 +1,22 @@
 # ADR-015: Launch RPS model, fairness and validation
-- **Status:** Proposed (revised v0.3.1, 2026-11-21) — not approved
+- **Status:** **Accepted with changes at G0** — D-01, D-02, D-03 owner-confirmed; D-04 decided under owner delegation. **Pending M1 verification** (S-5 input study, S-1 physics). (v0.3.1 proposal of a saturating curve is superseded.)
 
-## Decision (proposed)
-- `RPS(n) = 20 + 130·(1 − e^(−n/19.0575))`, anchored at 5 presses = 50.000 RPS [C anchor]; 0 presses → 20.00 RPS.
-- **Counted-press cap `r_cap` = measured median sustained touch rate** (provisional 7/s ⇒ `n_max = 35`, max 129.3 RPS) — CHG-13; replaces the v0.3 proposal of 12/s (`n_max = 60`, 144.42 RPS), which remains the alternative.
-- Half-open window; edge + release counting; server timestamp bounds; regularity flags without automatic penalty.
-- **Ranked gate (FR-186):** no ranked matchmaking or rating until FC-1 passes with S-5/S-1 data.
+## Decision
+- **D-01 (owner):** `RPS = 10 × n` for accepted presses n ≥ 1 — strictly linear; no exponential, saturating or rescaled formula.
+- **D-03 (owner):** n = 0 → 20 RPS automatic launch (deliberate exception; no automatic elimination).
+- **D-02 (owner):** 1.5 s READY cue without accepted presses, then exactly 5.0 s window.
+- **D-04 (delegated):** cap **35** accepted presses (provisional, from a provisional 7 presses/s median); interval floor 142 857 µs; half-open window; max **350 RPS**; FC-1 kept; **ranked gate FR-186** kept; no automated punishment from regularity alone; spin modelled as an authoritative scalar (DOC-CMB-001 §2.4). Re-select the cap after measuring mobile and keyboard/gamepad distributions in S-5; re-run FC-1, S-1 and balance.
 
-## Fairness evidence (`tools/analysis/results/e5_launch.csv`)
-Capped presser vs median (35-press) player, Attack / Stamina mirror: 12/s → 68.9% / 93.6%; 10/s → 65.0% / 88.6%; 8/s → 55.1% / 71.0%; **median cap → 47.5% / 50.8%** (FC-1 ≤ 60% passes).
+## Evidence (`tools/analysis/results/e5_launch.csv`, v0.4 model — not M1 validation)
+Capped presser (35 → 350) vs 35 presses: 47.1% / 51.0% (FC-1 passes only if the median is 35); vs 32: 65.8% / 91.0%; vs 30: 73.8% / 97.8%. Caps above a 35 median: 40 → 71.4% / 97.1%.
 
-## Known limitations (accepted for friendly play; gated for ranked)
-- Client input cannot prove a physical human press; a macro always reaches the cap.
-- The launch-zone check is client-side.
-- Below-median players stay disadvantaged (as against fast humans).
-- The median cap lowers the skill ceiling: pressing faster than the median gives nothing.
-- Spin-race matchups are very sensitive to small launch differences (F-11) — to be addressed in S-1.
+## Known issues flagged for the owner
+- **Zero-tap / one-tap inversion (OQ-LN-08):** 0 presses (20 RPS) beats 1 press (10 RPS) 98.6% / 99.6%. Rules kept; recommended resolution R1 `RPS = max(20, 10·n)` requires owner approval.
+- **Launch sensitivity (F-11) and accessibility (OQ-LN-09):** small press gaps are decisive under linear launch.
+- Client input cannot prove a physical human press; macros reach the cap.
 
-## Alternatives
-12/s / 10/s / 8/s caps; accuracy layer (moving sweet spot, evaluate in S-5); server challenge windows (rejected: automatable, latency-unfair); lower launch weight (with F-11); literal linear 10·n (unbounded); hold-to-charge (excluded by user).
+## Alternatives (historical)
+Saturating curve (v0.3/v0.3.1, superseded by D-01), 12/10/8 presses/s caps, accuracy layer, server challenge windows, hold-to-charge (excluded).
 
 ## Revisit when
-S-5 measures the real touch median and per-device distributions; FC-1 re-evaluated before any ranked feature.
+S-5 measured medians differ from 35; FC-1 fails; the owner resolves OQ-LN-08.

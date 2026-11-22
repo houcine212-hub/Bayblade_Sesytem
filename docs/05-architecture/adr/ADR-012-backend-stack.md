@@ -1,5 +1,5 @@
 # ADR-012: Backend/API technology stack (supersedes ADR-003)
-- **Status:** Proposed — user decision required · **Date:** 2026-11-21 · **Reviewed v0.3** (facts verified against laravel.com and docs.godotengine.org/en/4.7)
+- **Status:** **Accepted conditionally at G0 under owner delegation (D-15)** — confirm runtime/dependency compatibility, custom Godot Reverb/Pusher interoperability, token handling, heartbeat, process limits, RAM, latency and reconnect in **M1 spikes** before production commitment; if a spike fails, propose a focused ADR revision instead of forcing this stack · **Date:** 2026-11-21 · facts verified v0.3
 
 ## 1. Scope of this decision
 Two different servers exist and are decided separately:

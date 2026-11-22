@@ -1,4 +1,4 @@
-"""Design-analysis model for the Bayblade combat specifications (v0.3.1).
+"""Design-analysis model for the Bayblade combat specifications (v0.4).
 
 NOT game code. This script is a simplified 1-v-1 Monte Carlo model used only to
 screen balance hypotheses during the design phase. It implements the canonical
@@ -12,7 +12,7 @@ import copy
 import math
 import numpy as np
 
-FINISHES = ("BURST", "OVER", "SPIN", "DRAW", "TIMEOUT")
+FINISHES = ("BURST", "OVER", "SPIN", "TIME_LIMIT", "DRAW", "TIMEOUT")
 
 # Profile matrix: (attacker, defender) -> (Pk knockback factor, Pb burst factor)
 PROFILE = {
@@ -29,12 +29,20 @@ class Model:
         self.c = dict(cfg["coefficients"])
         self.builds = copy.deepcopy(cfg["builds"])
         c = self.c
-        c["k"] = -c["n_ref"] / math.log(1 - (c["rps_ref"] - c["rps_min"]) / (c["rps_max"] - c["rps_min"]))
+        c.setdefault("launch_model", "saturating")
+        c.setdefault("omega_ref", c.get("rps_max", 150.0))
+        c.setdefault("time_limit_rank", False)
+        if c["launch_model"] == "saturating":
+            c["k"] = -c["n_ref"] / math.log(1 - (c["rps_ref"] - c["rps_min"]) / (c["rps_max"] - c["rps_min"]))
 
     # ---------- launch / energy / advantage ----------
     def launch_rps(self, presses):
+        """D-01/D-03 (v0.4): linear 10 RPS per counted press for n >= 1, zero presses = 20 RPS (exception).
+        The v0.3.1 saturating curve is kept only to reproduce superseded comparison runs."""
         c = self.c
         n = np.minimum(np.asarray(presses, float), c["n_max"])
+        if c["launch_model"] == "linear":
+            return np.where(n <= 0, c["zero_press_rps"], c["rps_per_press"] * n)
         return c["rps_min"] + (c["rps_max"] - c["rps_min"]) * (1 - np.exp(-n / c["k"]))
 
     def energy(self, b, w_mag=None):
@@ -114,8 +122,8 @@ class Model:
             dec_b = c["c_d"] * (1.25 - b["sta"] / 100) * b.get("fric", 1.0) * (1 + c["c_move"] * b["mob"]) * dt
             wa = np.where(alive, wa - (c["c_s"] * n_ba * (1 - a["sta"] / 250) * k + dec_a), wa)
             wb = np.where(alive, wb - (c["c_s"] * n_ab * (1 - b["sta"] / 250) * k + dec_b), wb)
-            ta = c["t0"] * a["lock"] * (1 + c["beta"] * np.maximum(wa, 0) / c["rps_max"])
-            tb = c["t0"] * b["lock"] * (1 + c["beta"] * np.maximum(wb, 0) / c["rps_max"])
+            ta = c["t0"] * a["lock"] * (1 + c["beta"] * np.maximum(wa, 0) / c["omega_ref"])
+            tb = c["t0"] * b["lock"] * (1 + c["beta"] * np.maximum(wb, 0) / c["omega_ref"])
             eps_a = 1 + rng.uniform(-c["eps"], c["eps"], n)
             eps_b = 1 + rng.uniform(-c["eps"], c["eps"], n)
             bload_a = n_ba * pb_ba          # burst load on A (A(theta) = 1 on average in this proxy)
@@ -148,15 +156,23 @@ class Model:
             res[both], fin[both] = 0, "DRAW"
             tend[da | db] = t
             alive &= ~(da | db)
+        if c["time_limit_rank"]:
+            # D-16: at the time limit survivors are ranked by current spin; exact ties share placement (draw)
+            hi_a = alive & (wa > wb); hi_b = alive & (wb > wa); tie = alive & (wa == wb)
+            res[hi_a], fin[hi_a] = 1, "TIME_LIMIT"
+            res[hi_b], fin[hi_b] = -1, "TIME_LIMIT"
+            res[tie], fin[tie] = 0, "DRAW"
+            alive[:] = False
         return {
             "win_a": float((res == 1).mean()), "win_b": float((res == -1).mean()), "draw": float((res == 0).mean()),
             "finish": {f: float((fin == f).mean()) for f in FINISHES},
             "t_median": float(np.median(tend)), "energy_a": float(ea), "energy_b": float(eb),
         }
 
-    def single_contact_max_damage(self, n_values, lock=1.0, spin=150.0):
+    def single_contact_max_damage(self, n_values, lock=1.0, spin=None):
         """TC-023 helper: damage of one contact event for extreme normalised impacts."""
         c = self.c
-        t = c["t0"] * lock * (1 + c["beta"] * spin / c["rps_max"])
+        spin = c["omega_ref"] if spin is None else spin
+        t = c["t0"] * lock * (1 + c["beta"] * spin / c["omega_ref"])
         d = np.minimum(c["c_b"] * np.maximum(0, np.asarray(n_values) * 1.25 * 1.5 - t) * (1 + c["eps"]), c["d_cap"])
         return d

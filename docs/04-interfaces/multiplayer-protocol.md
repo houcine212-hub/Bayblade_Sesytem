@@ -1,6 +1,6 @@
 # Multiplayer Protocol & Transport Proposal
 
-| Document ID | DOC-NET-001 | Version 0.3.1 (message catalogue = protocol version 1, unchanged since v0.2) | **[P] Proposed** — joystick, launch, skills added; values to verify in spike S-2 |
+| Document ID | DOC-NET-001 | Version 0.4 (protocol version 1; v0.4 widens `spinRps` to u16 for the 350-RPS scale) | **[P] Proposed** — joystick, launch, skills added; values to verify in spike S-2 |
 |---|---|---|---|
 | Decision | ADR-007 (transport), ADR-005 (simulation), ADR-006 (process model) |
 
@@ -19,11 +19,11 @@
 | C2S_Ping / S2C_Pong | both | 0 | clientTimeMs / serverTimeMs | Clock offset & RTT estimate |
 | S2C_PhaseChanged | S→C | 0 | phase, startsAtServerTimeMs, durationMs, extra | PRE_LAUNCH, BATTLE, ENDED |
 | C2S_LaunchPressBatch | C→S | 2 | seq[], tClientMs[] (presses since last batch) | every 100 ms during LAUNCH_WINDOW; validation in launch spec §6 |
-| S2C_LaunchResult | S→C | 0 | [{userId, presses, launchRps}] | at RELEASE (FR-185) |
+| S2C_LaunchResult | S→C | 0 | [{userId, presses (0–35), launchRps (u16: 10 × presses, or 20 for 0 presses)}] | at RELEASE (FR-185, D-01/D-03) |
 | C2S_ControlInput | C→S | 1 | seq, tick, x:int8, y:int8, prev3[] | **Confirmed joystick**; 30 Hz; clamped & rate-limited |
 | C2S_SkillActivate | C→S | 2 | seq, tick | Validated server-side (SQ-10) |
 | S2C_SkillEvent | S→C | 0 | userId, skillKey, START\|END\|REJECTED, endsAtTick?, reason? | |
-| S2C_Snapshot | S→C | 1 | tick, lastProcessedSeq (per receiver), tops[{slot, pos, rot, vel, spinRps(u8), burstStage(2 bit), skillGauge(u8), state}] | 30 Hz [P] |
+| S2C_Snapshot | S→C | 1 | tick, lastProcessedSeq (per receiver), tops[{slot, pos, rot, vel, spinRps(u16, 0.1 RPS units; authoritative value, displayed without rescaling), burstStage(2 bit), skillGauge(u8), state}] | 30 Hz [P] |
 | S2C_Eliminated | S→C | 0 | userId, finishType (BURST\|OVER\|XTREME\|SPIN), tick, creditedTo? | BR-015 |
 | S2C_RoleChanged | S→C | 0 | role | FR-058 |
 | S2C_MatchEnded | S→C | 0 | endReason, placements[] | Provisional until Backend persists |
@@ -37,9 +37,9 @@ All RPCs on the Match Server are declared so that only the server may call S2C m
 - Launch presses: client timestamps converted with the measured clock offset and **bounded by arrival time** (no future stamps, no back-dating beyond RTT/2 + 250 ms) — fair for high-latency players, safe against backdating (launch spec §6).
 
 ## 4. Bandwidth estimate (example, to be measured)
-Per top per snapshot: position 3×f32 (12 B) + quantised rotation (8 B) + velocity 2×f16 (4 B) + spin (1 B) + burst stage/state (1 B) + skill gauge (1 B) + slot (1 B) ≈ 28 B.
-5 tops ≈ 140 B + headers ≈ 170 B/snapshot. At 30 Hz ≈ 5.1 KB/s ≈ 41 kbit/s per client (+ overhead). Upstream control input: 30 Hz × ~12 B ≈ 2.9 kbit/s.
-20 matches × (5 competitors + 2 spectators) × 41 kbit/s ≈ **5.8 Mbit/s** server egress — well within typical VPS links, but must be measured (NFR-008).
+Per top per snapshot: position 3×f32 (12 B) + quantised rotation (8 B) + velocity 2×f16 (4 B) + spin (2 B, u16) + burst stage/state (1 B) + skill gauge (1 B) + slot (1 B) ≈ 28 B.
+5 tops ≈ 145 B + headers ≈ 175 B/snapshot. At 30 Hz ≈ 5.3 KB/s ≈ 42 kbit/s per client (+ overhead). Upstream control input: 30 Hz × ~12 B ≈ 2.9 kbit/s.
+20 matches × (5 competitors + 2 spectators) × 42 kbit/s ≈ **5.9 Mbit/s** server egress — well within typical VPS links, but must be measured (NFR-008).
 Godot RPC argument encoding (Variant) adds overhead; packing snapshots into a `PackedByteArray` is an optimisation candidate for spike S-2.
 
 ## 5. Jitter, loss, latency

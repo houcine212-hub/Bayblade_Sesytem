@@ -1,4 +1,4 @@
-"""Runs every analysis experiment quoted in DOC-BAL-001 and writes results/.
+"""Runs every analysis experiment quoted in DOC-BAL-001 (v0.4) and writes results/.
 Usage:  python3 run_all.py            (about 1-3 minutes)
 NOT game code - design-phase analysis only."""
 import csv, itertools, json, math, os, platform, copy
@@ -56,13 +56,17 @@ def write_csv(path, rows):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    summary = {"python": platform.python_version(), "numpy": np.__version__, "duels_per_cell": N}
-    cand = Model(load("v0.3.1-candidate.json"))
+    for f in os.listdir(OUT):
+        os.remove(os.path.join(OUT, f))
+    summary = {"python": platform.python_version(), "numpy": np.__version__, "duels_per_cell": N,
+               "primary_config": "v0.4-candidate (D-01 linear launch, D-04 cap 35, D-16 120 s)"}
+    cand = Model(load("v0.4-candidate.json"))
+    old = Model(load("v0.3.1-candidate.json"))
     ref = Model(load("v0.2-reference.json"))
 
-    # E1 advantage table
-    sc = [("S1", 60, 60, 120, 80), ("S2", 60, 60, 100, 95), ("S3", 66, 60, 100, 100), ("S4", 66, 60, 80, 120),
-          ("S5", 78, 60, 80, 120), ("S6", 78, 60, 60, 140), ("S7", 54, 66, 140, 60), ("S8", 66, 60, 70, 110), ("S9", 80, 50, 50, 150)]
+    # E1 advantage table (scale-free: depends only on g and r)
+    sc = [("S1", 60, 60, 350, 250), ("S2", 60, 60, 350, 320), ("S3", 66, 60, 300, 300), ("S4", 66, 60, 250, 350),
+          ("S5", 78, 60, 250, 350), ("S6", 78, 60, 150, 350), ("S7", 54, 66, 350, 150), ("S8", 66, 60, 220, 350), ("S9", 80, 50, 100, 350)]
     e1 = []
     for sid, ea, eb, wa, wb in sc:
         g = cand.rel(ea, eb); r = cand.rel(wa, wb); w = float(cand.w_rps(g))
@@ -72,7 +76,7 @@ def main():
     write_csv(os.path.join(OUT, "e1_advantage_table.csv"), e1)
 
     # E2 type matrices
-    for tag, m, seed in (("v0.3.1", cand, 101), ("v0.2-reference", ref, 11)):
+    for tag, m, seed in (("v0.4", cand, 101), ("v0.3.1-superseded", old, 101), ("v0.2-reference", ref, 11)):
         rows, pairs, overall, shares, med = type_matrix(m, seed)
         write_csv(os.path.join(OUT, f"e2_type_matrix_{tag}.csv"), rows)
         write_csv(os.path.join(OUT, f"e2_type_pairs_{tag}.csv"), pairs)
@@ -80,24 +84,35 @@ def main():
                                 "min_pairing_median_s": min(r["t_median_s"] for r in rows), "max_pairing_median_s": max(r["t_median_s"] for r in rows),
                                 "max_draw": max(r["draw"] for r in rows)}
 
-    # E3 RPS influence vs Energy gap (outcome level)
+    # E3 D-17: outcome effect of a 30-RPS launch difference (3 presses) vs Energy gap
     e3 = []
-    for arche in ("Attack", "Balance"):
+    for arche in ("Attack", "Balance", "Stamina"):
         for f in (1.0, 1.05, 1.10, 1.15, 1.20, 1.30):
             a = scaled(cand.builds[arche], f); b = cand.builds[arche]
-            p_eq = cand.duel(a, b, 120, 120, n=N, seed=3)["win_a"]
-            p_lo = cand.duel(a, b, 120, 150, n=N, seed=4)["win_a"]
-            p_hi = cand.duel(a, b, 150, 120, n=N, seed=5)["win_a"]
+            p_eq = cand.duel(a, b, 350, 350, n=N, seed=3)["win_a"]
+            p_lo = cand.duel(a, b, 320, 350, n=N, seed=4)["win_a"]
+            p_hi = cand.duel(a, b, 350, 320, n=N, seed=5)["win_a"]
             ea, eb = cand.energy(a), cand.energy(b)
             e3.append(dict(mirror=arche, scale=f, E_A=round(ea, 2), E_B=round(eb, 2), g=round(cand.rel(ea, eb), 4),
-                           p_equal_rps=p_eq, p_A120_B150=p_lo, p_A150_B120=p_hi, rps_swing_pp=round(100 * (p_hi - p_lo), 1)))
+                           p_equal_350=p_eq, p_A320_B350=p_lo, p_A350_B320=p_hi, rps_swing_pp=round(100 * (p_hi - p_lo), 1)))
     write_csv(os.path.join(OUT, "e3_rps_vs_energy.csv"), e3)
+    # E3b same, with a 70-RPS (7-press) difference: r = 0.222, the relative gap used by the v0.3.1 test (120 vs 150)
+    e3b = []
+    for arche in ("Attack", "Balance", "Stamina"):
+        for f in (1.0, 1.10, 1.15, 1.20, 1.30):
+            a = scaled(cand.builds[arche], f); b = cand.builds[arche]
+            p_lo = cand.duel(a, b, 280, 350, n=N, seed=6)["win_a"]
+            p_hi = cand.duel(a, b, 350, 280, n=N, seed=7)["win_a"]
+            ea, eb = cand.energy(a), cand.energy(b)
+            e3b.append(dict(mirror=arche, scale=f, g=round(cand.rel(ea, eb), 4), p_A280_B350=p_lo, p_A350_B280=p_hi,
+                            rps_swing_pp=round(100 * (p_hi - p_lo), 1)))
+    write_csv(os.path.join(OUT, "e3b_rps_vs_energy_relative.csv"), e3b)
 
     # E4 Magic weight (equal budget, skills NOT modelled)
     e4 = []
     base_b = cand.builds["Balance"]; shift = dict(base_b, atk=66, sta=66, mag=28); shift["def"] = 66
     base_a = cand.builds["Attack"]; himag = dict(base_a, atk=75, sta=35, mag=75); himag["def"] = 40
-    for w in (0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 1.0):
+    for w in (0.0, 0.5, 0.8, 1.0):
         cand.c["w_mag"] = w
         r1 = cand.duel(shift, base_b, n=N, seed=14)
         r2 = cand.duel(himag, base_a, n=N, seed=9)
@@ -105,22 +120,22 @@ def main():
     cand.c["w_mag"] = 1.0
     write_csv(os.path.join(OUT, "e4_magic_weight.csv"), e4)
 
-    # E5 launch: zero/low presses, capped presser, cap options
+    # E5 launch: zero/one-press paradox, low presses, FC-1 at the cap, alternative caps
     e5 = []
-    for p in (0, 1, 3, 5):
-        ra = cand.duel(cand.builds["Attack"], cand.builds["Attack"], presses_a=p, presses_b=35, n=N, seed=31)
-        rs = cand.duel(cand.builds["Stamina"], cand.builds["Stamina"], presses_a=p, presses_b=35, n=N, seed=32)
-        e5.append(dict(case="low_press_vs_35", n_max=60, presses_a=p, presses_b=35, p_a_attack_mirror=ra["win_a"], p_a_stamina_mirror=rs["win_a"]))
-    for nmax in (60, 50, 40, 35):
+    def add(case, nmax, pa, pb, seed_a=12, seed_s=13):
+        ra = cand.duel(cand.builds["Attack"], cand.builds["Attack"], presses_a=pa, presses_b=pb, n=N, seed=seed_a)
+        rs = cand.duel(cand.builds["Stamina"], cand.builds["Stamina"], presses_a=pa, presses_b=pb, n=N, seed=seed_s)
+        e5.append(dict(case=case, n_max=nmax, presses_a=pa, rps_a=float(cand.launch_rps(pa)), presses_b=pb, rps_b=float(cand.launch_rps(pb)),
+                       p_a_attack_mirror=ra["win_a"], p_a_stamina_mirror=rs["win_a"]))
+    add("zero_vs_one_press", 35, 0, 1, 31, 32)
+    for p in (0, 1, 2, 3, 5):
+        add("low_press_vs_median", 35, p, 35, 31, 32)
+    for human in (20, 25, 28, 30, 32, 35):
+        add("capped_presser_vs_human", 35, 35, human)
+    for nmax in (40, 50, 60):
         cand.c["n_max"] = nmax
-        for human in (25, 30, 35, 45):
-            if human > nmax:
-                continue
-            ra = cand.duel(cand.builds["Attack"], cand.builds["Attack"], presses_a=nmax, presses_b=human, n=N, seed=12)
-            rs = cand.duel(cand.builds["Stamina"], cand.builds["Stamina"], presses_a=nmax, presses_b=human, n=N, seed=13)
-            e5.append(dict(case="capped_presser_vs_human", n_max=nmax, presses_a=nmax, presses_b=human,
-                           p_a_attack_mirror=ra["win_a"], p_a_stamina_mirror=rs["win_a"]))
-    cand.c["n_max"] = 60
+        add("higher_cap_vs_median35", nmax, nmax, 35)
+    cand.c["n_max"] = 35
     write_csv(os.path.join(OUT, "e5_launch.csv"), e5)
 
     # E6 TC-023: one contact from full lock, extreme inputs
@@ -130,7 +145,7 @@ def main():
                                                      "lock_after_one_contact_min": 100 - max(dmg), "crit_gate": cand.c["crit_gate"]}
     with open(os.path.join(OUT, "summary.json"), "w") as f:
         json.dump(summary, f, indent=2)
-    print(json.dumps(summary, indent=2))
+    print(json.dumps({k: v for k, v in summary.items() if k.startswith("e2")}, indent=1))
 
 if __name__ == "__main__":
     main()

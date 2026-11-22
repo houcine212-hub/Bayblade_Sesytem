@@ -1,6 +1,6 @@
 # Beyblade Classification Specification
 
-| Document ID | DOC-CLS-001 | Version | 0.3.1 | Status | 4 primary types [official, verified]; our classification rules **[P] proposals** |
+| Document ID | DOC-CLS-001 | Version | 0.4 (G0: D-08 decided under owner delegation) | Status | 4 primary types [official, verified]; our classification rules **[P] proposals** |
 |---|---|---|---|---|---|---|---|
 
 ## 1. Official Beyblade X classification (verified, DOC-RES-001 §2.2)
@@ -24,7 +24,7 @@
 | **A. Distribution-based (v0.2 proposal, original)** | Type from ATK/DEF/STA shares; subtype from part properties | Reflects the actual build; supports hybrids; players see why | Not the official rule; players familiar with Beyblade X may expect the tip to decide |
 | B. Official-style (TIP decides) | The TIP part's designed type is the Bey's type; attributes still computed | Faithful to O-1; simple to read | A TIP labelled "Attack" on an otherwise defensive build gives a misleading type; no hybrids |
 | C. Combined | Headline type = the equipped TIP part's `tip_type`; **computed profile** (primary/secondary/subtype from §2.1) shown as secondary information; the two are stored and displayed separately | Official feel + transparent stats | Two type notions to explain |
-**Recommendation [P] (OQ-ST-07): Option C** — keeps the official convention for the headline type and our computed profile for depth. Option A remains the v0.2 proposal. Gameplay effects never depend on the label (they emerge from attributes and properties), so the choice affects UI, matchmaking display and skill compatibility only.
+**Decision D-08 (owner-delegated): Option C** (headline type from the TIP's `tip_type`; computed profile kept separate for analytics/UI; UNCLASSIFIED and deterministic tie/zero handling preserved). Former recommendation text: **Option C** — keeps the official convention for the headline type and our computed profile for depth. Option A remains the v0.2 proposal. Gameplay effects never depend on the label (they emerge from attributes and properties), so the choice affects UI, matchmaking display and skill compatibility only.
 
 ### 2.1 Distribution rules (used by Option A, and for the profile in Option C) [P] — "both components and distribution"
 1. **Primary type** is computed from the **distribution of physical attributes** (ATK, DEF, STA). Magic is excluded (it is not a physical axis in any source).
@@ -53,14 +53,14 @@ Boundary tests (TC-021): P = 0, P = 29, P = 30; spread exactly 0.10 (→ BALANCE
 | BALANCE | **ADAPTIVE** | Balance + any profile | Flexible; skill "Adapt" |
 Spin direction is shown as a badge (RIGHT/LEFT/DUAL); MVP gameplay effect: none (OQ-ST-04).
 
-## 4. Classification matrix (official tendency + measured v0.3.1 candidate)
+## 4. Classification matrix (official tendency + measured v0.4 candidate)
 | Type | Definition | Strengths | Weaknesses | Preferred strategy | ATK/DEF/STA/MAG relation | RPS relation | vs ATTACK | vs DEFENSE | vs STAMINA | vs BALANCE |
 |---|---|---|---|---|---|---|---|---|---|---|
-| **ATTACK** | Highest share ATK, high mobility | Fast BURST/OVER finishes, steering, skill gain from hits | Spends spin quickly (mobility cost, low STA); bounces off heavy defenders | Hunt, use Dash skill, finish before spin runs low | ATK high; DEF/STA low–mid; MAG fuels Dash | Needs high launch RPS early; poor launch = spins out vs Defense | Mirror: 48.0/48.0%, draw 4.0%, median 8.7 s (too fast — open) | **Unfavoured**: wins 14.7% | **Favoured**: wins 89.1% (BURST 69.5%) | Favoured: wins 64.0% |
-| **DEFENSE** | Highest share DEF, low mobility, heavy | Resists knockback and burst; punishes attackers | Low damage output; out-spun by Stamina | Hold centre, absorb, counter with skill | DEF high; STA mid; ATK low | Moderate RPS sufficient; large RPS deficit vs Attack is fatal | **Favoured**: wins 85.0% | Mirror: 49.9/49.9%, SPIN 99.7%, median 100.3 s | **Unfavoured**: wins 8.7% | Favoured: wins 63.5% |
-| **STAMINA** | Highest share STA, low friction | Longest spin, wins long matches | Low DEF → bursts under sustained attack | Avoid contact, outlast, Second Wind skill late | STA high; DEF mid; ATK low | Launch RPS strongly matters in mirrors (pure spin race) | **Unfavoured**: wins 10.2% | **Favoured**: wins 91.2% | Mirror: 49.8/49.8%, median 98.5 s | Slightly favoured: 53.3% vs 46.1% |
-| **BALANCE** | Spread ≤ 0.10 | No hard counter; flexible skill | No hard advantage; outcome very sensitive to exact values | Read opponent, Adapt skill | All ≈ equal | Medium sensitivity | Unfavoured: 34.5% | Unfavoured: 36.2% | Slightly unfavoured: 46.1% | Mirror |
-**v0.3.1 measured values** (DOC-BAL-001 §5.1, `tools/analysis/results/e2_type_pairs_v0.3.1.csv`, seat-averaged, N = 4,000 per cell, 1-v-1 analytic model only): Defense beats Attack **85.0%** · Attack beats Stamina **89.1%** · Stamina beats Defense **91.2%** · Attack beats Balance 64.0% · Defense beats Balance 63.5% · Stamina beats Balance 53.3%. Overall vs other types: Attack 56.3%, Defense 52.5%, Stamina 51.8%, Balance 39.3%. Favoured matchups exceed the proposed 55–80% band (AC-2). Not proof of balance; FFA not modelled.
+| **ATTACK** | Highest share ATK, high mobility | Fast BURST/OVER finishes, steering, skill gain from hits | Spends spin quickly (mobility cost, low STA); bounces off heavy defenders | Hunt, use Dash skill, finish before spin runs low | ATK high; DEF/STA low–mid; MAG fuels Dash | Needs high launch RPS early; poor launch = spins out vs Defense | Mirror: 48.5/48.5%, draw 3.1%, median 8.5 s (too fast — open) | **Unfavoured**: wins 20.2% | **Favoured**: wins 86.3% (BURST 66.6%) | Favoured: wins 60.1% |
+| **DEFENSE** | Highest share DEF, low mobility, heavy | Resists knockback and burst; punishes attackers | Low damage output; out-spun by Stamina | Hold centre, absorb, counter with skill | DEF high; STA mid; ATK low | Moderate RPS sufficient; large RPS deficit vs Attack is fatal | **Favoured**: wins 79.5% | Mirror: 50.0/50.0%, SPIN 66.3%, time limit 33.5%, median 109.8 s | **Unfavoured**: wins 19.1% | Favoured: wins 61.3% |
+| **STAMINA** | Highest share STA, low friction | Longest spin, wins long matches | Low DEF → bursts under sustained attack | Avoid contact, outlast, Second Wind skill late | STA high; DEF mid; ATK low | Launch RPS strongly matters in mirrors (pure spin race) | **Unfavoured**: wins 13.0% | **Favoured**: wins 80.8% | Mirror: 50.0/50.0%, time limit 26.1%, median 99.5 s | Slightly favoured: 51.9% vs 47.7% |
+| **BALANCE** | Spread ≤ 0.10 | No hard counter; flexible skill | No hard advantage; outcome very sensitive to exact values | Read opponent, Adapt skill | All ≈ equal | Medium sensitivity | Unfavoured: 38.8% | Unfavoured: 38.6% | Slightly unfavoured: 47.7% | Mirror |
+**v0.4 measured values** (DOC-BAL-001 §5.1, `tools/analysis/results/e2_type_pairs_v0.4.csv`, seat-averaged, N = 4,000 per cell, linear launch D-01/D-04, 1-v-1 analytic model only): Defense beats Attack **79.5%** · Attack beats Stamina **86.3%** · Stamina beats Defense **80.8%** · Attack beats Balance 60.1% · Defense beats Balance 61.3% · Stamina beats Balance 51.9%. Overall vs other types: Attack 55.9%, Defense 53.4%, Stamina 48.8%, Balance 42.0%. A>S and S>D exceed the 55–80% band (AC-2). Not proof of balance; FFA not modelled; no M1 test run.
 
 ## 5. Why no type is universally superior (design levers)
 1. Triangle emerges from attributes + properties (not hard-coded multipliers).

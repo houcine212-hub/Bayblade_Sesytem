@@ -21,7 +21,7 @@
 | **Inventory item** | A player-owned instance of an item definition. |
 | **Launch** | The act that puts a top into the arena with an initial spin based on input + stats. |
 | **Launch window** | The 5-second period in which successful presses are counted. |
-| **Launch RPS** | Initial rotation from the launch curve (20–144.4 RPS). |
+| **Launch RPS** | Initial rotation: 10 × accepted presses (10–350 RPS, cap 35 presses); 20 RPS for zero presses (D-01/D-03/D-04). |
 | **Lock Integrity** | 0–100 per-match burst gauge; damage accumulates from strong impacts. |
 | **Magic** | Primary attribute governing skill charge, potency and skill resistance. |
 | **Loadout** | A player's chosen top configuration for a match. |

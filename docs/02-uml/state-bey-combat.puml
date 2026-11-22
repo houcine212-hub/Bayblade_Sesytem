@@ -1,15 +1,15 @@
 @startuml state-bey-combat
-title State Machine: one Bey during a match (Match Server) [P, v0.3.1]
+title State Machine: one Bey during a match (Match Server) [P, v0.4]
 [*] --> AWAITING_LAUNCH
 AWAITING_LAUNCH --> LAUNCHING : LAUNCH_WINDOW opens (5 s)
-LAUNCHING --> ACTIVE : RELEASE (launchRps = RPS(presses))
+LAUNCHING --> ACTIVE : RELEASE (launchRps = 10 x presses, 20 if none; max 350)
 state ACTIVE {
   [*] --> STABLE
   STABLE --> STAGGERED : hit (N > 0)\ncontrol authority reduced 0.3 s
   STAGGERED --> STABLE : stagger expires
-  STABLE --> WOBBLING : spinRps < 25
+  STABLE --> WOBBLING : spinRps < 58.33
   WOBBLING --> STABLE : Second Wind raises spin
-  STABLE --> SKILL_ACTIVE : skill accepted\n(gauge full, cooldown ok, uses < 3,\nspin >= 20, not opening 3 s)
+  STABLE --> SKILL_ACTIVE : skill accepted\n(gauge full, cooldown ok, uses < 3,\nspin >= 47 RPS, not opening 3 s)
   SKILL_ACTIVE --> STABLE : duration ends (cooldown starts)
 }
 ACTIVE --> ELIMINATED_BURST : lockIntegrity <= 0\nor critical burst (L at tick start <= 50)
