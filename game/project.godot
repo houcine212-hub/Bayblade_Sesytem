@@ -1,0 +1,29 @@
+; Engine configuration file.
+; M1 technical-spike project (throw-away prototypes, not game features).
+
+config_version=5
+
+[application]
+
+config/name="Bayblade M1 Spikes"
+config/description="Throw-away M1 technical spikes (DOC-M1-001). Not game code."
+run/main_scene="res://spikes/s5_launch_input/s5_capture.tscn"
+config/features=PackedStringArray("4.7")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/handheld/orientation=4
+
+[input_devices]
+
+pointing/emulate_mouse_from_touch=false
+pointing/emulate_touch_from_mouse=false
+buffering/agile_event_flushing=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
