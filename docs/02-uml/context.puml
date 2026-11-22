@@ -1,0 +1,29 @@
+@startuml context
+' DOC: System context (C4 level 1 style). Status: [P] proposed.
+title System Context — Beyblade-style Multiplayer Game [PROPOSED]
+skinparam rectangleStyle rounded
+actor "Player\n(desktop / mobile)" as Player
+actor "Moderator" as Mod
+actor "Admin / Owner" as Admin
+rectangle "Game System" as SYS {
+  rectangle "Game Client\n(Godot app)" as Client
+  rectangle "Backend API" as API
+  rectangle "Match Server(s)\n(headless Godot)" as MS
+  database "MySQL" as DB
+}
+rectangle "App stores /\ndownload site [TBD]" as Store
+rectangle "E-mail provider [TBD]\n(only if e-mail accounts)" as Mail
+rectangle "Facebook group /\nMessenger [external,\nnon-authoritative]" as Social
+
+Player --> Store : downloads client
+Player --> Client : plays
+Client --> API : HTTPS / WSS
+Client --> MS : ENet over UDP [P]
+MS --> API : internal HTTP (service auth)
+API --> DB : SQL (private)
+Mod --> API : moderation tools
+Admin --> API : role & organizer approval
+API --> Mail : verification / recovery [TBD]
+Client ..> Social : opens link only (no API)
+note bottom of DB : Never reachable from clients (SEC-001)
+@enduml

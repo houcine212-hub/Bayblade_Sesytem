@@ -1,0 +1,18 @@
+@startuml SQ-10
+title SQ-10 Skill activation [C button / P rules]
+actor Player
+participant "Own Client" as C
+participant "Match Server" as MS
+participant "All Clients" as A
+Player -> C : press Skill button (opposite side of joystick)
+C -> C : show "requested" feedback only
+C -> MS : C2S_SkillActivate {seq, tick}
+MS -> MS : checks: role COMPETITOR, phase RUNNING (not opening 3 s),\ngauge = 100, cooldown done, uses < 3, spin >= 47 RPS (SEC-016, v0.4 scale)
+alt accepted
+  MS -> MS : gauge = 0; uses++; apply effect x Pot(MAG)\n(opponent effects x (1 - 0.3*Res_j))
+  MS -> A : S2C_SkillEvent {userId, skillKey, START, endsAtTick}
+  MS -> A : S2C_SkillEvent {userId, skillKey, END} (after duration)
+else rejected
+  MS -> C : S2C_SkillEvent {REJECTED, reason: GAUGE|COOLDOWN|LIMIT|PHASE|SPIN}
+end
+@enduml

@@ -1,0 +1,19 @@
+@startuml state-room
+title State Machine: Room (owned by Backend) [P]
+[*] --> OPEN : create (FR-030)
+OPEN --> OPEN : join / leave / ready / loadout change
+OPEN --> STARTING : host Start valid (FR-036)
+STARTING --> OPEN : allocation failed (503)
+STARTING --> IN_MATCH : Match Server AssignAck
+IN_MATCH --> POST_MATCH : match COMPLETED | ABORTED
+POST_MATCH --> OPEN : rematch / remain [TBD OQ-GP-14]
+POST_MATCH --> CLOSED : all left or idle timeout
+OPEN --> CLOSED : host closes | idle timeout (P: 30 min) | all members left
+CLOSED --> [*]
+note right of OPEN
+  Invariants:
+  - competitors <= 5 (BR-001)
+  - code unique among non-CLOSED rooms
+  - host leaves -> transfer or close [TBD OQ-GP-13]
+end note
+@enduml

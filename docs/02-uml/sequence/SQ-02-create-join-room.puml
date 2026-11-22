@@ -1,0 +1,34 @@
+@startuml SQ-02
+title SQ-02 Create & Join Room [P]
+actor Host
+actor Guest
+participant "Client (Host)" as CH
+participant "Client (Guest)" as CG
+participant "Backend API" as B
+database MySQL as DB
+Host -> CH : Create room
+CH -> B : POST /v1/rooms {mode: FFA}
+B -> B : generate code (unguessable, SEC-011)
+B -> DB : INSERT room(status=OPEN), room_member(host, COMPETITOR)
+B --> CH : 201 {roomId, code}
+CH -> B : Reverb subscribe private-room.{roomId} (WSS)
+Host -> Guest : shares code (out of band)
+Guest -> CG : enter code
+CG -> B : POST /v1/rooms/join {code, role: COMPETITOR}
+B -> B : rate-limit code attempts (SEC-011)
+B -> DB : SELECT room FOR UPDATE;\nCOUNT competitors
+alt room not found / closed
+  B --> CG : 404 ROOM_NOT_FOUND
+else competitors == 5 (BR-001)
+  B --> CG : 409 ROOM_FULL (may retry as SPECTATOR)
+else ok
+  B -> DB : INSERT room_member
+  B --> CG : 200 {room snapshot}
+  B -> CH : Reverb event room.updated
+  B -> CG : Reverb event room.updated
+end
+Guest -> CG : choose loadout, Ready
+CG -> B : POST /v1/rooms/{roomId}/ready {ready:true, loadoutId}\n(build = 4 parts: RING, CORE, TIP, SPIRIT)
+B -> DB : verify part ownership + one part per slot; UPDATE room_member
+B -> CH : Reverb event room.updated
+@enduml

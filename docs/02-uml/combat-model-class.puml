@@ -1,0 +1,152 @@
+@startuml combat-model-class
+title Combat Model — Class Diagram (v0.3.1) [C concepts / P structure]
+hide empty methods
+skinparam classAttributeIconSize 0
+
+package "Content data (versioned, content_version)" {
+  class PartDefinition <<P>> {
+    itemKey : string
+    slot : PartSlot
+    tier : int
+    contribAtk : int
+    contribDef : int
+    contribSta : int
+    contribMag : int
+    tipType : PrimaryType? (TIP slot only)
+  }
+  class PartProperties <<P>> {
+    mass : float
+    lockStrength : float
+    mobility : float
+    friction : float
+    height : Height
+    contactProfile : ContactProfile
+    spinDirection : SpinDirection
+  }
+  class SkillDefinition <<P>> {
+    skillKey : string
+    compatibleTypes : PrimaryType[]
+    durationMs : int
+    cooldownMs : int
+    maxUses : int
+    effectParams : map
+  }
+  class BalanceConfig <<P>> {
+    launch (rpsPerPress=10, minLaunchRps=20 [max(20,10n)], nMax=35, minIntervalUs=142857)
+    spinScale (omegaRef=350, omegaWob=58.33, stop=8)
+    energyWeights
+    advantage (wMax,wMin,sigma,kE,kR,alpha)
+    burst (T0,beta,cb,critFactor,variance)
+    classification thresholds
+    typeModifiers (default off)
+  }
+}
+package "Build (persistent, computed)" {
+  class BeyBuild <<P>> {
+    atk : int  [C attribute]
+    def : int  [C attribute]
+    sta : int  [C attribute]
+    mag : int  [C attribute]
+    /energy : float  [C derived]
+    /primaryType : PrimaryType
+    /secondaryType : PrimaryType?
+    /subtype : Subtype
+  }
+  class Classifier <<P>> {
+    classify(build) : (primary, secondary, subtype)
+  }
+  class EnergyCalculator <<P>> {
+    energy(atk,def,sta,mag) : float
+  }
+}
+package "Match Server (transient, per match)" {
+  class BeyCombatState <<P>> {
+    launchPresses : int
+    launchRps : float  [C separate variable]
+    spinRps : float  [current spin, not Stamina]
+    lockIntegrity : float
+    skillGauge : float
+    skillUses : int
+    staggerUntilTick : int
+    state : BeyState
+  }
+  class LaunchValidator <<P>> {
+    acceptPress(tClient, arrival) : bool
+    rps(n) : float
+  }
+  class AdvantageModel <<P>> {
+    advantage(Ei,Ej,wi,wj) : float
+    rpsWeight(g) : float
+  }
+  class CollisionResolver <<P>> {
+    resolve(contact, i, j) : CollisionOutcome
+  }
+  class BurstModel <<P>> {
+    threshold(j) : float
+    damage(Nij, i, j) : float
+  }
+  class SkillSystem <<P>> {
+    tryActivate(i, tick) : Result
+  }
+  class SteeringModel <<P>> {
+    force(u, mobility, spin, stagger) : Vector2
+  }
+  class CollisionOutcome <<P>> {
+    impulse
+    spinLoss
+    lockDamage
+    stagger
+    gaugeGain
+  }
+  class Elimination <<C>> {
+    userId
+    finishType : FinishType
+    tick : int
+    creditedTo : userId?
+  }
+}
+enum PartSlot {
+  RING
+  CORE
+  TIP
+  SPIRIT
+}
+enum PrimaryType {
+  ATTACK
+  DEFENSE
+  STAMINA
+  BALANCE
+}
+enum FinishType {
+  BURST
+  OVER
+  XTREME
+  SPIN
+}
+enum ContactProfile {
+  SMASH
+  UPPER
+  ABSORB
+  ROUND
+}
+
+PartDefinition "1" *-- "1" PartProperties
+PartDefinition "0..1" --> "0..1" SkillDefinition : SPIRIT grants
+BeyBuild "1" o-- "4" PartDefinition : equipped (one per slot)
+BeyBuild ..> EnergyCalculator
+BeyBuild ..> Classifier
+Classifier ..> BalanceConfig
+BeyCombatState "1" --> "1" BeyBuild : snapshot at match start
+CollisionResolver ..> AdvantageModel
+CollisionResolver ..> BurstModel
+CollisionResolver ..> BalanceConfig
+CollisionResolver --> CollisionOutcome
+LaunchValidator ..> BalanceConfig
+SkillSystem ..> SkillDefinition
+BurstModel ..> Elimination : creates when L<=0
+SteeringModel ..> BeyCombatState
+note bottom of BeyCombatState
+  spinRps (current) is NEVER the Stamina attribute.
+  Transient: only final values reach MySQL.
+end note
+@enduml

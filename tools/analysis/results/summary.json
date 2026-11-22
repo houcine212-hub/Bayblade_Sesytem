@@ -1,0 +1,82 @@
+{
+  "python": "3.13.18",
+  "numpy": "2.5.3",
+  "duels_per_cell": 4000,
+  "primary_config": "v0.4.1-candidate (RPS = max(20, 10n), cap 35, 120 s)",
+  "e2_v0.4.1": {
+    "overall_vs_other_types": {
+      "Attack": 0.5589583333333333,
+      "Defense": 0.5337291666666667,
+      "Stamina": 0.4875,
+      "Balance": 0.4198125
+    },
+    "finish_shares": {
+      "BURST": 0.33828125,
+      "OVER": 0.199796875,
+      "SPIN": 0.3994375,
+      "TIME_LIMIT": 0.056921875,
+      "DRAW": 0.0055625,
+      "TIMEOUT": 0.0
+    },
+    "median_of_pairing_medians_s": 53.30000000000049,
+    "min_pairing_median_s": 8.499999999999986,
+    "max_pairing_median_s": 109.79999999999804,
+    "max_draw": 0.03075
+  },
+  "e2_v0.3.1-superseded": {
+    "overall_vs_other_types": {
+      "Attack": 0.5634374999999999,
+      "Defense": 0.5252083333333333,
+      "Stamina": 0.5181666666666667,
+      "Balance": 0.3931875
+    },
+    "finish_shares": {
+      "BURST": 0.32475,
+      "OVER": 0.18687499999999999,
+      "SPIN": 0.481046875,
+      "TIME_LIMIT": 0.0,
+      "DRAW": 0.0073281250000000004,
+      "TIMEOUT": 0.0
+    },
+    "median_of_pairing_medians_s": 53.27500000000049,
+    "min_pairing_median_s": 8.699999999999985,
+    "max_pairing_median_s": 100.24999999999858,
+    "max_draw": 0.0395
+  },
+  "e2_v0.2-reference": {
+    "overall_vs_other_types": {
+      "Attack": 0.7635833333333334,
+      "Defense": 0.38845833333333335,
+      "Stamina": 0.504375,
+      "Balance": 0.34358333333333335
+    },
+    "finish_shares": {
+      "BURST": 0.149234375,
+      "OVER": 0.222484375,
+      "SPIN": 0.6163125,
+      "TIME_LIMIT": 0.0,
+      "DRAW": 0.011921875,
+      "TIMEOUT": 4.6875e-05
+    },
+    "median_of_pairing_medians_s": 82.04999999999961,
+    "min_pairing_median_s": 12.99999999999997,
+    "max_pairing_median_s": 151.99999999999565,
+    "max_draw": 0.0485
+  },
+  "e6_tc023_single_contact_damage_cap": {
+    "normalised_impacts": [
+      1,
+      10,
+      1000.0,
+      1000000.0
+    ],
+    "max_damage": [
+      4.2075000000000005,
+      49.0,
+      49.0,
+      49.0
+    ],
+    "lock_after_one_contact_min": 51.0,
+    "crit_gate": 50.0
+  }
+}

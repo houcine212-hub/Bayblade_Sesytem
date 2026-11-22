@@ -1,0 +1,308 @@
+@startuml erd
+title ERD v0.3.1 — MySQL 8.4 (InnoDB, utf8mb4) [P] — <<C>> confirmed entity, <<P>> proposed, <<post>> later
+hide circle
+skinparam linetype ortho
+' Note: table is game_match because MATCH is a MySQL reserved word.
+' Conventions: PK id BIGINT UNSIGNED AUTO_INCREMENT unless noted; timestamps DATETIME(3) UTC.
+
+entity user_account <<C>> {
+  * id : BIGINT PK
+  --
+  * email : VARCHAR(254) UNIQUE [C]
+  email_verified_at : DATETIME(3) NULL
+  * password_hash : VARCHAR(255) [C]
+  * status : ENUM(ACTIVE,SUSPENDED,DELETION_PENDING,DELETED)
+  * created_at : DATETIME(3)
+  last_login_at : DATETIME(3)
+}
+entity auth_session <<P>> {
+  * id : BIGINT PK
+  --
+  * user_id : FK
+  * refresh_token_hash : BINARY(32) UNIQUE
+  * platform : VARCHAR(16)
+  * client_version : VARCHAR(32)
+  * expires_at : DATETIME(3)
+  revoked_at : DATETIME(3)
+}
+entity player_profile <<C>> {
+  * user_id : PK FK
+  --
+  * display_name : VARCHAR(24) [C unique]
+  * display_name_normalized : VARCHAR(24) UNIQUE (lower-case)
+  avatar_ref : VARCHAR(64)
+  * updated_at : DATETIME(3)
+}
+entity role <<P>> {
+  * code : VARCHAR(32) PK
+  --
+  description : VARCHAR(255)
+}
+entity user_role <<P>> {
+  * user_id : FK
+  * role_code : FK
+  --
+  * granted_by : FK user_account
+  * granted_at : DATETIME(3)
+}
+entity item_definition <<C>> {
+  * id : BIGINT PK
+  --
+  * item_key : VARCHAR(64) UNIQUE
+  * slot : ENUM(RING,CORE,TIP,SPIRIT) [P]
+  * tier : TINYINT
+  * display_name : VARCHAR(64)
+  * contrib_atk : TINYINT
+  * contrib_def : TINYINT
+  * contrib_sta : TINYINT
+  * contrib_mag : TINYINT
+  tip_type : ENUM(ATTACK,DEFENSE,STAMINA,BALANCE) NULL\n  (CHECK: NOT NULL iff slot = TIP — headline type source)
+  * properties_json : JSON (mass, lock_strength, mobility, friction, height, contact_profile, spin_direction)
+  skill_key : VARCHAR(64) NULL (SPIRIT only)
+  * content_version : VARCHAR(16)
+  * is_starter : BOOLEAN
+  * is_enabled : BOOLEAN
+}
+entity inventory_item <<C>> {
+  * id : BIGINT PK
+  --
+  * user_id : FK
+  * item_definition_id : FK
+  * source : ENUM(STARTER,ADMIN_GRANT,REWARD,CHEST) [extensible]
+  * acquired_at : DATETIME(3)
+}
+entity loadout <<C>> {
+  * id : BIGINT PK
+  --
+  * user_id : FK
+  * name : VARCHAR(32)
+  * is_active : BOOLEAN
+}
+entity loadout_slot <<P>> {
+  * loadout_id : FK
+  * slot_type : ENUM(RING,CORE,TIP,SPIRIT)
+  PK(loadout_id, slot_type) — max one part per slot
+  --
+  * inventory_item_id : FK
+}
+entity room <<C>> {
+  * id : BIGINT PK
+  --
+  * code : CHAR(8)
+  * host_user_id : FK
+  * mode : ENUM(FFA)
+  * status : ENUM(OPEN,STARTING,IN_MATCH,POST_MATCH,CLOSED)
+  * visibility : ENUM(PRIVATE) [TBD]
+  * created_at : DATETIME(3)
+  * last_activity_at : DATETIME(3)
+  active_code : CHAR(8) UNIQUE NULL (generated: code if status<>CLOSED)
+}
+entity room_member <<C>> {
+  * room_id : FK
+  * user_id : FK
+  --
+  * role : ENUM(COMPETITOR,SPECTATOR)
+  * is_ready : BOOLEAN
+  loadout_id : FK NULL
+  * joined_at : DATETIME(3)
+}
+entity game_match <<C>> {
+  * id : BINARY(16) PK (UUIDv7)
+  --
+  room_id : FK NULL
+  * mode : ENUM(FFA)
+  * stake_type : ENUM(NONE) [BR-009]
+  * status : ENUM(ALLOCATING,WAITING_FOR_PLAYERS,LAUNCHING,BATTLE,ENDED,COMPLETED,CANCELLED,ABORTED,DISPUTED)
+  end_reason : ENUM(LAST_STANDING,TIME_LIMIT,ALL_DRAW,CANCELLED,ABORTED) NULL
+  server_instance_id : FK NULL → match_server_instance (ON DELETE SET NULL) [canonical link]
+  * protocol_version : INT
+  * content_version : VARCHAR(16)
+  * sim_seed : BIGINT UNSIGNED
+  * client_build_min : VARCHAR(32)
+  * created_at : DATETIME(3)
+  started_at : DATETIME(3)
+  ended_at : DATETIME(3)
+  duration_ms : INT
+}
+entity match_participant <<C>> {
+  * match_id : FK
+  * user_id : FK
+  --
+  * slot : TINYINT (1..5) [BR-001]
+  side_id : TINYINT NULL [post: Team Battle]
+  * loadout_snapshot_json : JSON (parts, attributes, properties, skill)
+  * stat_atk : TINYINT
+  * stat_def : TINYINT
+  * stat_sta : TINYINT
+  * stat_mag : TINYINT
+  * energy : DECIMAL(5,2) (derived snapshot)
+  headline_type : ENUM(ATTACK,DEFENSE,STAMINA,BALANCE) NULL (TIP label, D-08)
+  * profile_primary : ENUM(ATTACK,DEFENSE,STAMINA,BALANCE,UNCLASSIFIED) (computed)
+  profile_secondary : ENUM(ATTACK,DEFENSE,STAMINA) NULL
+  launch_presses : TINYINT NULL
+  launch_rps : DECIMAL(5,1) NULL
+  launch_flags : SET(REGULARITY,LATE_BATCH) NULL
+  placement : TINYINT NULL
+  finish_type : ENUM(BURST,OVER,XTREME,SPIN) NULL (physical finish only)
+  outcome_reason : ENUM(WINNER,PHYSICAL_FINISH,DRAW_SHARED,DISCONNECT_FORFEIT,NO_SHOW,TIME_LIMIT_RANK,MATCH_ABORTED) NULL
+  credited_to_user_id : FK NULL
+  eliminated_at_ms : INT NULL
+  final_spin_rps : DECIMAL(5,1) NULL
+  final_lock_integrity : DECIMAL(5,1) NULL
+  skill_uses : TINYINT
+  * connection_outcome : ENUM(OK,DISCONNECTED,NO_SHOW)
+}
+entity match_event <<P>> {
+  * match_id : FK
+  * seq : INT
+  --
+  * t_ms : INT
+  * type : VARCHAR(32)
+  payload_json : JSON
+}
+entity match_server_instance <<P>> {
+  * instance_id : VARCHAR(64) PK
+  --
+  * host : VARCHAR(64)
+  * udp_port : SMALLINT
+  * protocol_version : INT
+  * build_id : VARCHAR(32)
+  * state : ENUM(IDLE,BUSY,DRAINING,OFFLINE)
+  * last_heartbeat_at : DATETIME(3)
+}
+entity match_server_command <<P>> {
+  * id : BIGINT PK
+  --
+  * instance_id : FK
+  * type : ENUM(ASSIGN_MATCH,TICKET_GRANT,TICKET_REVOKE,DRAIN)
+  * payload_json : JSON (ticket HASHES only)
+  * status : ENUM(PENDING,DELIVERED,ACKED,EXPIRED)
+  * created_at : DATETIME(3)
+  acked_at : DATETIME(3) NULL
+}
+entity competitive_record <<P>> {
+  * user_id : PK FK
+  --
+  * matches_played : INT
+  * wins : INT
+  * placements_json : JSON
+  rating : DECIMAL(8,2) NULL [TBD ADR-009]
+  rating_deviation : DECIMAL(8,2) NULL [TBD]
+  * updated_at : DATETIME(3)
+}
+entity team <<C>> {
+  * id : BIGINT PK
+  --
+  * name : VARCHAR(32) UNIQUE
+  * tag : VARCHAR(5) UNIQUE
+  description : VARCHAR(500)
+  * status : ENUM(ACTIVE,DISSOLVED)
+  * created_by : FK
+  * created_at : DATETIME(3)
+}
+entity team_membership <<C>> {
+  * id : BIGINT PK
+  --
+  * team_id : FK
+  * user_id : FK
+  * role : ENUM(LEADER,MEMBER)
+  * joined_at : DATETIME(3)
+  left_at : DATETIME(3) NULL
+  left_reason : ENUM(LEFT,REMOVED,DISSOLVED) NULL
+}
+entity team_invitation <<P>> {
+  * id : BIGINT PK
+  --
+  * team_id : FK
+  * user_id : FK
+  * direction : ENUM(INVITE,REQUEST)
+  * status : ENUM(PENDING,ACCEPTED,DECLINED,CANCELLED,EXPIRED)
+  * created_by : FK
+  * created_at : DATETIME(3)
+}
+entity user_block <<P>> {
+  * blocker_id : FK
+  * blocked_id : FK
+  --
+  * created_at : DATETIME(3)
+}
+entity report <<C>> {
+  * id : BIGINT PK
+  --
+  * reporter_id : FK
+  * reported_id : FK
+  match_id : FK NULL
+  * reason : ENUM(CHEATING,HARASSMENT,OFFENSIVE_NAME,OTHER) [P]
+  details : VARCHAR(1000)
+  * status : ENUM(OPEN,IN_REVIEW,ACTIONED,DISMISSED)
+  * created_at : DATETIME(3)
+}
+entity moderation_action <<P>> {
+  * id : BIGINT PK
+  --
+  * target_user_id : FK
+  * moderator_id : FK
+  report_id : FK NULL
+  * action : ENUM(WARN,MUTE,SUSPEND,BAN,RENAME,LIFT)
+  * reason : VARCHAR(500)
+  expires_at : DATETIME(3) NULL
+  * created_at : DATETIME(3)
+}
+entity audit_log <<P>> {
+  * id : BIGINT PK
+  --
+  actor_user_id : FK NULL (NULL = system)
+  * action : VARCHAR(64)
+  * target_type : VARCHAR(32)
+  * target_id : VARCHAR(64)
+  metadata_json : JSON
+  * created_at : DATETIME(3)
+}
+entity organizer_application <<C>> {
+  * id : BIGINT PK
+  --
+  * user_id : FK
+  * status : ENUM(PENDING,APPROVED,REJECTED,REVOKED)
+  motivation : VARCHAR(1000)
+  reviewed_by : FK NULL
+  reviewed_at : DATETIME(3) NULL
+  * created_at : DATETIME(3)
+}
+entity tournament <<post>> {
+  * id : BIGINT PK
+  --
+  * organizer_id : FK
+  [fields TBD OQ-AC-06]
+}
+
+user_account ||--o{ auth_session
+user_account ||--|| player_profile
+user_account ||--o{ user_role
+role ||--o{ user_role
+user_account ||--o{ inventory_item
+item_definition ||--o{ inventory_item
+user_account ||--o{ loadout
+loadout ||--|{ loadout_slot
+inventory_item ||--o{ loadout_slot
+user_account ||--o{ room : hosts
+room ||--o{ room_member
+user_account ||--o{ room_member
+room |o--o{ game_match
+game_match ||--|{ match_participant
+user_account ||--o{ match_participant
+game_match ||--o{ match_event
+match_server_instance ||--o{ match_server_command
+match_server_instance |o--o{ game_match : runs (game_match.server_instance_id)
+user_account ||--|| competitive_record
+team ||--|{ team_membership
+user_account ||--o{ team_membership
+team ||--o{ team_invitation
+user_account ||--o{ user_block
+user_account ||--o{ report
+game_match |o--o{ report
+report |o--o{ moderation_action
+user_account ||--o{ moderation_action
+user_account |o--o{ audit_log
+user_account ||--o{ organizer_application
+user_account ||--o{ tournament
+@enduml

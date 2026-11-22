@@ -1,0 +1,28 @@
+@startuml SQ-08
+title SQ-08 Disconnect, reconnect & server failure [P mechanism — rules TBD OQ-GP-05]
+participant "Competitor Client" as C
+participant "Match Server" as MS
+participant "Backend API" as B
+== Disconnect ==
+C ->x MS : connection lost (ENet timeout / app backgrounded)
+MS -> MS : slot DISCONNECTED; top keeps simulating with zero input;\ngrace timer 15 s [P]
+MS -> B : POST /internal/v1/matches/{id}/state {participantDisconnected}
+== Reconnect within grace ==
+C -> B : GET /v1/me/active-match
+B --> C : {matchId, status: IN_PROGRESS}
+C -> B : POST /v1/matches/{matchId}/tickets {role: COMPETITOR}
+B -> B : verify participant; INSERT command TicketGrant
+B --> C : {host, udpPort, ticket}
+MS -> B : heartbeat
+B --> MS : {commands: [TicketGrant]}
+C -> MS : connect + C2S_Hello {ticket}
+MS -> MS : rebind userId; cancel grace
+MS --> C : S2C_Welcome + full snapshot (prediction re-seeded)
+== Grace expired ==
+MS -> MS : apply rule [TBD]: keep simulating (default proposal)\nor eliminate with reason DISCONNECT
+== Match Server failure ==
+B -> B : scheduler: instance heartbeat older than 10 s [P]
+B -> B : game_match ABORTED (BR-013), instance OFFLINE
+B -> C : Reverb: match.aborted
+note over B : Backend restart is not a match failure:\nservers keep heartbeating once it is back;\nlate results for contact-lost matches are accepted (P).
+@enduml

@@ -1,0 +1,35 @@
+@startuml state-bey-combat
+title State Machine: one Bey during a match (Match Server) [P, v0.4.1]
+[*] --> AWAITING_LAUNCH
+AWAITING_LAUNCH --> LAUNCHING : LAUNCH_WINDOW opens (5 s)
+LAUNCHING --> ACTIVE : RELEASE (launchRps = max(20, 10 x presses); max 350)
+state ACTIVE {
+  [*] --> STABLE
+  STABLE --> STAGGERED : hit (N > 0)\ncontrol authority reduced 0.3 s
+  STAGGERED --> STABLE : stagger expires
+  STABLE --> WOBBLING : spinRps < 58.33
+  WOBBLING --> STABLE : Second Wind raises spin
+  STABLE --> SKILL_ACTIVE : skill accepted\n(gauge full, cooldown ok, uses < 3,\nspin >= 47 RPS, not opening 3 s)
+  SKILL_ACTIVE --> STABLE : duration ends (cooldown starts)
+}
+ACTIVE --> ELIMINATED_BURST : lockIntegrity <= 0\nor critical burst (L at tick start <= 50)
+ACTIVE --> ELIMINATED_OVER : left arena / pocket >= 0.5 s
+ACTIVE --> ELIMINATED_XTREME : left via Xtreme zone
+ACTIVE --> ELIMINATED_SPIN : spinRps < 8
+ACTIVE --> WINNER : last remaining
+ELIMINATED_BURST --> SPECTATING
+ELIMINATED_OVER --> SPECTATING
+ELIMINATED_XTREME --> SPECTATING
+ELIMINATED_SPIN --> SPECTATING
+SPECTATING --> [*]
+note bottom of ELIMINATED_BURST
+  ELIMINATED_* states = physical finish_type (BURST | OVER | XTREME | SPIN).
+  Disconnect forfeit, no-show and match abort are NOT finish types:
+  they are stored as outcome_reason (data dictionary §2b).
+end note
+WINNER --> [*]
+note right of ACTIVE
+  Disconnected competitor: top keeps being simulated
+  with zero input during grace [P, OQ-GP-05].
+end note
+@enduml

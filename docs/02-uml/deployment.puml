@@ -1,0 +1,42 @@
+@startuml deployment
+title Deployment v0.3.1 — Initial single-VPS candidate [P] (Hostinger KVM = candidate only)
+node "Player device\n(Windows / Android / Linux; macOS & iOS later)" as DEV {
+  artifact "Game Client build" as CLIENT
+}
+cloud "Internet" as NET
+node "Linux VPS (Ubuntu LTS [P])" as VPS {
+  node "Provider firewall + UFW" as FW
+  node "Nginx (TLS :443)\nroutes /v1 -> PHP-FPM, /app -> Reverb" as RP
+  node "php-fpm.service (MemoryMax)" as FPM {
+    artifact "Laravel Backend API" as API
+  }
+  node "reverb.service\n127.0.0.1:8081" as REV
+  node "laravel-queue.service +\nlaravel-scheduler (timer)" as QW
+  node "systemd template: match-server@N.service\n(N = 1..pool size; MemoryMax each)" as MSN {
+    artifact "Godot headless Match Server\nUDP :40000+N (example range)" as MS
+  }
+  node "mysql.service" as DBN {
+    database "MySQL 8.4\nbind 127.0.0.1:3306" as DB
+  }
+  node "Ops agents" as OPS {
+    artifact "metrics exporter / log shipper" as MON
+  }
+}
+node "Off-site backup storage (TBD)" as BK
+node "E-mail provider (TBD)" as MAIL
+
+CLIENT --> NET
+NET --> FW : TCP 443 (HTTPS + WSS)\nUDP 40001-40032 (example)\nTCP 22 (restricted)
+FW --> RP : 443
+RP --> API : FastCGI (local socket)
+RP --> REV : WS proxy (localhost)
+FW --> MS : UDP
+MS --> RP : internal HTTP via 127.0.0.1\n(/internal/v1, loopback-only vhost)
+API --> DB : localhost
+QW --> DB : localhost
+API --> REV : broadcast (localhost)
+QW --> MAIL : SMTP/API (TLS)
+DB ..> BK : encrypted nightly dump + binlogs
+MON ..> VPS : CPU/RAM/disk/net/process
+note bottom of DB : Port 3306 never opened in firewall (SEC-001)
+@enduml

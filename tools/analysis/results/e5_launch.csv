@@ -1,0 +1,17 @@
+case,n_max,presses_a,rps_a,presses_b,rps_b,p_a_attack_mirror,p_a_stamina_mirror
+zero_vs_one_press,35,0,20.0,1,20.0,0.18725,0.375
+low_press_vs_median,35,0,20.0,35,350.0,0.01075,0.0
+low_press_vs_median,35,1,20.0,35,350.0,0.01075,0.0
+low_press_vs_median,35,2,20.0,35,350.0,0.01075,0.0
+low_press_vs_median,35,3,30.0,35,350.0,0.02325,0.00025
+low_press_vs_median,35,4,40.0,35,350.0,0.039,0.0005
+low_press_vs_median,35,5,50.0,35,350.0,0.05375,0.00075
+capped_presser_vs_human,35,35,350.0,20,200.0,0.83325,0.993
+capped_presser_vs_human,35,35,350.0,25,250.0,0.8125,0.99075
+capped_presser_vs_human,35,35,350.0,28,280.0,0.78,0.988
+capped_presser_vs_human,35,35,350.0,30,300.0,0.73825,0.97775
+capped_presser_vs_human,35,35,350.0,32,320.0,0.65775,0.91025
+capped_presser_vs_human,35,35,350.0,35,350.0,0.4715,0.51025
+higher_cap_vs_median35,40,40,400.0,35,350.0,0.7135,0.971
+higher_cap_vs_median35,50,50,500.0,35,350.0,0.80525,0.989
+higher_cap_vs_median35,60,60,600.0,35,350.0,0.81925,0.992

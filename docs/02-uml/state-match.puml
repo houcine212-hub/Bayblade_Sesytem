@@ -1,0 +1,33 @@
+@startuml state-match
+title State Machine: Match (authority: Match Server; mirrored status in Backend) [v0.4 — G0 decisions D-02, D-11, D-16]
+[*] --> ALLOCATING : Backend creates match
+ALLOCATING --> WAITING_FOR_PLAYERS : AssignAck (via heartbeat)
+ALLOCATING --> ABORTED : assign failed / timeout
+WAITING_FOR_PLAYERS --> READY : all competitors connected\nor join timeout + no-show rule [TBD]
+WAITING_FOR_PLAYERS --> CANCELLED : < 2 competitors present [TBD OQ-GP-17]
+READY --> LAUNCH_WINDOW : 1.5 s cue, no presses accepted [D-02]
+LAUNCH_WINDOW --> RELEASE : exactly 5.000 s elapsed [C]
+RELEASE --> BATTLE : 0.5 s, launch results broadcast
+state BATTLE {
+  [*] --> OPENING
+  OPENING --> RUNNING : 3 s (skills locked)
+  RUNNING --> RUNNING : tick / collisions / skills / eliminations
+  RUNNING --> TIME_LIMIT_RANKING : 120 s elapsed [D-16]
+}
+TIME_LIMIT_RANKING --> ENDED : survivors ranked by current spin;\nexact ties share placement
+BATTLE --> ENDED : remaining competitors <= 1\n(0 remaining in the same tick = draw, no unique winner [D-11])
+ENDED --> COMPLETED : result accepted by Backend
+ENDED --> DISPUTED : result rejected by validation
+READY --> ABORTED : server failure
+LAUNCH_WINDOW --> ABORTED : server failure
+BATTLE --> ABORTED : server failure (BR-013)
+WAITING_FOR_PLAYERS --> ABORTED : server failure
+COMPLETED --> [*]
+CANCELLED --> [*]
+ABORTED --> [*]
+DISPUTED --> [*] : resolved by admin
+note right of BATTLE
+  Per-Bey states: state-bey-combat.puml
+  Eliminations: BURST (primary) | OVER | XTREME | SPIN
+end note
+@enduml

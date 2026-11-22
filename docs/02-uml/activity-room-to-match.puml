@@ -1,0 +1,54 @@
+@startuml activity-room-to-match
+title Activity: Room-to-Match Lifecycle [v0.4.1]
+start
+:Host creates room (FR-030);
+:Backend generates room code (FR-031);
+repeat
+  :Players join by code (FR-032)\nas COMPETITOR (max 5, BR-001) or SPECTATOR;
+  :Competitors select build: parts -> attributes,\nEnergy, type shown (FR-196, FR-202);
+  :Competitors mark Ready (FR-035);
+repeat while (Host has not pressed Start?) is (waiting) not (Start pressed)
+if (all competitors ready AND 2 <= competitors <= 5?) then (yes)
+else (no)
+  :Reject start (409);
+  stop
+endif
+:Backend queues AssignMatch for an IDLE Match Server;
+if (instance available?) then (yes)
+else (no)
+  :503 NO_SERVER_AVAILABLE, room stays OPEN;
+  stop
+endif
+:Match Server picks up command on next heartbeat (<= 1 s);
+:Backend pushes tickets (Reverb); clients connect via ENet;
+if (all competitors connected before join timeout?) then (yes)
+else (no)
+  :Apply no-show rule [TBD OQ-GP-06/17];
+endif
+:READY cue 1.5 s, no presses accepted [D-02];
+:LAUNCH_WINDOW exactly 5 s: rapid presses, server counts\n(interval >= 142.857 ms, max 35) (FR-180..184, D-04);
+:Launch RPS = max(20, 10 x presses), max 350,\nbroadcast (FR-185, D-01/D-03, OQ-LN-08);
+:BATTLE: joystick steering, collisions, skills (server-authoritative);
+while (competitors remaining >= 2 and time < 120 s?) is (yes)
+  :Tick: resolve contacts with advantage S (FR-210..215);
+  if (Lock Integrity <= 0 or critical burst?) then (yes)
+    :BURST FINISH (primary, BR-015);
+  elseif (left arena?) then (yes)
+    :OVER / XTREME FINISH;
+  elseif (spin < 8 RPS?) then (yes)
+    :SPIN FINISH;
+  else (no)
+  endif
+  :Eliminated player -> spectator (BR-004);
+endwhile (no)
+:Winner = last remaining (BR-003), or at 120 s rank survivors by current spin (D-16);\nsame-tick ties share placement; all last remaining out together = draw (D-11);
+:Match Server reports result (finish types, launch & build telemetry);
+:Backend persists result, history, records;
+:Clients show result screen;
+if (room persists for rematch? [TBD OQ-GP-14]) then (yes)
+  :Room returns to OPEN;
+else (no)
+  :Room CLOSED;
+endif
+stop
+@enduml
